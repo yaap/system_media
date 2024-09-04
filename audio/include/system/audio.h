@@ -2321,11 +2321,16 @@ __END_DECLS
  * a suffix specific to the device.
  * e.g: audio.primary.goldfish.so or audio.a2dp.default.so
  *
+ * "bluetooth" is a newer implementation, combining functionality
+ * from the legacy "a2dp" and "hearing_aid" modules,
+ * and adding support for BT LE devices.
+ *
  * The same module names are used in audio policy configuration files.
  */
 
 #define AUDIO_HARDWARE_MODULE_ID_PRIMARY "primary"
 #define AUDIO_HARDWARE_MODULE_ID_A2DP "a2dp"
+#define AUDIO_HARDWARE_MODULE_ID_BLUETOOTH "bluetooth"
 #define AUDIO_HARDWARE_MODULE_ID_USB "usb"
 #define AUDIO_HARDWARE_MODULE_ID_REMOTE_SUBMIX "r_submix"
 #define AUDIO_HARDWARE_MODULE_ID_CODEC_OFFLOAD "codec_offload"

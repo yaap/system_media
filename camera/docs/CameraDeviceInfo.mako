@@ -26,7 +26,13 @@
   % for entry in find_unique_entries(sec):
     % if entry.kind == 'static' and entry.visibility in \
             ("public", "java_public", "fwk_java_public"):
+      % if not entry.aconfig_flag:
         charsKeyNames.add(CameraCharacteristics.${jkey_identifier(entry.name)}.getName());
+      % else:
+        if (Flags.${java_symbol_for_aconfig_flag(entry.aconfig_flag)}()) {
+            charsKeyNames.add(CameraCharacteristics.${jkey_identifier(entry.name)}.getName());
+        }
+      %endif
     % endif
   % endfor
 % endfor

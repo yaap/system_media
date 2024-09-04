@@ -34,9 +34,9 @@ cc_library_headers {
     min_sdk_version: "29",
     apex_available: [
         "//apex_available:platform",
+        "com.android.btservices",
         "com.android.media",
         "com.android.media.swcodec",
-        "com.android.btservices",
     ],
 }
 
@@ -47,7 +47,6 @@ filegroup {
     ],
     path: "include",
 }
-
 
 filegroup {
     name: "libaudio_system_audio_common_base",

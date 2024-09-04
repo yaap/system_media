@@ -34,84 +34,91 @@ $ atest audio_mutex_benchmark
 
 Benchmark                                                     Time        CPU        Iteration
 audio_mutex_benchmark:
-  #BM_atomic_add_equals<int32_t>                                 6.49708926103908 ns      6.472003500961985 ns     100653478
-  #BM_atomic_add_to_seq_cst<int16_t>                            6.612271967786937 ns      6.581374958282836 ns     106359096
-  #BM_atomic_add_to_seq_cst<int32_t>                            6.557587423605134 ns      6.526606701594883 ns     107255215
-  #BM_atomic_add_to_seq_cst<int64_t>                            6.611507804022058 ns      6.581571911586092 ns     106345485
-  #BM_atomic_add_to_seq_cst<float>                              7.940855618974662 ns      7.903428099126927 ns      88699973
-  #BM_atomic_add_to_seq_cst<double>                             7.892445499019113 ns     7.8553659380799665 ns      89357153
-  #BM_atomic_add_to_relaxed<int16_t>                            5.184282118879067 ns       5.16066629475692 ns     135599206
-  #BM_atomic_add_to_relaxed<int32_t>                           5.1525768457041385 ns       5.13082227851535 ns     135158791
-  #BM_atomic_add_to_relaxed<int64_t>                             5.18196641836829 ns      5.159386369625577 ns     135816093
-  #BM_atomic_add_to_relaxed<float>                              7.770385032959841 ns       7.73380439539666 ns      90647928
-  #BM_atomic_add_to_relaxed<double>                             7.774301916271472 ns      7.738535149984901 ns      90634221
-  #BM_atomic_add_to_unordered<int16_t>                         0.3536779780000643 ns    0.35200833499999895 ns    1000000000
-  #BM_atomic_add_to_unordered<int32_t>                        0.35392805999993016 ns    0.35196308799999976 ns    1000000000
-  #BM_atomic_add_to_unordered<int64_t>                        0.35319002300002467 ns    0.35198640199999964 ns    1000000000
-  #BM_atomic_add_to_unordered<float>                             0.70537668831226 ns     0.7020379879090289 ns     997049929
-  #BM_atomic_add_to_unordered<double>                          0.7051115684923829 ns     0.7020150599803927 ns     997060395
-  #BM_gettid                                                   2.1148936981430118 ns     2.1060756400940295 ns     332362067
-  #BM_systemTime                                               45.252249624452496 ns       45.0340629111274 ns      15544150
-  #BM_thread_8_variables                                       2.8213460062780684 ns      2.808115782371781 ns     249265925
-  #BM_thread_local_8_variables                                  2.821866488468177 ns     2.8083880672269608 ns     249247144
-  #BM_StdMutexLockUnlock                                       20.443066322018925 ns     20.352346307194033 ns      34391639
-  #BM_RWMutexReadLockUnlock                                     17.16239599718925 ns     17.081916542086816 ns      41022569
-  #BM_RWMutexWriteLockUnlock                                   19.853425611091456 ns      19.76218186210376 ns      35401669
-  #BM_SharedMutexReadLockUnlock                                  39.3766244173411 ns      39.22216162561333 ns      17844783
-  #BM_SharedMutexWriteLockUnlock                                42.54361761104441 ns     42.346080362033284 ns      16528427
-  #BM_AudioUtilsMutexLockUnlock                                32.316459678551176 ns     32.165598159419815 ns      21770091
-  #BM_AudioUtilsPIMutexLockUnlock                               32.91919379029218 ns      32.77652120372695 ns      21350822
-  #BM_StdMutexInitializationLockUnlock                         30.578741677235417 ns      30.43282384371753 ns      22998964
-  #BM_RWMutexInitializationReadLockUnlock                      27.291456623695325 ns     27.160228920838776 ns      25787779
-  #BM_RWMutexInitializationWriteLockUnlock                     30.177246005611483 ns     30.036540230009923 ns      23284993
-  #BM_SharedMutexInitializationReadLockUnlock                  57.531404407024816 ns     57.260222202532894 ns      12223173
-  #BM_SharedMutexInitializationWriteLockUnlock                   59.4755204867324 ns      59.19673708562941 ns      11821579
-  #BM_AudioUtilsMutexInitializationLockUnlock                   44.70003716328854 ns     44.516311007242074 ns      15719814
-  #BM_AudioUtilsPIMutexInitializationLockUnlock                  50.0569598188049 ns      49.76151232748948 ns      14066530
-  #BM_StdMutexBlockingConditionVariable/threads:2              21567.811717894936 ns      24430.56515004263 ns         32924
-  #BM_AudioUtilsMutexBlockingConditionVariable/threads:2       17895.140258052194 ns       21379.1065317615 ns         64638
-  #BM_AudioUtilsPIMutexBlockingConditionVariable/threads:2       16234.8055847075 ns        19758.387649925 ns         53360
-  #BM_StdMutexScopedLockUnlock/threads:1                        33.67012270000208 ns      33.51255456709671 ns      20617278
-  #BM_StdMutexScopedLockUnlock/threads:2                       334.03488387281124 ns       663.680747963286 ns       4746864
-  #BM_StdMutexScopedLockUnlock/threads:4                       128.53316611793798 ns      401.5973070022828 ns       1473748
-  #BM_StdMutexScopedLockUnlock/threads:8                        121.5346446122214 ns      431.4386839654385 ns       1614912
-  #BM_RWMutexScopedReadLockUnlock/threads:1                      32.1396832808462 ns     31.999380498079336 ns      21767487
-  #BM_RWMutexScopedReadLockUnlock/threads:2                    170.84739199998467 ns     339.15160600000127 ns       2000000
-  #BM_RWMutexScopedReadLockUnlock/threads:4                     246.6480510579401 ns      975.0323799866918 ns        745584
-  #BM_RWMutexScopedReadLockUnlock/threads:8                     238.1892263738593 ns     1826.4869477861284 ns        797336
-  #BM_RWMutexScopedWriteLockUnlock/threads:1                    35.00912072790768 ns      34.85540479077848 ns      20082498
-  #BM_RWMutexScopedWriteLockUnlock/threads:2                    223.1827494999834 ns      438.1546670000002 ns       2000000
-  #BM_RWMutexScopedWriteLockUnlock/threads:4                   486.84123644366286 ns     1672.5719360034366 ns        931300
-  #BM_RWMutexScopedWriteLockUnlock/threads:8                      564.87138969739 ns     2151.4437615176666 ns        464504
-  #BM_SharedMutexScopedReadLockUnlock/threads:1                 70.36601526045072 ns      69.84103085964486 ns       8484414
-  #BM_SharedMutexScopedReadLockUnlock/threads:2                 379.4861527643546 ns      753.3688988828279 ns       1567172
-  #BM_SharedMutexScopedReadLockUnlock/threads:4                 347.9172981302136 ns      1101.924198607498 ns        621044
-  #BM_SharedMutexScopedReadLockUnlock/threads:8                343.91707104488904 ns      1432.435581480825 ns        946824
-  #BM_SharedMutexScopedWriteLockUnlock/threads:1                76.38441149160603 ns      76.09520014228487 ns       7489222
-  #BM_SharedMutexScopedWriteLockUnlock/threads:2                  549.22601694552 ns      992.5252101883976 ns        644184
-  #BM_SharedMutexScopedWriteLockUnlock/threads:4                4286.404760312738 ns     10445.512869046388 ns        194420
-  #BM_SharedMutexScopedWriteLockUnlock/threads:8               2777.3490250002196 ns       9345.93453749998 ns         80000
-  #BM_AudioUtilsMutexScopedLockUnlock/threads:1                 67.12805853866571 ns      66.83999986247574 ns      10470891
-  #BM_AudioUtilsMutexScopedLockUnlock/threads:2                367.18428717404385 ns      720.3494810108673 ns        988460
-  #BM_AudioUtilsMutexScopedLockUnlock/threads:4                247.06318310687618 ns      713.1825332376544 ns        847232
-  #BM_AudioUtilsMutexScopedLockUnlock/threads:8                 321.6128632660656 ns     1219.0056378491781 ns       1102016
-  #BM_AudioUtilsPIMutexScopedLockUnlock/threads:1               68.06778275108272 ns      67.82319073618316 ns       8610878
-  #BM_AudioUtilsPIMutexScopedLockUnlock/threads:2              1740.7659979908651 ns       2080.35904028861 ns        535536
-  #BM_AudioUtilsPIMutexScopedLockUnlock/threads:4               44770.96510142291 ns     61714.283330752354 ns         25832
-  #BM_AudioUtilsPIMutexScopedLockUnlock/threads:8               31532.62551468983 ns      39864.36350786635 ns         16272
-  #BM_StdMutexReverseScopedLockUnlock/threads:1                 33.53062718758725 ns      33.37078532917351 ns      20302060
-  #BM_StdMutexReverseScopedLockUnlock/threads:2                  56.8951118357229 ns     110.10677172633986 ns       6485584
-  #BM_StdMutexReverseScopedLockUnlock/threads:4                 136.7939034223377 ns      471.5097278019701 ns       3746684
-  #BM_StdMutexReverseScopedLockUnlock/threads:8                159.71482571380815 ns      672.6030946954844 ns       1347984
-  #BM_AudioUtilsMutexReverseScopedLockUnlock/threads:1          67.08830703993506 ns      66.79194730109215 ns       9299168
-  #BM_AudioUtilsMutexReverseScopedLockUnlock/threads:2          349.1989208775619 ns      680.7213221240016 ns       1205424
-  #BM_AudioUtilsMutexReverseScopedLockUnlock/threads:4         242.54533324270986 ns      751.2404474633255 ns       1537288
-  #BM_AudioUtilsMutexReverseScopedLockUnlock/threads:8           264.199964885266 ns      1063.577426763085 ns        585224
-  #BM_AudioUtilsPIMutexReverseScopedLockUnlock/threads:1        68.08892559027429 ns      67.76412547568847 ns      10221231
-  #BM_AudioUtilsPIMutexReverseScopedLockUnlock/threads:2        2234.804406832892 ns      2710.598153659913 ns       2438554
-  #BM_AudioUtilsPIMutexReverseScopedLockUnlock/threads:4       30793.467662667594 ns      40396.41114605845 ns         20348
-  #BM_AudioUtilsPIMutexReverseScopedLockUnlock/threads:8        29475.46524613768 ns     38111.187252376985 ns         20192
-  #BM_empty_while                                             0.35276680499998747 ns    0.35103430999999574 ns    1000000000
+  #BM_atomic_add_equals<int32_t>                                6.502025194439543 ns       6.47205015631869 ns     108145417
+  #BM_atomic_add_to_seq_cst<int16_t>                             6.55807517340572 ns      6.526952655561198 ns     107217450
+  #BM_atomic_add_to_seq_cst<int32_t>                            6.610803828172807 ns       6.58148248625125 ns     106355671
+  #BM_atomic_add_to_seq_cst<int64_t>                           6.5568264443311595 ns      6.526632489003918 ns     107237292
+  #BM_atomic_add_to_seq_cst<float>                              7.884542958080632 ns     7.8526649209116375 ns      89368018
+  #BM_atomic_add_to_seq_cst<double>                             7.931010792308195 ns      7.893661616016361 ns      88487681
+  #BM_atomic_add_to_relaxed<int16_t>                            5.167222836799001 ns      5.144664678496968 ns     136918225
+  #BM_atomic_add_to_relaxed<int32_t>                            5.181042322951031 ns       5.15622768069756 ns     135684124
+  #BM_atomic_add_to_relaxed<int64_t>                             5.16751983474899 ns      5.144558629227656 ns     138681351
+  #BM_atomic_add_to_relaxed<float>                             7.7921119585599525 ns      7.741060701068997 ns      90441768
+  #BM_atomic_add_to_relaxed<double>                             7.774451559752642 ns      7.737580743492468 ns      90244734
+  #BM_atomic_add_to_unordered<int16_t>                         0.3535942390008131 ns            0.351996905 ns    1000000000
+  #BM_atomic_add_to_unordered<int32_t>                        0.35363073799817357 ns     0.3519564250000009 ns    1000000000
+  #BM_atomic_add_to_unordered<int64_t>                        0.35689860000275075 ns    0.35208711699999995 ns    1000000000
+  #BM_atomic_add_to_unordered<float>                           0.7052556854655034 ns     0.7020281104213322 ns     997014156
+  #BM_atomic_add_to_unordered<double>                          0.7050851735423606 ns     0.7020307730369924 ns     997136097
+  #BM_atomic_add_to_unordered<volatile_int16_t>                1.7630191837466263 ns      1.755060622823009 ns     398830899
+  #BM_atomic_add_to_unordered<volatile_int32_t>                1.7636458882248507 ns     1.7551169249266374 ns     398840618
+  #BM_atomic_add_to_unordered<volatile_int64_t>                 1.762758401503814 ns      1.755028484468997 ns     398845420
+  #BM_atomic_add_to_unordered<volatile_float>                  2.6616841096538084 ns     2.6491095463299206 ns     264227784
+  #BM_atomic_add_to_unordered<volatile_double>                  2.659741383344485 ns     2.6476598391107227 ns     264613772
+  #BM_gettid                                                   2.1159776035370936 ns       2.10614115284375 ns     332373750
+  #BM_systemTime                                                45.25256074688064 ns     45.040996499041846 ns      15560597
+  #BM_thread_8_variables                                       2.8218847925890063 ns      2.808269438152783 ns     249265931
+  #BM_thread_local_8_variables                                 2.8201526456300243 ns      2.808261059704455 ns     249274993
+  #BM_thread_detach_async                                        66004.9478946627 ns      36389.48824859354 ns         19019
+  #BM_thread_join_sync                                         226163.65853653837 ns     115567.64218708145 ns         11193
+  #BM_StdMutexLockUnlock                                       20.148828538610392 ns      20.05356471045582 ns      33531405
+  #BM_RWMutexReadLockUnlock                                     17.19880095571374 ns      17.12071584234365 ns      40958460
+  #BM_RWMutexWriteLockUnlock                                   19.816517996240673 ns      19.73653147918977 ns      35482330
+  #BM_SharedMutexReadLockUnlock                                38.818405116741836 ns      38.64741636654499 ns      18109051
+  #BM_SharedMutexWriteLockUnlock                               41.472496065276786 ns      41.27604196581944 ns      16957610
+  #BM_AudioUtilsMutexLockUnlock                                31.710274563460512 ns     31.560500556055743 ns      22196515
+  #BM_AudioUtilsPIMutexLockUnlock                              32.041340383783485 ns     31.906233969585948 ns      21938766
+  #BM_StdMutexInitializationLockUnlock                          29.75497564252243 ns     29.621176282468877 ns      23639560
+  #BM_RWMutexInitializationReadLockUnlock                      27.335134720127595 ns     27.211004896327836 ns      25715190
+  #BM_RWMutexInitializationWriteLockUnlock                      30.29120801891917 ns      30.12894761884541 ns      23244772
+  #BM_SharedMutexInitializationReadLockUnlock                  56.699768519426065 ns     56.433009417474274 ns      12406617
+  #BM_SharedMutexInitializationWriteLockUnlock                  57.55622814765764 ns     57.303949058279805 ns      12223851
+  #BM_AudioUtilsMutexInitializationLockUnlock                   43.02546297081612 ns     42.823799365616175 ns      16355083
+  #BM_AudioUtilsPIMutexInitializationLockUnlock                 47.94813033517548 ns     47.722581549497065 ns      14667687
+  #BM_StdMutexBlockingConditionVariable/threads:2              26879.128794361706 ns      31117.70547138501 ns         37358
+  #BM_AudioUtilsMutexBlockingConditionVariable/threads:2        46786.98106298265 ns      51810.75161375347 ns         15182
+  #BM_AudioUtilsPIMutexBlockingConditionVariable/threads:2      48937.30165022134 ns      57147.57405000012 ns         20000
+  #BM_StdMutexScopedLockUnlock/threads:1                        32.93981066359915 ns      32.76512553728174 ns      20414812
+  #BM_StdMutexScopedLockUnlock/threads:2                        571.8094382500567 ns            1137.253613 ns       2000000
+  #BM_StdMutexScopedLockUnlock/threads:4                       128.79479358731055 ns      404.5323853159404 ns       2347144
+  #BM_StdMutexScopedLockUnlock/threads:8                       131.74327468115035 ns      517.3769108963708 ns       2534936
+  #BM_RWMutexScopedReadLockUnlock/threads:1                    32.230652432400504 ns      32.08542964347514 ns      21723209
+  #BM_RWMutexScopedReadLockUnlock/threads:2                     155.3515724990575 ns     307.43060200000036 ns       2000000
+  #BM_RWMutexScopedReadLockUnlock/threads:4                     243.4595197344497 ns      961.0659840432863 ns        731980
+  #BM_RWMutexScopedReadLockUnlock/threads:8                    253.54372642695628 ns     1952.4235494344487 ns        381920
+  #BM_RWMutexScopedWriteLockUnlock/threads:1                    34.96165601863155 ns        34.794121014593 ns      20105476
+  #BM_RWMutexScopedWriteLockUnlock/threads:2                   263.78236900200136 ns      514.6362324999996 ns       2000000
+  #BM_RWMutexScopedWriteLockUnlock/threads:4                     527.032631925838 ns      1792.191760456376 ns       1008284
+  #BM_RWMutexScopedWriteLockUnlock/threads:8                    483.5519374297695 ns     1863.0285003579795 ns        435784
+  #BM_SharedMutexScopedReadLockUnlock/threads:1                  69.9000512364522 ns      69.56623691277518 ns       9561519
+  #BM_SharedMutexScopedReadLockUnlock/threads:2                351.76991433261804 ns      695.5628134433418 ns       1410542
+  #BM_SharedMutexScopedReadLockUnlock/threads:4                367.56704147658854 ns     1254.6058120544424 ns        771500
+  #BM_SharedMutexScopedReadLockUnlock/threads:8                378.72729057260494 ns     1560.9589011997377 ns        470768
+  #BM_SharedMutexScopedWriteLockUnlock/threads:1                71.71541684004359 ns       71.4271749213539 ns       8818020
+  #BM_SharedMutexScopedWriteLockUnlock/threads:2               277.63172079762904 ns      515.4668504883387 ns       1055008
+  #BM_SharedMutexScopedWriteLockUnlock/threads:4               2755.3780970431444 ns      6906.134785989446 ns        226344
+  #BM_SharedMutexScopedWriteLockUnlock/threads:8               3699.5667828023215 ns     12626.038175000023 ns         80000
+  #BM_AudioUtilsMutexScopedLockUnlock/threads:1                 65.17313525653955 ns       64.8294116126777 ns      10795219
+  #BM_AudioUtilsMutexScopedLockUnlock/threads:2                 446.8434749672579 ns       885.912395366048 ns       1181022
+  #BM_AudioUtilsMutexScopedLockUnlock/threads:4                333.62697061454804 ns     1070.9685904025976 ns        964928
+  #BM_AudioUtilsMutexScopedLockUnlock/threads:8                 314.9844454113926 ns      1212.955095620149 ns        582304
+  #BM_AudioUtilsPIMutexScopedLockUnlock/threads:1               65.65269811876958 ns      65.34601386374699 ns       9144281
+  #BM_AudioUtilsPIMutexScopedLockUnlock/threads:2               5017.670372810213 ns      6042.387748137168 ns       2288452
+  #BM_AudioUtilsPIMutexScopedLockUnlock/threads:4              29737.776158677327 ns      42942.53487809585 ns         20672
+  #BM_AudioUtilsPIMutexScopedLockUnlock/threads:8               39162.52888815035 ns      49320.37778141362 ns         12224
+  #BM_StdMutexReverseScopedLockUnlock/threads:1                  32.9542161313857 ns      32.80702810699402 ns      20720857
+  #BM_StdMutexReverseScopedLockUnlock/threads:2                 60.71405982389486 ns     116.22175457775452 ns       5378730
+  #BM_StdMutexReverseScopedLockUnlock/threads:4                130.27275630605487 ns     426.97113497151395 ns       2300604
+  #BM_StdMutexReverseScopedLockUnlock/threads:8                146.68614021968642 ns      525.7952204915628 ns       1277872
+  #BM_AudioUtilsMutexReverseScopedLockUnlock/threads:1          64.96217937278401 ns      64.67648684147889 ns       9147495
+  #BM_AudioUtilsMutexReverseScopedLockUnlock/threads:2         315.65038050030125 ns      621.0967409999993 ns       2000000
+  #BM_AudioUtilsMutexReverseScopedLockUnlock/threads:4         248.41254045888044 ns      727.5389901889789 ns       1138312
+  #BM_AudioUtilsMutexReverseScopedLockUnlock/threads:8         327.52771167681186 ns     1223.1142029482817 ns        606184
+  #BM_AudioUtilsPIMutexReverseScopedLockUnlock/threads:1        65.70167857940193 ns       65.4193651777703 ns       9300777
+  #BM_AudioUtilsPIMutexReverseScopedLockUnlock/threads:2       2553.0187592521543 ns      3020.612901000003 ns       2000000
+  #BM_AudioUtilsPIMutexReverseScopedLockUnlock/threads:4        59069.56778749645 ns      74846.59661112927 ns         24728
+  #BM_AudioUtilsPIMutexReverseScopedLockUnlock/threads:8        28588.76596390947 ns      34629.68940916421 ns         19904
+  #BM_empty_while                                              0.3527790119987912 ns     0.3510390169999908 ns    1000000000
 
 */
 
@@ -190,6 +197,23 @@ BENCHMARK(BM_atomic_add_to_unordered<float>);
 
 BENCHMARK(BM_atomic_add_to_unordered<double>);
 
+// type aliases to allow for macro parsing.
+using volatile_int16_t = volatile int16_t;
+using volatile_int32_t = volatile int32_t;
+using volatile_int64_t = volatile int64_t;
+using volatile_float = volatile float;
+using volatile_double = volatile double;
+
+BENCHMARK(BM_atomic_add_to_unordered<volatile_int16_t>);
+
+BENCHMARK(BM_atomic_add_to_unordered<volatile_int32_t>);
+
+BENCHMARK(BM_atomic_add_to_unordered<volatile_int64_t>);
+
+BENCHMARK(BM_atomic_add_to_unordered<volatile_float>);
+
+BENCHMARK(BM_atomic_add_to_unordered<volatile_double>);
+
 // Benchmark gettid().  The mutex class uses this to get the linux thread id.
 static void BM_gettid(benchmark::State &state) {
     int32_t value = 0;
@@ -252,6 +276,22 @@ static void BM_thread_local_8_variables(benchmark::State &state) {
 }
 
 BENCHMARK(BM_thread_local_8_variables);
+
+static void BM_thread_detach_async(benchmark::State &state) {
+    while (state.KeepRunning()) {
+        std::thread([](){}).detach();
+    }
+}
+
+BENCHMARK(BM_thread_detach_async);
+
+static void BM_thread_join_sync(benchmark::State &state) {
+    while (state.KeepRunning()) {
+        std::thread([](){}).join();
+    }
+}
+
+BENCHMARK(BM_thread_join_sync);
 
 // ---
 

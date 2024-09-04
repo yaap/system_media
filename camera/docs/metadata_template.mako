@@ -135,6 +135,10 @@
           % if (prop.hal_major_version, prop.hal_minor_version) != (3,2):
                 hal_version="${prop.hal_major_version}.${prop.hal_minor_version}"
           % endif
+
+          % if prop.session_characteristics_key_since:
+                session_characteristics_key_since="${prop.session_characteristics_key_since}"
+          % endif
             >
 
               % if prop.container == 'array':

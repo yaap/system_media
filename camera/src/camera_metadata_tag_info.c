@@ -824,6 +824,8 @@ static tag_info_t android_info[ANDROID_INFO_END -
     [ ANDROID_INFO_SESSION_CONFIGURATION_QUERY_VERSION - ANDROID_INFO_START ] =
     { "sessionConfigurationQueryVersion",
                                         TYPE_INT32  },
+    [ ANDROID_INFO_DEVICE_ID - ANDROID_INFO_START ] =
+    { "deviceId",                      TYPE_INT32  },
 };
 
 static tag_info_t android_black_level[ANDROID_BLACK_LEVEL_END -
@@ -3642,6 +3644,9 @@ int camera_metadata_enum_snprint(uint32_t tag,
                 default:
                     msg = "error: enum value out of range";
             }
+            break;
+        }
+        case ANDROID_INFO_DEVICE_ID: {
             break;
         }
 
@@ -7093,6 +7098,9 @@ int camera_metadata_enum_value(uint32_t tag,
                     ret = 0;
                     break;
                 }
+            break;
+        }
+        case ANDROID_INFO_DEVICE_ID: {
             break;
         }
 

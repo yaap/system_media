@@ -14,4 +14,7 @@
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
 ##
-<%include file="CameraMetadataKeys.mako" args="java_class='CaptureResult', xml_kind='dynamic'" />
+<%include file="CameraMetadataKeys.mako" args="java_class='CaptureResult', xml_kind='dynamic'" />\
+    /*~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~
+     * End generated code
+     *~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~O@*/

@@ -1379,6 +1379,10 @@ class Entry(Node):
   def enum(self):
     return self._enum
 
+  @property
+  def session_characteristics_key_since(self):
+    return self._session_characteristics_key_since
+
   def has_new_values_added_in_hal_version(self, hal_major_version, hal_minor_version):
     if self._enum is not None:
       return self._enum.has_new_values_added_in_hal_version(hal_major_version,hal_minor_version)
@@ -1466,6 +1470,10 @@ class Entry(Node):
     self._permission_needed = kwargs.get('permission_needed')
     self._optional = kwargs.get('optional')
     self._ndk_visible = kwargs.get('ndk_visible')
+
+    self._session_characteristics_key_since = None \
+                  if not kwargs.get('session_characteristics_key_since') \
+                    else int(kwargs.get('session_characteristics_key_since'))
 
     self._property_keys = kwargs
 
@@ -1675,7 +1683,8 @@ class MergedEntry(Entry):
                     'hal_major_version',
                     'hal_minor_version',
                     'permission_needed',
-                    'aconfig_flag'
+                    'aconfig_flag',
+                    'session_characteristics_key_since'
                    ]
 
     for p in props_common:

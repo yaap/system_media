@@ -1,6 +1,7 @@
 // Build the benchmarks for audio_utils
 
 package {
+    default_team: "trendy_team_android_media_audio_framework",
     // http://go/android-license-faq
     // A large-scale-change added 'default_applicable_licenses' to import
     // the below license kinds from "system_media_license":
@@ -50,11 +51,13 @@ cc_benchmark {
 
     srcs: ["biquad_filter_benchmark.cpp"],
     cflags: [
-        "-Werror",
         "-Wall",
+        "-Werror",
         "-ffast-math",
-      //  "-fno-vectorize",      // (test only)
-      //  "-fno-slp-vectorize",  // (test only)
+        "-fhonor-infinities",
+        "-fhonor-nans",
+        //  "-fno-vectorize",      // (test only)
+        //  "-fno-slp-vectorize",  // (test only)
     ],
     static_libs: [
         "libaudioutils",
@@ -83,11 +86,13 @@ cc_benchmark {
 
     srcs: ["intrinsic_benchmark.cpp"],
     cflags: [
-        "-Werror",
         "-Wall",
+        "-Werror",
         "-ffast-math",
-      //  "-fno-vectorize",      // (test only)
-      //  "-fno-slp-vectorize",  // (test only)
+        "-fhonor-infinities",
+        "-fhonor-nans",
+        //  "-fno-vectorize",      // (test only)
+        //  "-fno-slp-vectorize",  // (test only)
     ],
     static_libs: [
         "libaudioutils",
@@ -105,8 +110,8 @@ cc_benchmark {
 
     srcs: ["primitives_benchmark.cpp"],
     cflags: [
-        "-Werror",
         "-Wall",
+        "-Werror",
     ],
     static_libs: [
         "libaudioutils",
@@ -119,8 +124,8 @@ cc_benchmark {
 
     srcs: ["statistics_benchmark.cpp"],
     cflags: [
-        "-Werror",
         "-Wall",
+        "-Werror",
     ],
     static_libs: [
         "libaudioutils",

@@ -68,3 +68,13 @@ TEST(audio_math_tests, safe_isinf) {
     ALOGD("%s: std::isinf:%d  eq_isinf:%d  audio_utils::isinf:%d",
             __func__, std_isinf, eq_isinf, au_isinf);
 }
+
+TEST(audio_math_tests, safe_add_sat) {
+    static_assert(INT_MAX == android::audio_utils::safe_add_sat(INT_MAX, 10));
+    static_assert(INT_MAX - 10 == android::audio_utils::safe_add_sat(INT_MAX, -10));
+    static_assert(INT_MIN == android::audio_utils::safe_add_sat(INT_MIN, -10));
+    static_assert(INT_MIN + 10 == android::audio_utils::safe_add_sat(INT_MIN, 10));
+    static_assert(UINT_MAX == android::audio_utils::safe_add_sat(UINT_MAX, 10U));
+    static_assert(UINT_MAX - 10 == android::audio_utils::safe_add_sat(UINT_MAX - 20, 10U));
+    static_assert(UINT_MAX - 10 == android::audio_utils::safe_add_sat(UINT_MAX - 20, 10U));
+}

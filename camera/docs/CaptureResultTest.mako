@@ -25,7 +25,13 @@
 % for sec in find_all_sections(metadata):
   % for entry in find_unique_entries(sec):
     % if entry.kind == 'dynamic' and entry.visibility in ("public", "java_public"):
+      % if not entry.aconfig_flag:
         resultKeys.add(CaptureResult.${jkey_identifier(entry.name)});
+      % else:
+        if (Flags.${java_symbol_for_aconfig_flag(entry.aconfig_flag)}()) {
+            resultKeys.add(CaptureResult.${jkey_identifier(entry.name)});
+        }
+      %endif
     % endif
   % endfor
 % endfor

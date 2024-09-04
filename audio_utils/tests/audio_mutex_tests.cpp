@@ -19,6 +19,8 @@
 
 #include <thread>
 
+using namespace std::chrono_literals;
+
 // Currently tests mutex priority-inheritance (or not) based on flag
 // adb shell setprop \
 // persist.device_config.aconfig_flags.media_audio.\
@@ -571,7 +573,7 @@ TEST_P(MutexTestSuite, DeadlockDetection) {
     EXPECT_EQ(false, deadlockInfo.has_cycle);
 
     // no condition_variable detected
-    EXPECT_EQ(false, deadlockInfo.cv_detected);
+    EXPECT_EQ(audio_utils::other_wait_reason_t::none, deadlockInfo.other_wait_reason);
 
     // thread1 is waiting on a chain of 3 other threads.
     const auto chain = deadlockInfo.chain;
@@ -686,7 +688,7 @@ TEST_P(MutexTestSuite, DeadlockConditionVariableDetection) {
     EXPECT_EQ(false, deadlockInfo.has_cycle);
 
     // condition_variable detected
-    EXPECT_EQ(true, deadlockInfo.cv_detected);
+    EXPECT_EQ(audio_utils::other_wait_reason_t::cv, deadlockInfo.other_wait_reason);
 
     // thread1 is waiting on a chain of 3 other threads.
     const auto chain = deadlockInfo.chain;
@@ -709,7 +711,11 @@ TEST_P(MutexTestSuite, DeadlockConditionVariableDetection) {
                 Mutex::attributes_t::order_names_[default_idx]).c_str(), chain[2].second);
     }
 
-    ALOGD("%s", android::audio_utils::mutex::all_threads_to_string().c_str());
+    ALOGD("with cv all_threads_to_string():\n%s",
+            android::audio_utils::mutex::all_threads_to_string().c_str());
+    ALOGD("with cv deadlock_info_t:\n%s",
+            android::audio_utils::mutex::deadlock_detection(
+                   tid1).to_string().c_str());
 
     {
         UniqueLock ul(m);
@@ -728,6 +734,99 @@ TEST_P(MutexTestSuite, DeadlockConditionVariableDetection) {
     t4.join();
     t3.join();
     t2.join();
+    t1.join();
+}
+
+TEST_P(MutexTestSuite, DeadlockJoinDetection) {
+    using Mutex = android::audio_utils::mutex;
+    using UniqueLock = android::audio_utils::unique_lock;
+    using ConditionVariable = android::audio_utils::condition_variable;
+    const bool priority_inheritance = GetParam();
+
+    Mutex m{priority_inheritance};
+    ConditionVariable cv;
+    bool quit = false;  // GUARDED_BY(m)
+    std::atomic<pid_t> tid1{}, tid2{}, tid3{}, tid4{};
+
+    std::thread t4([&]() {
+        UniqueLock ul(m);
+        tid4 = android::audio_utils::gettid_wrapper();
+        while (!quit) {
+            cv.wait(ul, [&]{ return quit; });
+            if (quit) break;
+        }
+    });
+
+    while (tid4 == 0) { std::this_thread::sleep_for(1ms); }
+
+    std::thread t3([&]() {
+        tid3 = android::audio_utils::gettid_wrapper();
+        audio_utils::mutex::scoped_join_wait_check sjw(tid4);
+        t4.join();
+    });
+
+    while (tid3 == 0) { std::this_thread::sleep_for(1ms); }
+
+    std::thread t2([&]() {
+        tid2 = android::audio_utils::gettid_wrapper();
+        audio_utils::mutex::scoped_join_wait_check sjw(tid3);
+        t3.join();
+    });
+
+    while (tid2 == 0) { std::this_thread::sleep_for(1ms); }
+
+    std::thread t1([&]() {
+        tid1 = android::audio_utils::gettid_wrapper();
+        audio_utils::mutex::scoped_join_wait_check sjw(tid2);
+        t2.join();
+    });
+
+    while (tid1 == 0) { std::this_thread::sleep_for(1ms); }
+
+    // we know that the threads will now block in the proper order.
+    // however, we need to wait for the block to happen.
+    // this part is racy unless we check the thread state or use
+    // futexes directly in our mutex (which allows atomic accuracy of wait).
+    std::this_thread::sleep_for(20ms);
+
+    const auto deadlockInfo = android::audio_utils::mutex::deadlock_detection(tid1);
+
+    // no cycle.
+    EXPECT_EQ(false, deadlockInfo.has_cycle);
+
+    // thread join detected
+    EXPECT_EQ(audio_utils::other_wait_reason_t::join, deadlockInfo.other_wait_reason);
+
+    // thread1 is attempting to join, in a chain of 3 other threads.
+    const auto chain = deadlockInfo.chain;
+    const size_t chain_size = chain.size();
+    EXPECT_EQ(3u, chain_size);
+
+    const auto default_idx = static_cast<size_t>(Mutex::attributes_t::order_default_);
+    if (chain_size > 0) {
+        EXPECT_EQ(tid2, chain[0].first);
+        EXPECT_EQ("join", chain[0].second);
+    }
+    if (chain_size > 1) {
+        EXPECT_EQ(tid3, chain[1].first);
+        EXPECT_EQ("join", chain[1].second);
+    }
+    if (chain_size > 2) {
+        EXPECT_EQ(tid4, chain[2].first);
+        EXPECT_EQ("join", chain[2].second);
+    }
+
+    ALOGD("with join all_threads_to_string():\n%s",
+            android::audio_utils::mutex::all_threads_to_string().c_str());
+    ALOGD("with join deadlock_info_t:\n%s",
+            android::audio_utils::mutex::deadlock_detection(
+                   tid1).to_string().c_str());
+
+    {
+        UniqueLock ul(m);
+        quit = true;
+        cv.notify_one();
+    }
     t1.join();
 }
 

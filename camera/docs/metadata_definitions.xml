@@ -686,7 +686,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
                 flash.
               </notes>
             </value>
-            <value optional="true" hal_version="3.9"
+            <value optional="true" hal_version="3.10"
                 aconfig_flag="camera_ae_mode_low_light_boost">ON_LOW_LIGHT_BOOST_BRIGHTNESS_PRIORITY
               <notes>
                 Like 'ON' but applies additional brightness boost in low light scenes.
@@ -717,9 +717,9 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
                 If the session configuration is not supported, the AE mode reported in the
                 CaptureResult will be 'ON' instead of 'ON_LOW_LIGHT_BOOST_BRIGHTNESS_PRIORITY'.
 
-                The application can observe the CapturerResult field
-                android.control.lowLightBoostState to determine when low light boost is 'ACTIVE' or
-                'INACTIVE'.
+                When this AE mode is enabled, the CaptureResult field
+                android.control.lowLightBoostState will indicate when low light boost is 'ACTIVE'
+                or 'INACTIVE'. By default android.control.lowLightBoostState will be 'INACTIVE'.
 
                 The low light boost is 'ACTIVE' once the scene lighting condition is less than the
                 upper bound lux value defined by android.control.lowLightBoostInfoLuminanceRange.
@@ -882,7 +882,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
 
           Note that the actual achievable max framerate also depends on the minimum frame
           duration of the output streams. The max frame rate will be
-          `min(aeTargetFpsRange.maxFps, 1 / max(individual stream min durations)`. For example,
+          `min(aeTargetFpsRange.maxFps, 1 / max(individual stream min durations))`. For example,
           if the application sets this key to `{60, 60}`, but the maximum minFrameDuration among
           all configured streams is 33ms, the maximum framerate won't be 60fps, but will be
           30fps.
@@ -3412,7 +3412,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
       <static>
         <entry name="zoomRatioRange" type="float" visibility="public"
                type_notes="The range of zoom ratios that this camera device supports."
-               container="array" typedef="rangeFloat" hwlevel="limited" hal_version="3.5">
+               container="array" typedef="rangeFloat" hwlevel="limited" hal_version="3.5"
+               session_characteristics_key_since="35">
           <array>
             <size>2</size>
           </array>
@@ -3749,8 +3750,15 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             overridden controls' latency by applying them as soon as processCaptureRequest is
             called, rather than when it's unblocked.
 
-            If zoom settings override is on, when zooming in, the HAL must be able to apply the
-            zoom related settings at least 1 frame ahead.
+            For devices launching with API level 35 or newer, to avoid regression on zoom
+            smoothness, when zoom settings override is on during pinch zoom (zoom value gradually
+            changes), the zoom effect in the camera output must not become more jittery. More
+            specifically, the variation of zoom pipeline latency must not increase. The latency
+            improvement must be at least 1 frame regardless of zoom in or zoom out.
+
+            For devices launched before API level 35, if zoom settings override is on, when
+            zooming in, the HAL must be able to apply the zoom related settings at least 1
+            frame ahead.
           </hal_details>
         </entry>
     </controls>
@@ -3897,7 +3905,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
     <static>
         <entry name="lowLightBoostInfoLuminanceRange" type="float" visibility="public"
                optional="true" container="array" typedef="rangeFloat"
-               aconfig_flag="camera_ae_mode_low_light_boost" hal_version="3.9">
+               aconfig_flag="camera_ae_mode_low_light_boost" hal_version="3.10">
           <array>
             <size>2</size>
           </array>
@@ -3922,7 +3930,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
       </static>
       <dynamic>
         <entry name="lowLightBoostState" type="byte" visibility="public" optional="true" enum="true"
-               aconfig_flag="camera_ae_mode_low_light_boost" hal_version="3.9">
+               aconfig_flag="camera_ae_mode_low_light_boost" hal_version="3.10">
           <enum>
             <value>INACTIVE
             <notes>
@@ -3946,6 +3954,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
 
             This key will be absent from the CaptureResult if AE mode is not set to
             'ON_LOW_LIGHT_BOOST_BRIGHTNESS_PRIORITY.
+
+            The default value will always be 'INACTIVE'.
           </details>
         </entry>
       </dynamic>
@@ -4263,49 +4273,49 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
       </dynamic>
       <controls>
         <entry name="strengthLevel" type="int32" visibility="public" hwlevel="legacy"
-          aconfig_flag="camera_manual_flash_strength_control" hal_version="3.9">
+          aconfig_flag="camera_manual_flash_strength_control" hal_version="3.10">
           <description>Flash strength level to be used when manual flash control is active.
           </description>
-          <range>`[1-android.flash.info.torchStrengthMaxLevel]` when the android.flash.mode is
+          <range>`[1-android.flash.torchStrengthMaxLevel]` when the android.flash.mode is
             set to TORCH;
-            `[1-android.flash.info.singleStrengthMaxLevel]` when the android.flash.mode is
+            `[1-android.flash.singleStrengthMaxLevel]` when the android.flash.mode is
             set to SINGLE
           </range>
           <details>Flash strength level to use in capture mode i.e. when the applications control
-            flash with either SINGLE or TORCH mode.
+            flash with either `SINGLE` or `TORCH` mode.
 
-            Use android.flash.info.singleStrengthMaxLevel and
-            android.flash.info.torchStrengthMaxLevel to check whether the device supports
+            Use android.flash.singleStrengthMaxLevel and
+            android.flash.torchStrengthMaxLevel to check whether the device supports
             flash strength control or not.
-            If the values of android.flash.info.singleStrengthMaxLevel and
-            android.flash.info.torchStrengthMaxLevel are greater than 1,
+            If the values of android.flash.singleStrengthMaxLevel and
+            android.flash.torchStrengthMaxLevel are greater than 1,
             then the device supports manual flash strength control.
 
-            If the android.flash.mode `==` TORCH the value must be &amp;gt;= 1
-            and &amp;lt;= android.flash.info.torchStrengthMaxLevel.
+            If the android.flash.mode `==` `TORCH` the value must be &amp;gt;= 1
+            and &amp;lt;= android.flash.torchStrengthMaxLevel.
             If the application doesn't set the key and
-            android.flash.info.torchStrengthMaxLevel &amp;gt; 1,
+            android.flash.torchStrengthMaxLevel &amp;gt; 1,
             then the flash will be fired at the default level set by HAL in
-            android.flash.info.torchStrengthDefaultLevel.
-            If the android.flash.mode `==` SINGLE, then the value must be &amp;gt;= 1
-            and &amp;lt;= android.flash.info.singleStrengthMaxLevel.
+            android.flash.torchStrengthDefaultLevel.
+            If the android.flash.mode `==` `SINGLE`, then the value must be &amp;gt;= 1
+            and &amp;lt;= android.flash.singleStrengthMaxLevel.
             If the application does not set this key and
-            android.flash.info.singleStrengthMaxLevel &amp;gt; 1,
+            android.flash.singleStrengthMaxLevel &amp;gt; 1,
             then the flash will be fired at the default level set by HAL
-            in android.flash.info.singleStrengthDefaultLevel.
-            If android.control.aeMode is set to any of ON_AUTO_FLASH, ON_ALWAYS_FLASH,
-            ON_AUTO_FLASH_REDEYE, ON_EXTERNAL_FLASH values, then the strengthLevel will be ignored.
+            in android.flash.singleStrengthDefaultLevel.
+            If android.control.aeMode is set to any of `ON_AUTO_FLASH`, `ON_ALWAYS_FLASH`,
+            `ON_AUTO_FLASH_REDEYE`, `ON_EXTERNAL_FLASH` values, then the strengthLevel will be ignored.
           </details>
         </entry>
       </controls>
       <static>
         <entry name="singleStrengthMaxLevel" type="int32" visibility="public" hwlevel="legacy"
-               aconfig_flag="camera_manual_flash_strength_control" hal_version="3.9">
-          <description>Maximum flash brightness level for manual flash control in SINGLE mode.
+               aconfig_flag="camera_manual_flash_strength_control" hal_version="3.10">
+          <description>Maximum flash brightness level for manual flash control in `SINGLE` mode.
           </description>
           <details>
             Maximum flash brightness level in camera capture mode and
-            android.flash.mode set to SINGLE.
+            android.flash.mode set to `SINGLE`.
             Value will be &amp;gt; 1 if the manual flash strength control feature is supported,
             otherwise the value will be equal to 1.
             Note that this level is just a number of supported levels (the granularity of control).
@@ -4313,41 +4323,41 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
         <entry name="singleStrengthDefaultLevel" type="int32" visibility="public" hwlevel="legacy"
-               aconfig_flag="camera_manual_flash_strength_control" hal_version="3.9">
-          <description>Default flash brightness level for manual flash control in SINGLE mode.
+               aconfig_flag="camera_manual_flash_strength_control" hal_version="3.10">
+          <description>Default flash brightness level for manual flash control in `SINGLE` mode.
           </description>
           <details>
             If flash unit is available this will be greater than or equal to 1 and less
-            or equal to `android.flash.info.singleStrengthMaxLevel`.
+            or equal to android.flash.singleStrengthMaxLevel.
             Note for devices that do not support the manual flash strength control
             feature, this level will always be equal to 1.
           </details>
         </entry>
         <entry name="torchStrengthMaxLevel" type="int32" visibility="public" hwlevel="legacy"
-               aconfig_flag="camera_manual_flash_strength_control" hal_version="3.9">
-          <description>Maximum flash brightness level for manual flash control in TORCH mode
+               aconfig_flag="camera_manual_flash_strength_control" hal_version="3.10">
+          <description>Maximum flash brightness level for manual flash control in `TORCH` mode
           </description>
           <details>
             Maximum flash brightness level in camera capture mode and
-            android.flash.mode set to TORCH.
+            android.flash.mode set to `TORCH`.
             Value will be &amp;gt; 1 if the manual flash strength control feature is supported,
             otherwise the value will be equal to 1.
 
             Note that this level is just a number of supported levels(the granularity of control).
             There is no actual physical power units tied to this level.
-            There is no relation between android.flash.info.torchStrengthMaxLevel and
-            android.flash.info.singleStrengthMaxLevel i.e. the ratio of
-            android.flash.info.torchStrengthMaxLevel:android.flash.info.singleStrengthMaxLevel
+            There is no relation between android.flash.torchStrengthMaxLevel and
+            android.flash.singleStrengthMaxLevel i.e. the ratio of
+            android.flash.torchStrengthMaxLevel:android.flash.singleStrengthMaxLevel
             is not guaranteed to be the ratio of actual brightness.
           </details>
         </entry>
         <entry name="torchStrengthDefaultLevel" type="int32" visibility="public" hwlevel="legacy"
-               aconfig_flag="camera_manual_flash_strength_control" hal_version="3.9">
-          <description>Default flash brightness level for manual flash control in TORCH mode
+               aconfig_flag="camera_manual_flash_strength_control" hal_version="3.10">
+          <description>Default flash brightness level for manual flash control in `TORCH` mode
           </description>
           <details>
             If flash unit is available this will be greater than or equal to 1 and less
-            or equal to android.flash.info.torchStrengthMaxLevel.
+            or equal to android.flash.torchStrengthMaxLevel.
             Note for the devices that do not support the manual flash strength control feature,
             this level will always be equal to 1.
           </details>
@@ -4488,7 +4498,9 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
 
           Camera devices may either encode this value into the JPEG EXIF header, or
           rotate the image data to match this orientation. When the image data is rotated,
-          the thumbnail data will also be rotated.
+          the thumbnail data will also be rotated. Additionally, in the case where the image data
+          is rotated, {@link android.media.Image#getWidth} and {@link android.media.Image#getHeight}
+          will not be updated to reflect the height and width of the rotated image.
 
           Note that this orientation is relative to the orientation of the camera sensor, given
           by android.sensor.orientation.
@@ -6524,10 +6536,10 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
 
               Combinations of logical and physical streams, or physical streams from different
               physical cameras are not guaranteed. However, if the camera device supports
-              {@link CameraManager#isSessionConfigurationWithParametersSupported|ACameraDevice_isSessionConfigurationSupported},
+              {@link CameraDevice#isSessionConfigurationSupported|ACameraDevice_isSessionConfigurationSupported},
               application must be able to query whether a stream combination involving physical
               streams is supported by calling
-              {@link CameraManager#isSessionConfigurationWithParametersSupported|ACameraDevice_isSessionConfigurationSupported}.
+              {@link CameraDevice#isSessionConfigurationSupported|ACameraDevice_isSessionConfigurationSupported}.
 
               Camera application shouldn't assume that there are at most 1 rear camera and 1 front
               camera in the system. For an application that switches between front and back cameras,
@@ -7804,7 +7816,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           <tag id="BC" />
         </entry>
         <entry name="availableMaxDigitalZoom" type="float" visibility="public"
-              hwlevel="legacy">
+              hwlevel="legacy" session_characteristics_key_since="35">
           <description>The maximum ratio between both active area width
           and crop region width, and active area height and
           crop region height, for android.scaler.cropRegion.
@@ -8873,7 +8885,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             When the key is present, only a PRIVATE/YUV output of the specified size is guaranteed
             to be supported by the camera HAL in the secure camera mode. Any other format or
             resolutions might not be supported. Use
-            {@link CameraManager#isSessionConfigurationWithParametersSupported|ACameraDevice_isSessionConfigurationSupported}
+            {@link CameraDevice#isSessionConfigurationSupported|ACameraDevice_isSessionConfigurationSupported}
             API to query if a secure session configuration is supported if the device supports this
             API.
 
@@ -9948,10 +9960,17 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           <description>Whether the RAW images output from this camera device are subject to
           lens shading correction.</description>
           <details>
-          If TRUE, all images produced by the camera device in the RAW image formats will
-          have lens shading correction already applied to it. If FALSE, the images will
-          not be adjusted for lens shading correction.
-          See android.request.maxNumOutputRaw for a list of RAW image formats.
+          If `true`, all images produced by the camera device in the `RAW` image formats will have
+          at least some lens shading correction already applied to it. If `false`, the images will
+          not be adjusted for lens shading correction.  See android.request.maxNumOutputRaw for a
+          list of RAW image formats.
+
+          When `true`, the `lensShadingCorrectionMap` key may still have values greater than 1.0,
+          and those will need to be applied to any captured RAW frames for them to match the shading
+          correction of processed buffers such as `YUV` or `JPEG` images. This may occur, for
+          example, when some basic fixed lens shading correction is applied by hardware to RAW data,
+          and additional correction is done dynamically in the camera processing pipeline after
+          demosaicing.
 
           This key will be `null` for all devices do not report this information.
           Devices with RAW capability will always report this information in this key.
@@ -11802,6 +11821,10 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           corrected images that match the camera device's output for
           non-RAW formats.
 
+          Therefore, whatever the value of lensShadingApplied is, the lens
+          shading map should always be applied to RAW images if the goal is to
+          match the shading appearance of processed (non-RAW) images.
+
           For a complete shading correction map, the least shaded
           section of the image will have a gain factor of 1; all
           other sections will have gains above 1.
@@ -12250,7 +12273,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
         </entry>
         <entry name="lensIntrinsicsSamples" type="float" visibility="java_public" synthetic="true"
                container="array" typedef="lensIntrinsicsSample" aconfig_flag="concert_mode"
-               hal_version="3.9">
+               hal_version="3.10">
           <array>
             <size>n</size>
           </array>
@@ -12271,7 +12294,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
         <entry name="lensIntrinsicTimestamps" type="int64" visibility="ndk_public" container="array"
-               aconfig_flag="concert_mode" hal_version="3.9">
+               aconfig_flag="concert_mode" hal_version="3.10">
           <array>
             <size>n</size>
           </array>
@@ -12285,7 +12308,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
         <entry name="lensIntrinsicSamples" type="float" visibility="ndk_public"
-               container="array" aconfig_flag="concert_mode" hal_version="3.9">
+               container="array" aconfig_flag="concert_mode" hal_version="3.10">
           <array>
             <size>5</size>
             <size>n</size>
@@ -12952,7 +12975,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               HIDL ICameraDevice version 3.5.
               </notes>
             </value>
-            <value hal_version="3.9" aconfig_flag="session_hal_buf_manager">
+            <value hal_version="3.10" aconfig_flag="session_hal_buf_manager">
               SESSION_CONFIGURABLE
               <notes>
               This camera device supports the buffer management APIs provided by AIDL ICameraDevice
@@ -13003,86 +13026,93 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
         </entry>
         <entry name="sessionConfigurationQueryVersion" type="int32"
           visibility="fwk_java_public" enum="true" typedef="versionCode"
-          hwlevel="legacy" aconfig_flag="feature_combination_query">
+          hwlevel="legacy" aconfig_flag="feature_combination_query"
+          hal_version="3.10">
           <enum>
             <value id="34">UPSIDE_DOWN_CAKE</value>
             <value id="35">VANILLA_ICE_CREAM</value>
           </enum>
           <description>The version of the session configuration query
-          {@link android.hardware.camera2.CameraManager#isSessionConfigurationWithParametersSupported}
-          API
+          {@link android.hardware.camera2.CameraDevice.CameraDeviceSetup#isSessionConfigurationSupported}
+          and {@link android.hardware.camera2.CameraDevice.CameraDeviceSetup#getSessionCharacteristics}
+          APIs.
           </description>
           <details>The possible values in this key correspond to the values defined in
           android.os.Build.VERSION_CODES. Each version defines a set of feature combinations the
           camera device must reliably report whether they are supported via
-          {@link android.hardware.camera2.CameraManager#isSessionConfigurationWithParametersSupported}
-          API. And the version is always less or equal to android.os.Build.VERSION.SDK_INT.
+          {@link android.hardware.camera2.CameraDevice.CameraDeviceSetup#isSessionConfigurationSupported}.
+          It also defines the set of session specific keys in CameraCharacteristics when returned from
+          {@link android.hardware.camera2.CameraDevice.CameraDeviceSetup#getSessionCharacteristics}.
+          The version is always less or equal to android.os.Build.VERSION.SDK_INT.
 
-          If set to UPSIDE_DOWN_CAKE, this camera device doesn't support
-          {@link android.hardware.camera2.CameraManager#isSessionConfigurationWithParametersSupported}.
-          Calling the method for this camera ID throws an UnsupportedOperationException.
+          If set to UPSIDE_DOWN_CAKE, this camera device doesn't support the
+          {@link android.hardware.camera2.CameraDevice.CameraDeviceSetup} API.
+          Trying to create a CameraDeviceSetup instance throws an UnsupportedOperationException.
 
-          If set to VANILLA_ICE_CREAM, the application can call
-          {@link android.hardware.camera2.CameraManager#isSessionConfigurationWithParametersSupported}
-          to check if the combinations of below features are supported.
+          From VANILLA_ICE_CREAM onwards, the camera compliance tests verify a set of
+          commonly used SessionConfigurations to ensure that the outputs of
+          {@link android.hardware.camera2.CameraDevice.CameraDeviceSetup#isSessionConfigurationSupported}
+          and {@link android.hardware.camera2.CameraDevice.CameraDeviceSetup#getSessionCharacteristics}
+          are accurate. The application is encouraged to use these SessionConfigurations when turning on
+          multiple features at the same time.
 
-          * A subset of LIMITED-level device stream combinations.
+          When set to VANILLA_ICE_CREAM, the combinations of the following configurations are verified
+          by the compliance tests:
 
-          Target 1    |     Size      | Target 2    |     Size    | Sample use case(s)
-          :----------:|:-------------:|:-----------:|:-----------:|:-------------------:
-          PRIV        | MAXIMUM       |             |             | Simple preview, GPU video processing, or no-preview video recording.
-          PRIV        | PREVIEW       |             |             |
-          PRIV        | S1440P        |             |             |
-          PRIV        | S1080P        |             |             |
-          PRIV        | S720P         |             |             |
-          YUV         | MAXIMUM       |             |             | In-application video/image processing.
-          YUV         | PREVIEW       |             |             |
-          YUV         | S1440P        |             |             |
-          YUV         | S1080P        |             |             |
-          YUV         | S720P         |             |             |
-          PRIV        | PREVIEW       | JPEG        | MAXIMUM     | Standard still imaging.
-          PRIV        | S1440P        | JPEG        | MAXIMUM     |
-          PRIV        | S1080P        | JPEG        | MAXIMUM     |
-          PRIV        | S720P         | JPEG        | MAXIMUM     |
-          PRIV        | S1440P        | JPEG        | S1440P      |
-          PRIV        | S1080P        | JPEG        | S1080P      |
-          PRIV        | S720P         | JPEG        | S1080P      |
-          YUV         | PREVIEW       | JPEG        | MAXIMUM     | In-app processing plus still capture.
-          YUV         | S1440P        | JPEG        | MAXIMUM     |
-          YUV         | S1080P        | JPEG        | MAXIMUM     |
-          YUV         | S720P         | JPEG        | MAXIMUM     |
-          YUV         | S1440P        | JPEG        | S1440P      |
-          YUV         | S1080P        | JPEG        | S1080P      |
-          YUV         | S720P         | JPEG        | S1080P      |
-          PRIV        | PREVIEW       | PRIV        | PREVIEW     | Standard recording.
-          PRIV        | S1440P        | PRIV        | S1440P      |
-          PRIV        | S1080P        | PRIV        | S1080P      |
-          PRIV        | S720P         | PRIV        | S720P       |
-          PRIV        | PREVIEW       | YUV         | PREVIEW     | Preview plus in-app processing.
-          PRIV        | S1440P        | YUV         | S1440P      |
-          PRIV        | S1080P        | YUV         | S1080P      |
-          PRIV        | S720P         | YUV         | S720P       |
+          * A set of commonly used stream combinations:
 
-              - {@code MAXIMUM} size refers to the camera device's maximum output resolution for
-                that format from {@code StreamConfigurationMap#getOutputSizes}. {@code PREVIEW} size
-                refers to the best size match to the device's screen resolution, or to 1080p
-                (@code 1920x1080}, whichever is smaller. Both sizes are guaranteed to be supported.
+              Target 1    |     Size      | Target 2        |     Size     |
+              :----------:|:-------------:|:---------------:|:------------:|
+              PRIV        | S1080P        |                 |              |
+              PRIV        | S720P         |                 |              |
+              PRIV        | S1080P        | JPEG/JPEG_R     | MAXIMUM_16_9 |
+              PRIV        | S1080P        | JPEG/JPEG_R     | UHD          |
+              PRIV        | S1080P        | JPEG/JPEG_R     | S1440P       |
+              PRIV        | S1080P        | JPEG/JPEG_R     | S1080P       |
+              PRIV        | S1080P        | PRIV            | UHD          |
+              PRIV        | S720P         | JPEG/JPEG_R     | MAXIMUM_16_9 |
+              PRIV        | S720P         | JPEG/JPEG_R     | UHD          |
+              PRIV        | S720P         | JPEG/JPEG_R     | S1080P       |
+              PRIV        | XVGA          | JPEG/JPEG_R     | MAXIMUM_4_3  |
+              PRIV        | S1080P_4_3    | JPEG/JPEG_R     | MAXIMUM_4_3  |
 
-              - {@code S1440P} refers to {@code 1920x1440 (4:3)} and {@code 2560x1440 (16:9)}.
-                {@code S1080P} refers to {@code 1440x1080 (4:3)} and {@code 1920x1080 (16:9)}.
-                And {@code S720P} refers to {@code 960x720 (4:3)} and {@code 1280x720 (16:9)}.
+              * {@code MAXIMUM_4_3} refers to the camera device's maximum output resolution with
+                4:3 aspect ratio for that format from {@code StreamConfigurationMap#getOutputSizes}.
+              * {@code MAXIMUM_16_9} is the maximum output resolution with 16:9 aspect ratio.
+              * {@code S1440P} refers to {@code 2560x1440 (16:9)}.
+              * {@code S1080P} refers to {@code 1920x1080 (16:9)}.
+              * {@code S720P} refers to {@code 1280x720 (16:9)}.
+              * {@code UHD} refers to {@code 3840x2160 (16:9)}.
+              * {@code XVGA} refers to {@code 1024x768 (4:3)}.
+              * {@code S1080P_43} refers to {@code 1440x1080 (4:3)}.
 
-              - If a combination contains a S1440P, S1080P, or S720P stream,
-                both 4:3 and 16:9 aspect ratio sizes can be queried. For example, for the
-                stream combination of {PRIV, S1440P, JPEG, MAXIMUM}, and if MAXIMUM ==
-                4032 x 3024, the application will be able to query both
-                {PRIV, 1920 x 1440, JPEG, 4032 x 3024} and {PRIV, 2560 x 1440, JPEG, 4032 x 2268}
-                without an exception being thrown.
+          * VIDEO_STABILIZATION_MODE: {OFF, PREVIEW}
 
-          * VIDEO_STABILIZATION_MODES: {OFF, PREVIEW}
-          * AE_TARGET_FPS_RANGE: { {*, 30}, {*, 60} }
+          * AE_TARGET_FPS_RANGE: { {\*, 30}, {\*, 60} }
+
           * DYNAMIC_RANGE_PROFILE: {STANDARD, HLG10}
 
+          All of the above configurations can be set up with a SessionConfiguration. The list of
+          OutputConfiguration contains the stream configurations and DYNAMIC_RANGE_PROFILE, and
+          the AE_TARGET_FPS_RANGE and VIDEO_STABILIZATION_MODE are set as session parameters.
+          </details>
+          <hal_details>
+          Preview stabilization must be orthogonal to other features. In other words, if preview
+          stabilization is supported by the camera device, the return value of
+          isStreamCombinationWithSettingsSupported for a particular combination must return
+          the same value between stabilization off and preview stabilization on. This reduces the
+          search space for feature combination queries.
+          </hal_details>
+        </entry>
+        <entry name="deviceId" type="int32" visibility="fwk_only">
+          <description>
+            Id of the device that owns this camera.
+          </description>
+          <details>
+            In case of a virtual camera, this would be the id of the virtual device
+            owning the camera. For any other camera, this key would not be present.
+            Callers should assume {@link android.content.Context#DEVICE_ID_DEFAULT}
+            in case this key is not present.
           </details>
         </entry>
       </static>
@@ -13929,7 +13959,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
         <tag id="LOGICALCAMERA" />
       </entry>
       <entry name="activePhysicalSensorCropRegion" type="int32" visibility="public"
-             container="array" typedef="rectangle" aconfig_flag="concert_mode" hal_version="3.9">
+             container="array" typedef="rectangle" aconfig_flag="concert_mode" hal_version="3.10">
         <array>
           <size>4</size>
         </array>
@@ -14752,8 +14782,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
     <section name="efv">
       <static>
         <entry name="paddingZoomFactorRange" type="float" visibility="extension"
-            optional="true" container="array" typedef="rangeFloat" aconfig_flag="concert_mode"
-            hal_version="3.9">
+            optional="true" container="array" typedef="rangeFloat" aconfig_flag="concert_mode_api"
+            hal_version="3.10">
           <array>
             <size>2</size>
           </array>
@@ -14779,7 +14809,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
       </static>
       <controls>
         <entry name="paddingZoomFactor" type="float" visibility="extension"
-            aconfig_flag="concert_mode" hal_version="3.9">
+            aconfig_flag="concert_mode_api" hal_version="3.10">
           <description>Used to apply an additional digital zoom factor for the
           {@link android.hardware.camera2.CameraExtensionCharacteristics#EXTENSION_EYES_FREE_VIDEOGRAPHY}
           extension in {@link android.hardware.camera2.CameraMetadata#EFV_STABILIZATION_MODE_LOCKED} mode.
@@ -14799,12 +14829,12 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           android.efv.paddingZoomFactor to at least 1.5.
 
           If android.efv.autoZoom is enabled, the requested android.efv.paddingZoomFactor will be overridden.
-          android.efv.maxPaddingZoomFactor can be checked for more details on controlling the 
+          android.efv.maxPaddingZoomFactor can be checked for more details on controlling the
           padding zoom factor during android.efv.autoZoom.
           </details>
         </entry>
         <entry name="autoZoom" type="byte" visibility="extension" enum="true"
-            typedef="boolean" aconfig_flag="concert_mode" hal_version="3.9">
+            typedef="boolean" aconfig_flag="concert_mode_api" hal_version="3.10">
           <enum>
             <value>TRUE</value>
             <value>FALSE</value>
@@ -14826,7 +14856,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
         <entry name="maxPaddingZoomFactor" type="float" visibility="extension"
-            aconfig_flag="concert_mode" hal_version="3.9">
+            aconfig_flag="concert_mode_api" hal_version="3.10">
           <description>Used to limit the android.efv.paddingZoomFactor if
           android.efv.autoZoom is enabled for the
           {@link android.hardware.camera2.CameraExtensionCharacteristics#EXTENSION_EYES_FREE_VIDEOGRAPHY}
@@ -14843,7 +14873,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
         <entry name="stabilizationMode" type="int32" visibility="extension" enum="true"
-            aconfig_flag="concert_mode" hal_version="3.9">
+            aconfig_flag="concert_mode_api" hal_version="3.10">
           <enum>
             <value>OFF
               <notes>
@@ -14873,7 +14903,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
         <entry name="translateViewport" type="int32" visibility="extension"
-            typedef="pairIntegerInteger" aconfig_flag="concert_mode" hal_version="3.9">
+            typedef="pairIntegerInteger" aconfig_flag="concert_mode_api" hal_version="3.10">
           <description>Used to update the target region for the
           {@link android.hardware.camera2.CameraExtensionCharacteristics#EXTENSION_EYES_FREE_VIDEOGRAPHY}
           extension in {@link android.hardware.camera2.CameraMetadata#EFV_STABILIZATION_MODE_LOCKED} mode.
@@ -14892,7 +14922,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
         <entry name="rotateViewport" type="float" visibility="extension"
-            aconfig_flag="concert_mode" hal_version="3.9">
+            aconfig_flag="concert_mode_api" hal_version="3.10">
           <description>Representing the desired clockwise rotation
           of the target region in degrees for the
           {@link android.hardware.camera2.CameraExtensionCharacteristics#EXTENSION_EYES_FREE_VIDEOGRAPHY}
@@ -14908,7 +14938,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
       </controls>
       <dynamic>
         <entry name="paddingRegion" type="int32" visibility="extension" container="array"
-            aconfig_flag="concert_mode" hal_version="3.9">
+            aconfig_flag="concert_mode_api" hal_version="3.10">
           <array>
             <size>4</size>
           </array>
@@ -14933,7 +14963,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
         <entry name="autoZoomPaddingRegion" type="int32" visibility="extension"
-            container="array" aconfig_flag="concert_mode" hal_version="3.9">
+            container="array" aconfig_flag="concert_mode_api" hal_version="3.10">
           <array>
             <size>4</size>
           </array>
@@ -14954,7 +14984,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
         <entry name="targetCoordinates" type="float" visibility="extension"
-            container="array" typedef="pointF" aconfig_flag="concert_mode" hal_version="3.9">
+            container="array" typedef="pointF" aconfig_flag="concert_mode_api" hal_version="3.10">
           <array>
             <size>4</size>
             <size>n</size>

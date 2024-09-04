@@ -41,6 +41,21 @@
 
 __BEGIN_DECLS
 
+/*
+ * Note: The following enum values were incorrect and have been updated:
+ * enum                                                        old value                        updated value
+ * ACAMERA_CONTROL_SETTINGS_OVERRIDE                           ACAMERA_CONTROL_START + 49       ACAMERA_CONTROL_START + 52;
+ * ACAMERA_CONTROL_AVAILABLE_SETTINGS_OVERRIDES                ACAMERA_CONTROL_START + 50       ACAMERA_CONTROL_START + 53;
+ * ACAMERA_CONTROL_AUTOFRAMING                                 ACAMERA_CONTROL_START + 52       ACAMERA_CONTROL_START + 55;
+ * ACAMERA_CONTROL_AUTOFRAMING_AVAILABLE                       ACAMERA_CONTROL_START + 53       ACAMERA_CONTROL_START + 56;
+ * ACAMERA_CONTROL_AUTOFRAMING_STATE                           ACAMERA_CONTROL_START + 54       ACAMERA_CONTROL_START + 57;
+ * ACAMERA_CONTROL_LOW_LIGHT_BOOST_INFO_LUMINANCE_RANGE        ACAMERA_CONTROL_START + 55       ACAMERA_CONTROL_START + 58;
+ * ACAMERA_CONTROL_LOW_LIGHT_BOOST_STATE                       ACAMERA_CONTROL_START + 56       ACAMERA_CONTROL_START + 59;
+
+ * ACAMERA_SCALER_AVAILABLE_STREAM_USE_CASES                   ACAMERA_SCALER_START + 25        ACAMERA_SCALER_START + 26;
+ * ACAMERA_SCALER_CROP_REGION                                  ACAMERA_SCALER_START + 26        ACAMERA_SCALER_START + 27;
+ */
+
 <%!
   from metadata_helpers import csym
   def annotated_type(entry):
@@ -84,7 +99,7 @@ typedef enum acamera_metadata_tag {
       if skip_sec:
         continue
 %>\
-      % for idx,entry in enumerate(remove_hal_non_visible(find_unique_entries(sec))):
+      % for idx,entry in enumerate(remove_synthetic(find_unique_entries(sec))):
         % if entry.applied_ndk_visible == "true":
           % if entry.deprecated:
     ${ndk(entry.name) + " = " | csym,ljust(60)}// Deprecated! DO NOT USE

@@ -1,6 +1,7 @@
 // system/audio.h utilities test
 
 package {
+    default_team: "trendy_team_android_media_audio_framework",
     // http://go/android-license-faq
     // A large-scale-change added 'default_applicable_licenses' to import
     // the below license kinds from "system_media_license":
@@ -73,8 +74,8 @@ cc_test {
     header_libs: ["libmedia_headers"],
 
     srcs: [
-        "static_checks_c.c",
         "static_checks.cpp",
+        "static_checks_c.c",
         "systemaudio_tests.cpp",
     ],
 

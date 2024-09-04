@@ -26,8 +26,8 @@ cc_defaults {
     srcs: [
         "alsa_device_profile.c",
         "alsa_device_proxy.c",
-        "alsa_logging.c",
         "alsa_format.c",
+        "alsa_logging.c",
     ],
     export_include_dirs: ["include"],
     header_libs: [
@@ -37,13 +37,13 @@ cc_defaults {
         "libaudio_system_headers",
     ],
     shared_libs: [
-        "liblog",
-        "libcutils",
         "libaudioutils",
+        "libcutils",
+        "liblog",
     ],
     cflags: [
-        "-Werror",
         "-Wall",
+        "-Werror",
         "-Wno-unused-parameter",
     ],
 }

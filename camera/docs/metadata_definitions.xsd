@@ -255,6 +255,7 @@
             </simpleType>
         </attribute>
         <attribute name="aconfig_flag" type="string" />
+        <attribute name="session_characteristics_key_since" type="decimal"/>
     </complexType>
 
     <complexType name="EnumType">

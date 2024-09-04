@@ -9,18 +9,15 @@ package {
 cc_library_shared {
     name: "libradio_metadata",
     vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
 
     srcs: [
-        "src/radio_metadata.c",
         "src/RadioMetadataWrapper.cpp",
+        "src/radio_metadata.c",
     ],
 
     cflags: [
-        "-Werror",
         "-Wall",
+        "-Werror",
         "-fvisibility=hidden",
     ],
 

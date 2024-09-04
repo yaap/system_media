@@ -17,6 +17,7 @@
 #pragma once
 
 #include <android-base/thread_annotations.h>
+#include <audio_utils/safe_math.h>
 #include <audio_utils/threads.h>
 #include <utils/Log.h>
 #include <utils/Timers.h>
@@ -442,22 +443,25 @@ public:
 // optimizations can take place which would otherwise be discouraged for atomics.
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0062r1.html
 
-template <typename T>
+// VT may be volatile qualified, if desired, or a normal arithmetic type.
+template <typename VT>
 class unordered_atomic {
+    using T = std::decay_t<VT>;
     static_assert(std::atomic<T>::is_always_lock_free);
 public:
     constexpr unordered_atomic(T desired = {}) : t_(desired) {}
     operator T() const { return t_; }
-    T& operator=(T desired) { return t_ = desired; }
+    T operator=(T desired) { t_ = desired; return desired; }
 
-    T& operator--() { const T temp = t_ - 1; return t_ = temp; }
-    T& operator++() { const T temp = t_ + 1; return t_ = temp; }
-    T& operator+=(const T value) { const T temp = t_ + value; return t_ = temp; }
+    // a volatile ++t_ or t_ += 1 is deprecated in C++20.
+    T operator--() { return operator=(t_ - 1); }
+    T operator++() { return operator=(t_ + 1); }
+    T operator+=(const T value) { return operator=(t_ + value); }
 
     T load(std::memory_order order = std::memory_order_relaxed) const { (void)order; return t_; }
 
 private:
-    T t_;
+    VT t_;
 };
 
 inline constexpr pid_t kInvalidTid = -1;
@@ -596,7 +600,8 @@ struct mutex_stat {
         AccumulatorType recip = waits == 0 ? 0. : 1. / waits;
         AccumulatorType avg_wait_ms = waits == 0 ? 0. : wait_sum_ns * 1e-6 * recip;
         AccumulatorType std_wait_ms = waits < 2 ? 0. :
-                std::sqrt(wait_sumsq_ns * recip * 1e-12 - avg_wait_ms * avg_wait_ms);
+                std::sqrt(std::max(wait_sumsq_ns * recip * 1e-12 - avg_wait_ms * avg_wait_ms,
+                        0.));
         return std::string("locks: ").append(std::to_string(locks))
             .append("\nuncontested: ").append(std::to_string(uncontested))
             .append("\nwaits: ").append(std::to_string(waits))
@@ -793,7 +798,7 @@ public:
    /*
     * stack configuration
     */
-    static size_t capacity() { return N; }
+    static consteval size_t capacity() { return N; }
     size_t true_size() const { return true_top_; }
     size_t size() const { return top_; }
     const auto& invalid() const { return invalid_; }
@@ -816,8 +821,24 @@ private:
      * The invalid pair is returned when top() is called without a tracked item.
      * This might occur with an empty subset of the "true" stack.
      */
-    static constexpr item_payload_pair_t invalid_{};
+    static inline const item_payload_pair_t invalid_{};  // volatile != constexpr, if so qualified
 };
+
+// A list of reasons why we might have an inter-thread wait besides a mutex.
+enum class other_wait_reason_t {
+    none = 0,
+    cv = 1,
+    join = 2,
+};
+
+inline constexpr const char* reason_to_string(other_wait_reason_t reason) {
+    switch (reason) {
+        case other_wait_reason_t::none: return "none";
+        case other_wait_reason_t::cv: return "cv";
+        case other_wait_reason_t::join: return "join";
+        default: return "invalid";
+    }
+}
 
 /**
  * thread_mutex_info is a struct that is associated with every
@@ -842,6 +863,37 @@ template <typename MutexHandle, typename Order, size_t N>
 class thread_mutex_info {
 public:
     using atomic_stack_t = atomic_stack<MutexHandle, Order, N>;
+
+    class other_wait_info {
+    public:
+        thread_atomic<pid_t> tid_ = kInvalidTid;
+        thread_atomic<other_wait_reason_t> reason_ = other_wait_reason_t::none;
+        thread_atomic<Order> order_ = (Order)-1;
+
+        std::string to_string() const {
+            const pid_t tid = tid_.load();
+            const other_wait_reason_t reason = reason_.load();
+            const Order order = order_.load();
+
+            std::string s;
+            if (tid != kInvalidTid) {
+                switch (reason) {
+                case other_wait_reason_t::none:
+                default:
+                    break;
+                case other_wait_reason_t::cv:
+                    s.append("cv_tid: ").append(std::to_string(tid))
+                            .append("  cv_order: ").append(std::to_string(
+                                    static_cast<size_t>(order)));
+                    break;
+                case other_wait_reason_t::join:
+                    s.append("join_tid: ").append(std::to_string(tid));
+                    break;
+                }
+            }
+            return s;
+        }
+    };
 
     thread_mutex_info(pid_t tid) : tid_(tid) {}
 
@@ -892,14 +944,25 @@ public:
     void push_held_for_cv(MutexHandle mutex, Order order) {
         push_held(mutex, order);
         // condition wait has expired.  always invalidate.
-        cv_info_.first = kInvalidTid;
+        other_wait_info_.tid_ = kInvalidTid;
     }
 
     bool remove_held_for_cv(MutexHandle mutex, Order order, pid_t notifier_tid) {
         // last condition on the mutex overwrites.
-        cv_info_.second = order;
-        cv_info_.first = notifier_tid;
+        other_wait_info_.order_ = order;
+        other_wait_info_.reason_ = other_wait_reason_t::cv;
+        other_wait_info_.tid_ = notifier_tid;
         return remove_held(mutex);
+    }
+
+    // Add waiting state for join.
+    void add_wait_join(pid_t waiting_tid) {
+        other_wait_info_.reason_ = other_wait_reason_t::join;
+        other_wait_info_.tid_ = waiting_tid;
+    }
+
+    void remove_wait_join() {
+        other_wait_info_.tid_ = kInvalidTid;
     }
 
     /*
@@ -913,10 +976,8 @@ public:
         s.append("\nwaiting: ").append(std::to_string(
                 reinterpret_cast<uintptr_t>(mutex_wait_.load())));
         // inform if there is a condition variable wait associated with a known thread.
-        if (cv_info_.first != kInvalidTid) {
-            s.append("\ncv_tid: ").append(std::to_string(cv_info_.first.load()))
-                    .append("  cv_order: ").append(std::to_string(
-                            static_cast<size_t>(cv_info_.second.load())));
+        if (other_wait_info_.tid_ != kInvalidTid) {
+            s.append("\n").append(other_wait_info_.to_string());
         }
         s.append("\nheld: ").append(mutexes_held_.to_string());
         return s;
@@ -936,8 +997,7 @@ public:
 
     const pid_t tid_;                                   // me
     thread_atomic<MutexHandle> mutex_wait_{};           // mutex waiting for
-    std::pair<thread_atomic<pid_t>, thread_atomic<Order>> cv_info_{
-        kInvalidTid, (Order)-1 };  // condition variable wait with known notifier tid.
+    other_wait_info other_wait_info_;
     atomic_stack_t mutexes_held_;  // mutexes held
 };
 
@@ -969,7 +1029,7 @@ public:
         // Note: when we dump here, we add the timeout tid to the start of the wait chain.
         for (const auto& [ tid2, name ] : chain) {
             description.append(", ").append(std::to_string(tid2))
-                    .append(" (holding ").append(name).append(")");
+                    .append(" (by ").append(name).append(")");
         }
         description.append(" ]");
         return description;
@@ -977,7 +1037,7 @@ public:
 
     const pid_t tid;         // tid for which the deadlock was checked
     bool has_cycle = false;  // true if there is a cycle detected
-    bool cv_detected = false; // true if the logic went through a condition variable.
+    other_wait_reason_t other_wait_reason = other_wait_reason_t::none;
     std::vector<std::pair<pid_t, std::string>> chain;  // wait chain of tids and mutexes.
 };
 
@@ -1108,9 +1168,12 @@ public:
         if (tinfo_original_tid == nullptr) return deadlock_info;
 
         void* m = tinfo_original_tid->mutex_wait_.load();
-        pid_t cv_tid = tinfo_original_tid->cv_info_.first;
-        if (m == nullptr && cv_tid == kInvalidTid) return deadlock_info;
-        size_t cv_order = static_cast<size_t>(tinfo_original_tid->cv_info_.second.load());
+        pid_t other_wait_tid = tinfo_original_tid->other_wait_info_.tid_.load();
+        if (m == nullptr && other_wait_tid == kInvalidTid) return deadlock_info;
+        other_wait_reason_t other_wait_reason =
+                tinfo_original_tid->other_wait_info_.reason_.load();
+        size_t other_wait_order =
+                static_cast<size_t>(tinfo_original_tid->other_wait_info_.order_.load());
 
         bool subset = false; // do we have missing mutex data per thread?
 
@@ -1140,8 +1203,10 @@ public:
             const auto info = weak_info.lock();
             if (info == nullptr) continue;
             const auto& stack = info->mutexes_held_;
-            subset = subset || stack.size() != stack.true_size();
-            for (size_t i = 0; i < stack.size(); ++i) {
+            static constinit size_t capacity = std::decay_t<decltype(stack)>::capacity();
+            const size_t size = std::min(stack.size(), capacity);
+            subset = subset || size != stack.true_size();
+            for (size_t i = 0; i < size; ++i) {
                 const auto& mutex_order_pair = stack.bottom(i);
                 // if this method is not called by the writer thread
                 // it is possible for data to change.
@@ -1162,17 +1227,17 @@ public:
         visited.insert(tid);  // mark the original tid, we start there for cycle detection.
         for (pid_t tid2 = tid; true;) {
             size_t order;
-            bool cv_detected = false;  // current wait relationship is through condition_variable.
+            other_wait_reason_t reason = other_wait_reason_t::none;
 
             if (m != nullptr && mutex_to_tid.count(m)) {
                 // waiting on mutex held by another tid.
                 std::tie(tid2, order) = mutex_to_tid[m];
-            }  else if (cv_tid != kInvalidTid) {
+            }  else if (other_wait_tid != kInvalidTid) {
                 // condition variable waiting on tid.
-                tid2 = cv_tid;
-                order = cv_order;
-                deadlock_info.cv_detected = true;
-                cv_detected = true;
+                tid2 = other_wait_tid;
+                order = other_wait_order;
+                reason = other_wait_reason;
+                deadlock_info.other_wait_reason = reason;
             } else {
                 // no mutex or cv info.
                 return deadlock_info;
@@ -1181,8 +1246,10 @@ public:
             // add to chain.
             // if waiting through a condition variable, we prefix with "cv-".
             const auto name = order < std::size(mutex_names) ? mutex_names[order] : "unknown";
-            deadlock_info.chain.emplace_back(tid2, cv_detected ?
-                    std::string("cv-").append(name).c_str() : name);
+            deadlock_info.chain.emplace_back(tid2,
+                    reason == other_wait_reason_t::cv
+                            ? std::string("cv-").append(name).c_str()
+                    : reason == other_wait_reason_t::join ? "join" : name);
 
             // cycle detected
             if (visited.count(tid2)) {
@@ -1194,8 +1261,9 @@ public:
             // if tid not waiting return (could be blocked on binder).
             const auto tinfo = tid_to_info(registry_map, tid2);
             m = tinfo->mutex_wait_.load();
-            cv_tid = tinfo->cv_info_.first;
-            cv_order = static_cast<size_t>(tinfo->cv_info_.second.load());
+            other_wait_tid = tinfo->other_wait_info_.tid_.load();
+            other_wait_reason = tinfo->other_wait_info_.reason_.load();
+            other_wait_order = static_cast<size_t>(tinfo->other_wait_info_.order_.load());
         }
     }
 
@@ -1216,7 +1284,7 @@ private:
 extern bool mutex_get_enable_flag();
 
 template <typename Attributes>
-class CAPABILITY("mutex") mutex_impl {
+class CAPABILITY("mutex") [[nodiscard]] mutex_impl {
 public:
     using attributes_t = Attributes;
 
@@ -1293,7 +1361,8 @@ public:
         if (timeout_ns <= 0) {
             if (!m_.try_lock()) return false;
         } else {
-            const int64_t deadline_ns = timeout_ns + systemTime(SYSTEM_TIME_REALTIME);
+            const int64_t deadline_ns =
+                    safe_add_sat(timeout_ns, systemTime(SYSTEM_TIME_REALTIME));
             const struct timespec ts = {
                 .tv_sec = static_cast<time_t>(deadline_ns / 1'000'000'000),
                 .tv_nsec = static_cast<long>(deadline_ns % 1'000'000'000),
@@ -1387,7 +1456,7 @@ public:
 
     // helper class for registering statistics for a mutex lock.
 
-    class lock_scoped_stat_enabled {
+    class [[nodiscard]] lock_scoped_stat_enabled {
     public:
         explicit lock_scoped_stat_enabled(mutex& m)
             : mutex_(m)
@@ -1409,7 +1478,6 @@ public:
             ++m.stat_.unlocks;
             const bool success = m.get_thread_mutex_info()->remove_held(&m);
             LOG_ALWAYS_FATAL_IF(Attributes::abort_on_invalid_unlock_
-                    && mutex_get_enable_flag()
                     && !success,
                     "%s: invalid mutex unlock when not previously held", __func__);
         }
@@ -1428,7 +1496,6 @@ public:
 
             // lock inversion
             LOG_ALWAYS_FATAL_IF(Attributes::abort_on_order_check_
-                    && mutex_get_enable_flag()
                     && p_order > m_order,
                     "%s: invalid mutex order (previous) %zu %s> (new) %zu %s",
                     __func__, p_order, Attributes::order_names_[p_order],
@@ -1436,7 +1503,6 @@ public:
 
             // lock recursion
             LOG_ALWAYS_FATAL_IF(Attributes::abort_on_recursion_check_
-                    && mutex_get_enable_flag()
                     && p_order == m_order,
                     "%s: recursive mutex access detected (order: %zu %s)",
                     __func__, p_order, Attributes::order_names_[p_order]);
@@ -1451,6 +1517,29 @@ public:
         mutex& mutex_;
         const int64_t time_;
         bool discard_wait_time_ = false;
+    };
+
+    // A RAII class that implements thread join wait detection
+    // for the deadlock check.
+    //
+    // During the lifetime of this class object, the current thread
+    // is assumed blocked on the thread tid due to a
+    // thread join.
+    //
+    // {
+    //   scoped_join_wait_check sjw(tid_of_thread);
+    //   thread.join();
+    // }
+    //
+
+    class [[nodiscard]] scoped_join_wait_check {
+    public:
+        explicit scoped_join_wait_check(pid_t tid) {
+           get_thread_mutex_info()->add_wait_join(tid);
+        }
+        ~scoped_join_wait_check() {
+           get_thread_mutex_info()->remove_wait_join();
+        }
     };
 
     class lock_scoped_stat_disabled {
@@ -1470,7 +1559,7 @@ public:
             lock_scoped_stat_enabled, lock_scoped_stat_disabled>;
 
     // helper class for registering statistics for a cv wait.
-    class cv_wait_scoped_stat_enabled {
+    class [[nodiscard]] cv_wait_scoped_stat_enabled {
     public:
         explicit cv_wait_scoped_stat_enabled(mutex& m, pid_t notifier_tid = kInvalidTid)
             : mutex_(m) {
@@ -1479,7 +1568,6 @@ public:
             const bool success = mutex_.get_thread_mutex_info()->remove_held_for_cv(
                     &mutex_, mutex_.order_, notifier_tid);
             LOG_ALWAYS_FATAL_IF(Attributes::abort_on_invalid_unlock_
-                    && mutex_get_enable_flag()
                     && !success,
                     "%s: invalid mutex unlock when not previously held", __func__);
         }
@@ -1493,7 +1581,7 @@ public:
         mutex& mutex_;
     };
 
-    class cv_wait_scoped_stat_disabled {
+    class [[nodiscard]] cv_wait_scoped_stat_disabled {
         explicit cv_wait_scoped_stat_disabled(mutex&) {}
     };
 
@@ -1572,7 +1660,7 @@ public:
     }
 
     ~unique_lock() RELEASE() {
-        if (held) unlock();
+        if (owns_lock()) unlock();
     }
 
     void lock() ACQUIRE() {
@@ -1582,13 +1670,11 @@ public:
             ul_.lock();
         }
         mutex::lock_scoped_stat_t::post_lock(mutex_);
-        held = true;
         metadata_memory_barrier_if_needed();
     }
 
     void unlock() RELEASE() {
         mutex::lock_scoped_stat_t::pre_unlock(mutex_);
-        held = false;
         ul_.unlock();
         metadata_memory_barrier_if_needed();
     }
@@ -1597,7 +1683,6 @@ public:
         mutex::lock_scoped_stat_t::pre_lock(mutex_);
         if (!ul_.try_lock()) return false;
         mutex::lock_scoped_stat_t::post_lock(mutex_);
-        held = true;
         metadata_memory_barrier_if_needed();
         return true;
     }
@@ -1608,7 +1693,6 @@ public:
         mutex::lock_scoped_stat_t::pre_lock(mutex_);
         if (!ul_.try_lock_for(timeout_duration)) return false;
         mutex::lock_scoped_stat_t::post_lock(mutex_);
-        held = true;
         metadata_memory_barrier_if_needed();
         return true;
     }
@@ -1619,9 +1703,16 @@ public:
         mutex::lock_scoped_stat_t::pre_lock(mutex_);
         if (!ul_.try_lock_until(timeout_time)) return false;
         mutex::lock_scoped_stat_t::post_lock(mutex_);
-        held = true;
         metadata_memory_barrier_if_needed();
         return true;
+    }
+
+    bool owns_lock() const {
+        return ul_.owns_lock();
+    }
+
+    explicit operator bool() const {
+        return owns_lock();
     }
 
     // additional method to obtain the underlying std::unique_lock
@@ -1636,7 +1727,6 @@ public:
 
 private:
     std::unique_lock<std::mutex> ul_;
-    bool held = false;
     mutex& mutex_;
 };
 
@@ -1648,7 +1738,7 @@ private:
 // The audio_utils condition_variable permits speicifying a "notifier_tid"
 // metadata in the wait() methods, which states the expected tid of the
 // notification thread for deadlock / wait detection purposes.
-class condition_variable {
+class [[nodiscard]] condition_variable {
 public:
     void notify_one() noexcept {
         cv_.notify_one();

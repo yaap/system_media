@@ -1,5 +1,6 @@
 // Build the unit tests.
 package {
+    default_team: "trendy_team_camera_framework",
     // http://go/android-license-faq
     // A large-scale-change added 'default_applicable_licenses' to import
     // the below license kinds from "system_media_license":
@@ -13,16 +14,16 @@ cc_test {
     test_suites: ["device-tests"],
 
     shared_libs: [
-        "libutils",
         "libcamera_metadata",
+        "libutils",
     ],
 
     include_dirs: ["system/media/private/camera/include"],
 
     cflags: [
         "-Wall",
-        "-Wextra",
         "-Werror",
+        "-Wextra",
     ],
 
     multilib: {

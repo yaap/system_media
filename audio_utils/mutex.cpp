@@ -36,7 +36,7 @@ bool mutex_get_enable_flag() {
 // results in multiple objects if included into multiple shared libraries.
 template<>
 mutex::stat_array_t& mutex::get_mutex_stat_array() {
-    static stat_array_t stat_array{};
+    [[clang::no_destroy]] static constinit stat_array_t stat_array{};
     return stat_array;
 }
 
@@ -44,7 +44,7 @@ mutex::stat_array_t& mutex::get_mutex_stat_array() {
 // results in multiple objects if included into multiple shared libraries.
 template<>
 mutex::thread_registry_t& mutex::get_registry() {
-    static thread_registry_t thread_registry{};
+    [[clang::no_destroy]] static thread_registry_t thread_registry{};
     return thread_registry;
 }
 

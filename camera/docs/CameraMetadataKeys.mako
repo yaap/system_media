@@ -111,6 +111,3 @@ ${generate_key(entry)}
 ## Dynamic properties only
 ##${single_kind_keys('CaptureResultKeys', 'dynamic')}
 ${single_kind_keys(java_class, xml_kind)}\
-    /*~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~
-     * End generated code
-     *~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~O@*/

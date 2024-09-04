@@ -103,4 +103,23 @@ auto safe_add_overflow(const T& a, const U& b) {
   return result;
 }
 
+// safe_add_sat returns the saturated add result of two values a and b
+// which are of the same integral type.
+// compare with std::add_sat in C++26.
+template <typename T>
+requires std::is_integral_v<T>
+constexpr auto safe_add_sat(T a, T b) {
+  std::decay_t<T> result;
+  if (__builtin_add_overflow(a, b, &result)) {  // returns true on overflow.
+      if constexpr (std::is_signed_v<T>) {
+        // overflow only occurs if a and b have the same sign.
+        result = a >= 0 ? std::numeric_limits<T>::max() : std::numeric_limits<T>::min();
+      } else /* constexpr */ {
+        // on unsigned add, the only add overflow is max.
+        result = std::numeric_limits<T>::max();
+      }
+  }
+  return result;
+}
+
 } // namespace android::audio_utils

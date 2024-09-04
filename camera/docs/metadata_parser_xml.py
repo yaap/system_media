@@ -217,6 +217,10 @@ class MetadataParserXml:
     d['hal_version'] = entry.get('hal_version')
 
     #
+    # HAL version from which this entry became a session characteristic ?
+    d['session_characteristics_key_since'] = entry.get('session_characteristics_key_since')
+
+    #
     # Enum
     #
     if entry.get('enum', 'false') == 'true':
