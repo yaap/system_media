@@ -18,7 +18,7 @@
 
 // To dump the mutex code to stdout:
 //
-// $ clang++ generate_mutex_order.cpp
+// $ clang++ -std=c++2a generate_mutex_order.cpp
 // $ ./a.out
 //
 
@@ -32,7 +32,9 @@ constexpr const char* mutexes[] {
   //    avoids acquiring AudioFlinger::mutex() from inside thread loop.
   // 4) AudioFlinger -> ThreadBase -> EffectChain -> EffectBase(EffectModule)
   // 5) EffectHandle -> ThreadBase -> EffectChain -> EffectBase(EffectModule)
-
+  // 6) AudioFlinger::mutex() -> DeviceEffectManager -> DeviceEffectProxy -> EffectChain
+  //    -> AudioFlinger::hardwareMutex() when adding/removing effect to/from HAL
+  // 7) AudioFlinger -> DeviceEffectManager -> DeviceEffectProxy -> DeviceEffectHandle
 
   "Spatializer_Mutex",         // AP - must come before EffectHandle_Mutex
   "AudioPolicyEffects_Mutex",  // AP - never hold AudioPolicyEffects_Mutex while calling APS,
@@ -47,15 +49,16 @@ constexpr const char* mutexes[] {
   "UidPolicy_Mutex",           // AP
 
   "AudioFlinger_Mutex",            // AF
-  "AudioFlinger_HardwareMutex",    // AF
   "DeviceEffectManager_Mutex",     // AF
+  "DeviceEffectProxy_ProxyMutex",  // AF: used for device effects (which have no chain).
+  "DeviceEffectHandle_Mutex",      // AF: used for device effects when controlled internally.
   "PatchCommandThread_Mutex",      // AF
   "ThreadBase_Mutex",              // AF
   "AudioFlinger_ClientMutex",      // AF
-  "MelReporter_Mutex",             // AF
   "EffectChain_Mutex",             // AF
-  "DeviceEffectProxy_ProxyMutex",  // AF: used for device effects (which have no chain).
   "EffectBase_Mutex",              // AF
+  "AudioFlinger_HardwareMutex",    // AF: used for HAL, called from AF or DeviceEffectManager
+  "MelReporter_Mutex",             // AF
 
   // These mutexes are in leaf objects
   // and are presented afterwards in arbitrary order.

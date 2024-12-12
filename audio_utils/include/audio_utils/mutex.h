@@ -59,26 +59,27 @@ enum class MutexOrder : uint32_t {
     kAudioCommand_Mutex = 6,
     kUidPolicy_Mutex = 7,
     kAudioFlinger_Mutex = 8,
-    kAudioFlinger_HardwareMutex = 9,
-    kDeviceEffectManager_Mutex = 10,
-    kPatchCommandThread_Mutex = 11,
-    kThreadBase_Mutex = 12,
-    kAudioFlinger_ClientMutex = 13,
-    kMelReporter_Mutex = 14,
+    kDeviceEffectManager_Mutex = 9,
+    kDeviceEffectProxy_ProxyMutex = 10,
+    kDeviceEffectHandle_Mutex = 11,
+    kPatchCommandThread_Mutex = 12,
+    kThreadBase_Mutex = 13,
+    kAudioFlinger_ClientMutex = 14,
     kEffectChain_Mutex = 15,
-    kDeviceEffectProxy_ProxyMutex = 16,
-    kEffectBase_Mutex = 17,
-    kAudioFlinger_UnregisteredWritersMutex = 18,
-    kAsyncCallbackThread_Mutex = 19,
-    kConfigEvent_Mutex = 20,
-    kOutputTrack_TrackMetadataMutex = 21,
-    kPassthruPatchRecord_ReadMutex = 22,
-    kPatchCommandThread_ListenerMutex = 23,
-    kPlaybackThread_AudioTrackCbMutex = 24,
-    kAudioPolicyService_NotificationClientsMutex = 25,
-    kMediaLogNotifier_Mutex = 26,
-    kOtherMutex = 27,
-    kSize = 28,
+    kEffectBase_Mutex = 16,
+    kAudioFlinger_HardwareMutex = 17,
+    kMelReporter_Mutex = 18,
+    kAudioFlinger_UnregisteredWritersMutex = 19,
+    kAsyncCallbackThread_Mutex = 20,
+    kConfigEvent_Mutex = 21,
+    kOutputTrack_TrackMetadataMutex = 22,
+    kPassthruPatchRecord_ReadMutex = 23,
+    kPatchCommandThread_ListenerMutex = 24,
+    kPlaybackThread_AudioTrackCbMutex = 25,
+    kAudioPolicyService_NotificationClientsMutex = 26,
+    kMediaLogNotifier_Mutex = 27,
+    kOtherMutex = 28,
+    kSize = 29,
 };
 
 // Lock by name
@@ -92,15 +93,16 @@ inline constexpr const char* const gMutexNames[] = {
     "AudioCommand_Mutex",
     "UidPolicy_Mutex",
     "AudioFlinger_Mutex",
-    "AudioFlinger_HardwareMutex",
     "DeviceEffectManager_Mutex",
+    "DeviceEffectProxy_ProxyMutex",
+    "DeviceEffectHandle_Mutex",
     "PatchCommandThread_Mutex",
     "ThreadBase_Mutex",
     "AudioFlinger_ClientMutex",
-    "MelReporter_Mutex",
     "EffectChain_Mutex",
-    "DeviceEffectProxy_ProxyMutex",
     "EffectBase_Mutex",
+    "AudioFlinger_HardwareMutex",
+    "MelReporter_Mutex",
     "AudioFlinger_UnregisteredWritersMutex",
     "AsyncCallbackThread_Mutex",
     "ConfigEvent_Mutex",
@@ -137,26 +139,28 @@ inline mutex* UidPolicy_Mutex
         ACQUIRED_AFTER(android::audio_utils::AudioCommand_Mutex);
 inline mutex* AudioFlinger_Mutex
         ACQUIRED_AFTER(android::audio_utils::UidPolicy_Mutex);
-inline mutex* AudioFlinger_HardwareMutex
-        ACQUIRED_AFTER(android::audio_utils::AudioFlinger_Mutex);
 inline mutex* DeviceEffectManager_Mutex
-        ACQUIRED_AFTER(android::audio_utils::AudioFlinger_HardwareMutex);
-inline mutex* PatchCommandThread_Mutex
+        ACQUIRED_AFTER(android::audio_utils::AudioFlinger_Mutex);
+inline mutex* DeviceEffectProxy_ProxyMutex
         ACQUIRED_AFTER(android::audio_utils::DeviceEffectManager_Mutex);
+inline mutex* DeviceEffectHandle_Mutex
+        ACQUIRED_AFTER(android::audio_utils::DeviceEffectProxy_ProxyMutex);
+inline mutex* PatchCommandThread_Mutex
+        ACQUIRED_AFTER(android::audio_utils::DeviceEffectHandle_Mutex);
 inline mutex* ThreadBase_Mutex
         ACQUIRED_AFTER(android::audio_utils::PatchCommandThread_Mutex);
 inline mutex* AudioFlinger_ClientMutex
         ACQUIRED_AFTER(android::audio_utils::ThreadBase_Mutex);
-inline mutex* MelReporter_Mutex
-        ACQUIRED_AFTER(android::audio_utils::AudioFlinger_ClientMutex);
 inline mutex* EffectChain_Mutex
-        ACQUIRED_AFTER(android::audio_utils::MelReporter_Mutex);
-inline mutex* DeviceEffectProxy_ProxyMutex
-        ACQUIRED_AFTER(android::audio_utils::EffectChain_Mutex);
+        ACQUIRED_AFTER(android::audio_utils::AudioFlinger_ClientMutex);
 inline mutex* EffectBase_Mutex
-        ACQUIRED_AFTER(android::audio_utils::DeviceEffectProxy_ProxyMutex);
-inline mutex* AudioFlinger_UnregisteredWritersMutex
+        ACQUIRED_AFTER(android::audio_utils::EffectChain_Mutex);
+inline mutex* AudioFlinger_HardwareMutex
         ACQUIRED_AFTER(android::audio_utils::EffectBase_Mutex);
+inline mutex* MelReporter_Mutex
+        ACQUIRED_AFTER(android::audio_utils::AudioFlinger_HardwareMutex);
+inline mutex* AudioFlinger_UnregisteredWritersMutex
+        ACQUIRED_AFTER(android::audio_utils::MelReporter_Mutex);
 inline mutex* AsyncCallbackThread_Mutex
         ACQUIRED_AFTER(android::audio_utils::AudioFlinger_UnregisteredWritersMutex);
 inline mutex* ConfigEvent_Mutex
@@ -236,32 +240,32 @@ inline mutex* OtherMutex
     EXCLUDES(android::audio_utils::AudioFlinger_UnregisteredWritersMutex) \
     EXCLUDES_BELOW_AudioFlinger_UnregisteredWritersMutex
 
-#define EXCLUDES_BELOW_EffectBase_Mutex \
-    EXCLUDES_AudioFlinger_UnregisteredWritersMutex
-#define EXCLUDES_EffectBase_Mutex \
-    EXCLUDES(android::audio_utils::EffectBase_Mutex) \
-    EXCLUDES_BELOW_EffectBase_Mutex
-
-#define EXCLUDES_BELOW_DeviceEffectProxy_ProxyMutex \
-    EXCLUDES_EffectBase_Mutex
-#define EXCLUDES_DeviceEffectProxy_ProxyMutex \
-    EXCLUDES(android::audio_utils::DeviceEffectProxy_ProxyMutex) \
-    EXCLUDES_BELOW_DeviceEffectProxy_ProxyMutex
-
-#define EXCLUDES_BELOW_EffectChain_Mutex \
-    EXCLUDES_DeviceEffectProxy_ProxyMutex
-#define EXCLUDES_EffectChain_Mutex \
-    EXCLUDES(android::audio_utils::EffectChain_Mutex) \
-    EXCLUDES_BELOW_EffectChain_Mutex
-
 #define EXCLUDES_BELOW_MelReporter_Mutex \
-    EXCLUDES_EffectChain_Mutex
+    EXCLUDES_AudioFlinger_UnregisteredWritersMutex
 #define EXCLUDES_MelReporter_Mutex \
     EXCLUDES(android::audio_utils::MelReporter_Mutex) \
     EXCLUDES_BELOW_MelReporter_Mutex
 
-#define EXCLUDES_BELOW_AudioFlinger_ClientMutex \
+#define EXCLUDES_BELOW_AudioFlinger_HardwareMutex \
     EXCLUDES_MelReporter_Mutex
+#define EXCLUDES_AudioFlinger_HardwareMutex \
+    EXCLUDES(android::audio_utils::AudioFlinger_HardwareMutex) \
+    EXCLUDES_BELOW_AudioFlinger_HardwareMutex
+
+#define EXCLUDES_BELOW_EffectBase_Mutex \
+    EXCLUDES_AudioFlinger_HardwareMutex
+#define EXCLUDES_EffectBase_Mutex \
+    EXCLUDES(android::audio_utils::EffectBase_Mutex) \
+    EXCLUDES_BELOW_EffectBase_Mutex
+
+#define EXCLUDES_BELOW_EffectChain_Mutex \
+    EXCLUDES_EffectBase_Mutex
+#define EXCLUDES_EffectChain_Mutex \
+    EXCLUDES(android::audio_utils::EffectChain_Mutex) \
+    EXCLUDES_BELOW_EffectChain_Mutex
+
+#define EXCLUDES_BELOW_AudioFlinger_ClientMutex \
+    EXCLUDES_EffectChain_Mutex
 #define EXCLUDES_AudioFlinger_ClientMutex \
     EXCLUDES(android::audio_utils::AudioFlinger_ClientMutex) \
     EXCLUDES_BELOW_AudioFlinger_ClientMutex
@@ -278,20 +282,26 @@ inline mutex* OtherMutex
     EXCLUDES(android::audio_utils::PatchCommandThread_Mutex) \
     EXCLUDES_BELOW_PatchCommandThread_Mutex
 
-#define EXCLUDES_BELOW_DeviceEffectManager_Mutex \
+#define EXCLUDES_BELOW_DeviceEffectHandle_Mutex \
     EXCLUDES_PatchCommandThread_Mutex
+#define EXCLUDES_DeviceEffectHandle_Mutex \
+    EXCLUDES(android::audio_utils::DeviceEffectHandle_Mutex) \
+    EXCLUDES_BELOW_DeviceEffectHandle_Mutex
+
+#define EXCLUDES_BELOW_DeviceEffectProxy_ProxyMutex \
+    EXCLUDES_DeviceEffectHandle_Mutex
+#define EXCLUDES_DeviceEffectProxy_ProxyMutex \
+    EXCLUDES(android::audio_utils::DeviceEffectProxy_ProxyMutex) \
+    EXCLUDES_BELOW_DeviceEffectProxy_ProxyMutex
+
+#define EXCLUDES_BELOW_DeviceEffectManager_Mutex \
+    EXCLUDES_DeviceEffectProxy_ProxyMutex
 #define EXCLUDES_DeviceEffectManager_Mutex \
     EXCLUDES(android::audio_utils::DeviceEffectManager_Mutex) \
     EXCLUDES_BELOW_DeviceEffectManager_Mutex
 
-#define EXCLUDES_BELOW_AudioFlinger_HardwareMutex \
-    EXCLUDES_DeviceEffectManager_Mutex
-#define EXCLUDES_AudioFlinger_HardwareMutex \
-    EXCLUDES(android::audio_utils::AudioFlinger_HardwareMutex) \
-    EXCLUDES_BELOW_AudioFlinger_HardwareMutex
-
 #define EXCLUDES_BELOW_AudioFlinger_Mutex \
-    EXCLUDES_AudioFlinger_HardwareMutex
+    EXCLUDES_DeviceEffectManager_Mutex
 #define EXCLUDES_AudioFlinger_Mutex \
     EXCLUDES(android::audio_utils::AudioFlinger_Mutex) \
     EXCLUDES_BELOW_AudioFlinger_Mutex

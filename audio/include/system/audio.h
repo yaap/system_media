@@ -2490,5 +2490,41 @@ __END_DECLS
 #define AUDIO_OFFLOAD_CODEC_DELAY_SAMPLES  "delay_samples"
 #define AUDIO_OFFLOAD_CODEC_PADDING_SAMPLES  "padding_samples"
 
+/**
+ * The maximum supported audio sample rate.
+ *
+ * note: The audio policy will use it as the max mixer sample rate for mixed
+ * output and inputs.
+ */
+#define SAMPLE_RATE_HZ_MAX 192000
+
+/**
+ * The minimum supported audio sample rate.
+ */
+#define SAMPLE_RATE_HZ_MIN 4000
+
+/**
+ * The maximum possible audio sample rate as defined in IEC61937.
+ * This definition is for a pre-check before asking the lower level service to
+ * open an AAudio stream.
+ *
+ * note: HDMI supports up to 32 channels at 1536000 Hz.
+ * note: This definition serve the purpose of parameter pre-check, real
+ * validation happens in the audio policy.
+ */
+#define SAMPLE_RATE_HZ_MAX_IEC610937 1600000
+
+/**
+ * The minimum audio sample rate supported by AAudio stream.
+ * This definition is for a pre-check before asking the lower level service to
+ * open an AAudio stream.
+ */
+#define SAMPLE_RATE_HZ_MIN_AAUDIO 8000
+
+/**
+ * Minimum/maximum channel count supported by AAudio stream.
+ */
+#define CHANNEL_COUNT_MIN_AAUDIO 1
+#define CHANNEL_COUNT_MAX_AAUDIO FCC_LIMIT
 
 #endif  // ANDROID_AUDIO_CORE_H

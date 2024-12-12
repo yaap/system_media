@@ -28,12 +28,46 @@ cc_test {
 }
 
 cc_test {
+    name: "audio_deferredexecutor_tests",
+    host_supported: true,
+    srcs: ["audio_deferredexecutor_tests.cpp"],
+    shared_libs: [
+        "libbase",
+    ],
+    header_libs: [
+        "libaudioutils_headers",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wthread-safety",
+    ],
+}
+
+cc_test {
     name: "audio_float_tests",
     host_supported: true,
     srcs: ["audio_float_tests.cpp"],
     shared_libs: [
         "libbase",
         "libbinder",
+    ],
+    header_libs: [
+        "libaudioutils_headers",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wthread-safety",
+    ],
+}
+
+cc_test {
+    name: "audio_linkedhashmap_tests",
+    host_supported: true,
+    srcs: ["audio_linkedhashmap_tests.cpp"],
+    shared_libs: [
+        "libbase",
     ],
     header_libs: [
         "libaudioutils_headers",

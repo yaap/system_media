@@ -95,6 +95,7 @@ struct config_parse_state {
     struct audio_route *ar;
     struct mixer_path *path;
     int level;
+    bool enum_mixer_numeric_fallback;
 };
 
 /* path functions */
@@ -445,8 +446,23 @@ static int path_reset(struct audio_route *ar, struct mixer_path *path)
     return 0;
 }
 
+static bool safe_strtol(const char *str, long *val)
+{
+    char *end;
+    long v;
+    if (str == NULL || strlen(str) == 0)
+        return false;
+    errno = 0;
+    v = strtol(str, &end, 0);
+    if (errno || *end)
+        return false;
+    *val = v;
+    return true;
+}
+
 /* mixer helper function */
-static int mixer_enum_string_to_value(struct mixer_ctl *ctl, const char *string)
+static int mixer_enum_string_to_value(struct mixer_ctl *ctl, const char *string,
+                                      bool allow_numeric_fallback)
 {
     unsigned int i;
     unsigned int num_values = mixer_ctl_get_num_enums(ctl);
@@ -463,6 +479,13 @@ static int mixer_enum_string_to_value(struct mixer_ctl *ctl, const char *string)
             break;
     }
     if (i == num_values) {
+        /* No enum string match. Check the flag before numeric parsing. */
+        if (allow_numeric_fallback) {
+            long value = 0;
+            if (safe_strtol(string, &value) && value >= 0 && value < num_values) {
+                return value;
+            }
+        }
         ALOGW("unknown enum value string %s for ctl %s",
               string, mixer_ctl_get_name(ctl));
         return 0;
@@ -476,6 +499,7 @@ static void start_tag(void *data, const XML_Char *tag_name,
     const XML_Char *attr_name = NULL;
     const XML_Char *attr_id = NULL;
     const XML_Char *attr_value = NULL;
+    const XML_Char *attr_enum_mixer_numeric_fallback = NULL;
     struct config_parse_state *state = data;
     struct audio_route *ar = state->ar;
     unsigned int i;
@@ -495,10 +519,16 @@ static void start_tag(void *data, const XML_Char *tag_name,
             attr_id = attr[i + 1];
         else if (strcmp(attr[i], "value") == 0)
             attr_value = attr[i + 1];
+        else if (strcmp(attr[i], "enum_mixer_numeric_fallback") == 0)
+            attr_enum_mixer_numeric_fallback = attr[i + 1];
     }
 
     /* Look at tags */
-    if (strcmp(tag_name, "path") == 0) {
+    if (strcmp(tag_name, "mixer") == 0) {
+        state->enum_mixer_numeric_fallback =
+                attr_enum_mixer_numeric_fallback != NULL &&
+                strcmp(attr_enum_mixer_numeric_fallback, "true") == 0 ;
+    } else if (strcmp(tag_name, "path") == 0) {
         if (attr_name == NULL) {
             ALOGE("Unnamed path!");
         } else {
@@ -571,7 +601,8 @@ static void start_tag(void *data, const XML_Char *tag_name,
                 ALOGE("No value specified for ctl %s", attr_name);
                 goto done;
             }
-            value = mixer_enum_string_to_value(ctl, (char *)attr_value);
+            value = mixer_enum_string_to_value(ctl, (char *)attr_value,
+                                               state->enum_mixer_numeric_fallback);
             break;
         default:
             value = 0;

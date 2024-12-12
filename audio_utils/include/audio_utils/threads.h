@@ -17,6 +17,7 @@
 #pragma once
 
 #include <algorithm>
+#include <bitset>
 #include <sys/syscall.h>   // SYS_gettid
 #include <unistd.h>        // bionic gettid
 #include <utils/Errors.h>  // status_t
@@ -142,5 +143,45 @@ status_t set_thread_priority(pid_t tid, int priority);
  * A negative number represents error.
  */
 int get_thread_priority(int tid);
+
+/**
+ * An arbitrary CPU limit for Android running on Chrome / Linux / Windows devices.
+ */
+inline constexpr size_t kMaxCpus = std::min(256, CPU_SETSIZE);
+
+/**
+ * Sets the thread affinity based on a bit mask.
+ *
+ * \param  tid where 0 represents the current thread.
+ * \param  mask where a set bit indicates that core is available for the thread
+ *         to execute on.
+ *         A 64 bit integer may be used so long as you only need to access
+ *         the first 64 cores (an integer will implicitly convert to the std::bitset).
+ * \return 0 on success or -errno on failure.
+ */
+status_t set_thread_affinity(pid_t tid, const std::bitset<kMaxCpus>& mask);
+
+/**
+ * Returns the CPU mask thread affinity, which has a count of 0 if not found.
+ *
+ * \param  tid where 0 represents the current thread.
+ * \return a mask where a set bit indicates that core is allowed for the thread.
+ *         The bitset method to_ullong() may be used for devices with 64 CPUs or less.
+ */
+std::bitset<kMaxCpus> get_thread_affinity(pid_t tid);
+
+/**
+ * Returns current thread's CPU core or -1 if not found.
+ */
+ int get_cpu();
+
+/**
+ * Returns number of CPUs (equivalent to std::thread::hardware_concurrency()
+ * but is internally cached).
+ *
+ * If the value is not well defined or not computable, 0 is returned.
+ * This is not cached and a subsequent call will retry.
+ */
+size_t get_number_cpus();
 
 } // namespace android::audio_utils

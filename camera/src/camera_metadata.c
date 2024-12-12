@@ -1167,6 +1167,29 @@ static void print_data(int fd, const uint8_t *data_ptr, uint32_t tag, int type,
     size_t type_size = camera_metadata_type_size[type];
     char value_string_tmp[CAMERA_METADATA_ENUM_STRING_MAX_SIZE];
     uint32_t value;
+    size_t value_offset;
+    size_t entry_size;
+    // It is possible that the tag value is only found at specific
+    // offset. The rest of the data must not be enumerated.
+    switch (tag) {
+        case ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS:
+        case ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION:
+        case ANDROID_DEPTH_AVAILABLE_DEPTH_STREAM_CONFIGURATIONS:
+        case ANDROID_DEPTH_AVAILABLE_DEPTH_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION:
+        case ANDROID_DEPTH_AVAILABLE_DYNAMIC_DEPTH_STREAM_CONFIGURATIONS:
+        case ANDROID_DEPTH_AVAILABLE_DYNAMIC_DEPTH_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION:
+        case ANDROID_HEIC_AVAILABLE_HEIC_STREAM_CONFIGURATIONS:
+        case ANDROID_HEIC_AVAILABLE_HEIC_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION:
+        case ANDROID_JPEGR_AVAILABLE_JPEG_R_STREAM_CONFIGURATIONS:
+        case ANDROID_JPEGR_AVAILABLE_JPEG_R_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION:
+        case ANDROID_SCALER_PHYSICAL_CAMERA_MULTI_RESOLUTION_STREAM_CONFIGURATIONS:
+            value_offset = 3 * type_size;
+            entry_size = 4 * type_size;
+            break;
+        default:
+            value_offset = 0;
+            entry_size = 0;
+    }
 
     int lines = count / values_per_line[type];
     if (count % values_per_line[type] != 0) lines++;
@@ -1195,6 +1218,12 @@ static void print_data(int fd, const uint8_t *data_ptr, uint32_t tag, int type,
                     break;
                 case TYPE_INT32:
                     value = *(int32_t*)(data_ptr + index);
+
+                    if ((entry_size > 0) && ((index % entry_size ) != value_offset)) {
+                        dprintf(fd, "%" PRId32 " ", value);
+                        break;
+                    }
+
                     if (camera_metadata_enum_snprint(tag,
                                                      value,
                                                      value_string_tmp,

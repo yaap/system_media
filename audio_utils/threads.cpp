@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <sched.h>    // scheduler
 #include <sys/resource.h>
+#include <thread>
 #include <utils/Errors.h>  // status_t
 #include <utils/Log.h>
 
@@ -84,6 +85,57 @@ int get_thread_priority(int tid) {
     } else {
         return INVALID_OPERATION;
     }
+}
+
+status_t set_thread_affinity(pid_t tid, const std::bitset<kMaxCpus>& mask) {
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    const size_t limit = std::min(get_number_cpus(), kMaxCpus);
+    for (size_t i = 0; i < limit; ++i) {
+        if (mask.test(i)) {
+            CPU_SET(i, &cpuset);
+        }
+    }
+    if (sched_setaffinity(tid, sizeof(cpuset), &cpuset) == 0) {
+        return OK;
+    }
+    return -errno;
+}
+
+std::bitset<kMaxCpus> get_thread_affinity(pid_t tid) {
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    std::bitset<kMaxCpus> mask;
+    if (sched_getaffinity(tid, sizeof(cpuset), &cpuset) == 0) {
+        const size_t limit = std::min(get_number_cpus(), kMaxCpus);
+        for (size_t i = 0; i < limit; ++i) {
+            if (CPU_ISSET(i, &cpuset)) {
+                mask.set(i);
+            }
+        }
+    }
+    return mask;
+}
+
+int get_cpu() {
+    return sched_getcpu();
+}
+
+/*
+ * std::thread::hardware_concurrency() is not optimized.  We cache the value here
+ * and it is implementation dependent whether std::thread::hardware_concurrency()
+ * returns only the cpus currently online, or includes offline hot plug cpus.
+ *
+ * See external/libcxx/src/thread.cpp.
+ */
+size_t get_number_cpus() {
+    static constinit std::atomic<size_t> n{};  // zero initialized.
+    size_t value = n.load(std::memory_order_relaxed);
+    if (value == 0) {  // not set, so we fetch.
+        value = std::thread::hardware_concurrency();
+        n.store(value, std::memory_order_relaxed);  // on race, this store is idempotent.
+    }
+    return value;
 }
 
 } // namespace android::audio_utils

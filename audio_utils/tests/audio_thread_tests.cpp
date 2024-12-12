@@ -16,6 +16,7 @@
 
 #include <audio_utils/threads.h>
 #include <gtest/gtest.h>
+#include <thread>
 
 using namespace android;
 using namespace android::audio_utils;
@@ -61,4 +62,26 @@ TEST(audio_thread_tests, priority) {
     // EXPECT_EQ(kPriority98, get_thread_priority(tid));
 
     EXPECT_EQ(NO_ERROR, set_thread_priority(tid, priority));
+}
+
+TEST(audio_thread_tests, cpu_count) {
+    const unsigned cpu_count = std::thread::hardware_concurrency();
+    ASSERT_EQ(cpu_count, get_number_cpus());
+}
+
+TEST(audio_thread_tests, affinity) {
+    constexpr pid_t self = 0;
+    const int limit = std::min(get_number_cpus(), sizeof(uint64_t) * CHAR_BIT);
+    for (int i = 0; i < limit; ++i) {
+        uint64_t mask = 1ULL << i;
+        const status_t result = set_thread_affinity(self, mask);
+        ASSERT_EQ(NO_ERROR, result);
+        EXPECT_EQ(mask, get_thread_affinity(self).to_ullong());
+    }
+}
+
+TEST(audio_thread_tests, invalid_affinity) {
+    constexpr pid_t self = 0;
+    const int cpu_count = get_number_cpus();
+    ASSERT_NE(NO_ERROR, set_thread_affinity(self, std::bitset<kMaxCpus>{}.set(cpu_count)));
 }
