@@ -148,6 +148,32 @@ cc_test {
 }
 
 cc_test {
+    name: "audio_stringutils_tests",
+    host_supported: true,
+
+    srcs: [
+        "audio_stringutils_tests.cpp",
+    ],
+
+    shared_libs: [
+        "libbase",
+        "liblog",
+        "libutils",
+    ],
+
+    static_libs: [
+        "libaudioutils",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-Wthread-safety",
+    ],
+}
+
+cc_test {
     name: "audio_thread_tests",
 
     srcs: [
@@ -168,6 +194,24 @@ cc_test {
         "-Wall",
         "-Werror",
         "-Wextra",
+        "-Wthread-safety",
+    ],
+}
+
+cc_test {
+    name: "audio_trace_tests",
+    host_supported: true,
+    srcs: ["audio_trace_tests.cpp"],
+    shared_libs: [
+        "libbase",
+        "libbinder",
+    ],
+    header_libs: [
+        "libaudioutils_headers",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
         "-Wthread-safety",
     ],
 }
@@ -309,6 +353,7 @@ cc_test {
         "-Wall",
         "-Werror",
         "-Wextra",
+        "-Wthread-safety",
     ],
 }
 
@@ -334,6 +379,7 @@ cc_test {
         "-Wall",
         "-Werror",
         "-Wextra",
+        "-Wthread-safety",
     ],
 }
 
@@ -538,6 +584,27 @@ cc_test {
             static_libs: ["libaudioutils"],
         },
     },
+}
+
+cc_test {
+    name: "run_remote_tests",
+    host_supported: true,
+
+    shared_libs: [
+        "libcutils",
+        "liblog",
+    ],
+
+    static_libs: [
+        "libaudioutils",
+    ],
+
+    srcs: ["run_remote_tests.cpp"],
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+    ],
 }
 
 cc_test {

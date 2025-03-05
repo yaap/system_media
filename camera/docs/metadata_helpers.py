@@ -217,6 +217,7 @@ def protobuf_type(entry):
     "dynamicRangeProfiles"   : "DynamicRangeProfiles",
     "colorSpaceProfiles"     : "ColorSpaceProfiles",
     "versionCode"            : "int32",
+    "sharedSessionConfiguration"  : "SharedSessionConfiguration",
   }
 
   if typeName not in typename_to_protobuftype:
@@ -881,7 +882,8 @@ def javadoc(metadata, indent = 4):
     # Convert metadata entry "android.x.y.z" to form
     # "{@link CaptureRequest#X_Y_Z android.x.y.z}"
     def javadoc_crossref_filter(node):
-      if node.applied_visibility in ('public', 'java_public', 'fwk_java_public'):
+      if node.applied_visibility in ('public', 'java_public', 'fwk_java_public', 'fwk_public',\
+                                     'fwk_system_public'):
         return '{@link %s#%s %s}' % (kind_mapping[node.kind],
                                      jkey_identifier(node.name),
                                      node.name)
@@ -892,7 +894,7 @@ def javadoc(metadata, indent = 4):
     # "@see CaptureRequest#X_Y_Z"
     def javadoc_crossref_see_filter(node_set):
       node_set = (x for x in node_set if x.applied_visibility in \
-                  ('public', 'java_public', 'fwk_java_public'))
+                  ('public', 'java_public', 'fwk_java_public', 'fwk_public', 'fwk_system_public'))
 
       text = '\n'
       for node in node_set:
@@ -1373,7 +1375,6 @@ def any_visible(section, kind_name, visibilities):
                                                               'merged_entries'),
                                visibilities))
 
-
 def filter_visibility(entries, visibilities):
   """
   Remove entries whose applied visibility is not in the supplied visibilities.
@@ -1387,9 +1388,40 @@ def filter_visibility(entries, visibilities):
   """
   return (e for e in entries if e.applied_visibility in visibilities)
 
+def is_not_hal_visible(e):
+  """
+  Determine that the entry being passed in is not visible to HAL.
+
+  Args:
+    e: An entry node
+
+  Returns:
+    True if the entry is not visible to HAL
+  """
+  return (e.visibility == 'fwk_only' or
+          e.visibility == 'fwk_java_public' or
+          e.visibility == 'fwk_public' or
+          e.visibility == 'fwk_system_public' or
+          e.visibility == 'fwk_ndk_public' or
+          e.visibility == 'extension')
+
 def remove_hal_non_visible(entries):
   """
   Filter the given entries by removing those that are not HAL visible:
+  synthetic, fwk_only, extension, fwk_java_public, fwk_system_public, fwk_ndk_public,
+  or fwk_public.
+
+  Args:
+    entries: An iterable of Entry nodes
+
+  Yields:
+    An iterable of Entry nodes
+  """
+  return (e for e in entries if not (e.synthetic or is_not_hal_visible(e)))
+
+def remove_ndk_non_visible(entries):
+  """
+  Filter the given entries by removing those that are not NDK visible:
   synthetic, fwk_only, extension, or fwk_java_public.
 
   Args:

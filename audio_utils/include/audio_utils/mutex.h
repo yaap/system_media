@@ -839,6 +839,7 @@ enum class other_wait_reason_t {
     none = 0,
     cv = 1,
     join = 2,
+    queue = 3,
 };
 
 inline constexpr const char* reason_to_string(other_wait_reason_t reason) {
@@ -846,6 +847,7 @@ inline constexpr const char* reason_to_string(other_wait_reason_t reason) {
         case other_wait_reason_t::none: return "none";
         case other_wait_reason_t::cv: return "cv";
         case other_wait_reason_t::join: return "join";
+        case other_wait_reason_t::queue: return "queue";
         default: return "invalid";
     }
 }
@@ -898,6 +900,9 @@ public:
                     break;
                 case other_wait_reason_t::join:
                     s.append("join_tid: ").append(std::to_string(tid));
+                    break;
+                case other_wait_reason_t::queue:
+                    s.append("queue_tid: ").append(std::to_string(tid));
                     break;
                 }
             }
@@ -972,6 +977,16 @@ public:
     }
 
     void remove_wait_join() {
+        other_wait_info_.tid_ = kInvalidTid;
+    }
+
+    // Add waiting state for queue.
+    void add_wait_queue(pid_t waiting_tid) {
+        other_wait_info_.reason_ = other_wait_reason_t::queue;
+        other_wait_info_.tid_ = waiting_tid;
+    }
+
+    void remove_wait_queue() {
         other_wait_info_.tid_ = kInvalidTid;
     }
 
@@ -1259,7 +1274,8 @@ public:
             deadlock_info.chain.emplace_back(tid2,
                     reason == other_wait_reason_t::cv
                             ? std::string("cv-").append(name).c_str()
-                    : reason == other_wait_reason_t::join ? "join" : name);
+                    : reason == other_wait_reason_t::join ? "join"
+                    : reason == other_wait_reason_t::queue ? "queue" : name);
 
             // cycle detected
             if (visited.count(tid2)) {
@@ -1270,6 +1286,10 @@ public:
 
             // if tid not waiting return (could be blocked on binder).
             const auto tinfo = tid_to_info(registry_map, tid2);
+            if (tinfo == nullptr) {
+                // thread may have disappeared.
+                return deadlock_info;
+            }
             m = tinfo->mutex_wait_.load();
             other_wait_tid = tinfo->other_wait_info_.tid_.load();
             other_wait_reason = tinfo->other_wait_info_.reason_.load();
@@ -1292,6 +1312,27 @@ private:
 // pthread_mutex_timedlock() on the mutex::native_handle().
 
 extern bool mutex_get_enable_flag();
+
+// Returns true if the mutex was locked within the timeout_ns.
+//
+// std::timed_mutex is implemented using a condition variable and doesn't
+// have complete thread safety annotations.
+//
+// Here, we add the flexibility of a timed lock on an existing std::mutex.
+//
+inline bool std_mutex_timed_lock(std::mutex& m, int64_t timeout_ns) TRY_ACQUIRE(true, m) {
+    const int64_t deadline_ns =
+            safe_add_sat(timeout_ns, systemTime(SYSTEM_TIME_REALTIME));
+    const struct timespec ts = {
+            .tv_sec = static_cast<time_t>(deadline_ns / 1'000'000'000),
+            .tv_nsec = static_cast<long>(deadline_ns % 1'000'000'000),
+    };
+    if (pthread_mutex_timedlock(m.native_handle(), &ts) != 0) {
+        metadata_memory_barrier_if_needed();
+        return false;
+    }
+    return true;
+}
 
 template <typename Attributes>
 class CAPABILITY("mutex") [[nodiscard]] mutex_impl {
@@ -1552,6 +1593,29 @@ public:
         }
     };
 
+    // A RAII class that implements queue wait detection
+    // for the deadlock check.
+    //
+    // During the lifetime of this class object, the current thread
+    // is assumed blocked on the thread tid due to a
+    // cross-thread communication via a queue.
+    //
+    // {
+    //   scoped_queue_wait_check sjw(tid_of_thread);
+    //   queue.add(...);
+    // }
+    //
+
+    class [[nodiscard]] scoped_queue_wait_check {
+    public:
+        explicit scoped_queue_wait_check(pid_t tid) {
+            get_thread_mutex_info()->add_wait_queue(tid);
+        }
+        ~scoped_queue_wait_check() {
+            get_thread_mutex_info()->remove_wait_queue();
+        }
+    };
+
     class lock_scoped_stat_disabled {
     public:
         explicit lock_scoped_stat_disabled(mutex&) {}
@@ -1627,6 +1691,18 @@ inline thread_mutex_info<MutexHandle, Order, N>::~thread_mutex_info() {
     }
 }
 
+
+namespace details {
+
+// Discovery of the audio_utils::mutex vs std::mutex.
+template<typename T>
+concept IsAudioMutex = requires (T& a) {
+    a.std_mutex();  // std::mutex does not have this method.
+};
+
+} // details
+
+
 // audio_utils::lock_guard only works with the defined mutex.
 //
 // We add [[nodiscard]] to prevent accidentally ignoring construction.
@@ -1661,9 +1737,42 @@ private:
 // safety annotations.
 //
 // We add [[nodiscard]] to prevent accidentally ignoring construction.
-class [[nodiscard]] SCOPED_CAPABILITY unique_lock {
+
+// The generic unique_lock.  This works for std::mutex.
+template <typename Mutex>
+class [[nodiscard]] SCOPED_CAPABILITY unique_lock : public std::unique_lock<Mutex> {
 public:
-    explicit unique_lock(mutex& m) ACQUIRE(m)
+    explicit unique_lock(Mutex& m) ACQUIRE(m)
+        : std::unique_lock<Mutex>(m) {}
+    ~unique_lock() RELEASE() {}
+
+    void lock() ACQUIRE() { std::unique_lock<Mutex>::lock(); }
+    void unlock() RELEASE() { std::unique_lock<Mutex>::unlock(); }
+
+    bool try_lock() TRY_ACQUIRE(true) { return std::unique_lock<Mutex>::try_lock(); }
+
+    template<class Rep, class Period>
+    bool try_lock_for(const std::chrono::duration<Rep, Period>& timeout_duration)
+            TRY_ACQUIRE(true) {
+        return std::unique_lock<Mutex>::try_lock_for(timeout_duration);
+    }
+
+    template<class Clock, class Duration>
+    bool try_lock_until(const std::chrono::time_point<Clock, Duration>& timeout_time)
+            TRY_ACQUIRE(true) {
+        return std::unique_lock<Mutex>::try_lock_until(timeout_time);
+    }
+};
+
+// Specialized unique_lock for the audio_utlis::mutex.
+//
+// the requires() clause selects this over the generic case upon match.
+//
+template <typename Mutex>
+requires details::IsAudioMutex<Mutex>
+class [[nodiscard]] SCOPED_CAPABILITY unique_lock<Mutex> {
+public:
+    explicit unique_lock(Mutex& m) ACQUIRE(m)
         : ul_(m.std_mutex(), std::defer_lock)
         , mutex_(m) {
         lock();
@@ -1676,7 +1785,7 @@ public:
     void lock() ACQUIRE() {
         mutex::lock_scoped_stat_t::pre_lock(mutex_);
         if (!ul_.try_lock()) {
-            mutex::lock_scoped_stat_t ls(mutex_);
+            typename Mutex::lock_scoped_stat_t ls(mutex_);
             ul_.lock();
         }
         mutex::lock_scoped_stat_t::post_lock(mutex_);
@@ -1698,7 +1807,7 @@ public:
     }
 
     template<class Rep, class Period>
-    bool try_lock_for(const std::chrono::duration<Rep,Period>& timeout_duration)
+    bool try_lock_for(const std::chrono::duration<Rep, Period>& timeout_duration)
             TRY_ACQUIRE(true) {
         mutex::lock_scoped_stat_t::pre_lock(mutex_);
         if (!ul_.try_lock_for(timeout_duration)) return false;
@@ -1708,7 +1817,7 @@ public:
     }
 
     template<class Clock, class Duration>
-    bool try_lock_until(const std::chrono::time_point<Clock,Duration>& timeout_time)
+    bool try_lock_until(const std::chrono::time_point<Clock, Duration>& timeout_time)
             TRY_ACQUIRE(true) {
         mutex::lock_scoped_stat_t::pre_lock(mutex_);
         if (!ul_.try_lock_until(timeout_time)) return false;
@@ -1758,46 +1867,47 @@ public:
         cv_.notify_all();
     }
 
-    void wait(unique_lock& lock, pid_t notifier_tid = kInvalidTid) {
-        mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
+    template <typename Mutex>
+    void wait(unique_lock<Mutex>& lock, pid_t notifier_tid = kInvalidTid) {
+        typename Mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
         cv_.wait(lock.std_unique_lock());
     }
 
-    template<typename Predicate>
-    void wait(unique_lock& lock, Predicate stop_waiting, pid_t notifier_tid = kInvalidTid) {
-        mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
+    template<typename Mutex, typename Predicate>
+    void wait(unique_lock<Mutex>& lock, Predicate stop_waiting, pid_t notifier_tid = kInvalidTid) {
+        typename Mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
         cv_.wait(lock.std_unique_lock(), std::move(stop_waiting));
     }
 
-    template<typename Rep, typename Period>
-    std::cv_status wait_for(unique_lock& lock,
+    template<typename Mutex, typename Rep, typename Period>
+    std::cv_status wait_for(unique_lock<Mutex>& lock,
             const std::chrono::duration<Rep, Period>& rel_time,
             pid_t notifier_tid = kInvalidTid) {
-        mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
+        typename Mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
         return cv_.wait_for(lock.std_unique_lock(), rel_time);
     }
 
-    template<typename Rep, typename Period, typename Predicate>
-    bool wait_for(unique_lock& lock,
+    template<typename Mutex, typename Rep, typename Period, typename Predicate>
+    bool wait_for(unique_lock<Mutex>& lock,
             const std::chrono::duration<Rep, Period>& rel_time,
             Predicate stop_waiting, pid_t notifier_tid = kInvalidTid) {
-        mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
+        typename Mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
         return cv_.wait_for(lock.std_unique_lock(), rel_time, std::move(stop_waiting));
     }
 
-    template<typename Clock, typename Duration>
-    std::cv_status wait_until(unique_lock& lock,
+    template<typename Mutex, typename Clock, typename Duration>
+    std::cv_status wait_until(unique_lock<Mutex>& lock,
             const std::chrono::time_point<Clock, Duration>& timeout_time,
             pid_t notifier_tid = kInvalidTid) {
-        mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
+        typename Mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
         return cv_.wait_until(lock.std_unique_lock(), timeout_time);
     }
 
-    template<typename Clock, typename Duration, typename Predicate>
-    bool wait_until(unique_lock& lock,
+    template<typename Mutex, typename Clock, typename Duration, typename Predicate>
+    bool wait_until(unique_lock<Mutex>& lock,
             const std::chrono::time_point<Clock, Duration>& timeout_time,
             Predicate stop_waiting, pid_t notifier_tid = kInvalidTid) {
-        mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
+        typename Mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
         return cv_.wait_until(lock.std_unique_lock(), timeout_time, std::move(stop_waiting));
     }
 

@@ -166,6 +166,9 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
     </typedef>
     <typedef name="lensIntrinsicsSample">
         <language name="java">android.hardware.camera2.params.LensIntrinsicsSample</language>
+      </typedef>
+    <typedef name="sharedSessionConfiguration">
+        <language name="java">android.hardware.camera2.params.SharedSessionConfiguration</language>
     </typedef>
   </types>
 
@@ -211,12 +214,26 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               (or defaults if AWB has never been run).
             </notes>
             </value>
+            <value hal_version="3.11" aconfig_flag="color_temperature">CCT
+              <notes>Use
+                android.colorCorrection.colorTemperature and
+                android.colorCorrection.colorTint to adjust the white balance based
+                on correlated color temperature.
+
+                If AWB is enabled with `android.control.awbMode != OFF`, then
+                CCT is ignored.
+              </notes>
+            </value>
           </enum>
 
           <description>
           The mode control selects how the image data is converted from the
           sensor's native color into linear sRGB color.
           </description>
+          <range>Starting from API level 36, android.colorCorrection.availableModes
+          can be used to check the list of supported values. Prior to API level 36,
+          TRANSFORM_MATRIX, HIGH_QUALITY, and FAST are guaranteed to be available
+          as valid modes on devices that support this key.</range>
           <details>
           When auto-white balance (AWB) is enabled with android.control.awbMode, this
           control is overridden by the AWB routine. When AWB is disabled, the
@@ -416,6 +433,99 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             capture rate, then FAST and HIGH_QUALITY will generate the same output.
           </hal_details>
           <tag id="V1" />
+        </entry>
+      </static>
+      <controls>
+        <entry name="colorTemperature" type="int32" visibility="public" optional="true"
+          aconfig_flag="color_temperature" hal_version="3.11">
+          <description>
+            Specifies the color temperature for CCT mode in Kelvin
+            to adjust the white balance of the image.
+          </description>
+          <units>Kelvin</units>
+          <range>android.colorCorrection.colorTemperatureRange</range>
+          <details>
+            Sets the color temperature in Kelvin units for when
+            android.colorCorrection.mode is CCT to adjust the
+            white balance of the image.
+
+            If CCT mode is enabled without a requested color temperature,
+            a default value will be set by the camera device. The default value can be
+            retrieved by checking the corresponding capture result. Color temperatures
+            requested outside the advertised android.colorCorrection.colorTemperatureRange
+            will be clamped.
+          </details>
+        </entry>
+        <entry name="colorTint" type="int32" visibility="public" optional="true"
+          aconfig_flag="color_temperature" hal_version="3.11">
+          <description>
+            Specifies the color tint for CCT mode to adjust the white
+            balance of the image.
+          </description>
+          <units>D_uv defined as the distance from the Planckian locus on the CIE 1931 xy
+          chromaticity diagram, with the range ±50 mapping to ±0.01 D_uv</units>
+          <range>The supported range, -50 to +50, corresponds to a D_uv distance
+          of ±0.01 below and above the Planckian locus. Some camera devices may have
+          limitations to achieving the full ±0.01 D_uv range at some color temperatures
+          (e.g., below 1500K). In these cases, the applied D_uv value may be clamped and
+          the actual color tint will be reported in the android.colorCorrection.colorTint
+          result.</range>
+          <details>
+            Sets the color tint for when android.colorCorrection.mode
+            is CCT to adjust the white balance of the image.
+
+            If CCT mode is enabled without a requested color tint,
+            a default value will be set by the camera device. The default value can be
+            retrieved by checking the corresponding capture result. Color tints requested
+            outside the supported range will be clamped to the nearest limit (-50 or +50).
+          </details>
+        </entry>
+      </controls>
+      <dynamic>
+        <clone entry="android.colorCorrection.colorTemperature" kind="controls">
+        </clone>
+        <clone entry="android.colorCorrection.colorTint" kind="controls">
+        </clone>
+      </dynamic>
+      <static>
+        <entry name="colorTemperatureRange" type="int32" visibility="public"
+               optional="true" container="array" typedef="rangeInt"
+               aconfig_flag="color_temperature" hal_version="3.11">
+          <array>
+            <size>2</size>
+          </array>
+          <description>The range of supported color temperature values for
+            android.colorCorrection.colorTemperature.</description>
+          <range>
+            The minimum supported range will be [2856K,6500K]. The maximum supported
+            range will be [1000K,40000K].
+          </range>
+          <details>
+            This key lists the valid range of color temperature values for
+            android.colorCorrection.colorTemperature supported by this camera device.
+
+            This key will be null on devices that do not support CCT mode for
+            android.colorCorrection.mode.
+          </details>
+        </entry>
+        <entry name="availableModes" type="byte" visibility="public"
+        optional="true" type_notes="list of enums" container="array" typedef="enumList"
+        aconfig_flag="color_temperature" hal_version="3.11">
+          <array>
+            <size>n</size>
+          </array>
+          <description>
+            List of color correction modes for android.colorCorrection.mode that are
+            supported by this camera device.
+          </description>
+          <range>Any value listed in android.colorCorrection.mode</range>
+          <details>
+            This key lists the valid modes for android.colorCorrection.mode. If no
+            color correction modes are available for a device, this key will be null.
+
+            Camera devices that have a FULL hardware level will always include at least
+            FAST, HIGH_QUALITY, and TRANSFORM_MATRIX modes.
+          </details>
         </entry>
       </static>
     </section>
@@ -632,6 +742,14 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
                 android.sensor.frameDuration are ignored. The
                 application has control over the various
                 android.flash.* fields.
+
+                If the device supports manual flash strength control, i.e.,
+                if android.flash.singleStrengthMaxLevel and
+                android.flash.torchStrengthMaxLevel are greater than 1, then
+                the auto-exposure (AE) precapture metering sequence should be
+                triggered for the configured flash mode and strength to avoid
+                the image being incorrectly exposed at different
+                android.flash.strengthLevel.
               </notes>
             </value>
             <value>ON_AUTO_FLASH
@@ -740,7 +858,9 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             application's selected exposure time, sensor sensitivity,
             and frame duration (android.sensor.exposureTime,
             android.sensor.sensitivity, and
-            android.sensor.frameDuration). If one of the FLASH modes
+            android.sensor.frameDuration). If android.control.aePriorityMode is
+            enabled, the relevant priority CaptureRequest settings will not be overridden.
+            See android.control.aePriorityMode for more details. If one of the FLASH modes
             is selected, the camera device's flash unit controls are
             also overridden.
 
@@ -754,6 +874,14 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             camera device auto-exposure routine for the overridden
             fields for a given capture will be available in its
             CaptureResult.
+
+            When android.control.aeMode is AE_MODE_ON and if the device
+            supports manual flash strength control, i.e.,
+            if android.flash.singleStrengthMaxLevel and
+            android.flash.torchStrengthMaxLevel are greater than 1, then
+            the auto-exposure (AE) precapture metering sequence should be
+            triggered to avoid the image being incorrectly exposed at
+            different android.flash.strengthLevel.
           </details>
           <tag id="BC" />
         </entry>
@@ -842,7 +970,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR}
               capability or devices where
               {@link CameraCharacteristics#getAvailableCaptureRequestKeys}
-              lists {@link CaptureRequest#SENSOR_PIXEL_MODE android.sensor.pixelMode}
+              lists android.sensor.pixelMode,
               android.sensor.info.activeArraySizeMaximumResolution /
               android.sensor.info.preCorrectionActiveArraySizeMaximumResolution must be used as the
               coordinate system for requests where android.sensor.pixelMode is set to
@@ -1199,7 +1327,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR}
               capability or devices where
               {@link CameraCharacteristics#getAvailableCaptureRequestKeys}
-              lists {@link CaptureRequest#SENSOR_PIXEL_MODE android.sensor.pixelMode},
+              lists android.sensor.pixelMode,
               android.sensor.info.activeArraySizeMaximumResolution /
               android.sensor.info.preCorrectionActiveArraySizeMaximumResolution must be used as the
               coordinate system for requests where android.sensor.pixelMode is set to
@@ -1559,7 +1687,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR}
               capability or devices where
               {@link CameraCharacteristics#getAvailableCaptureRequestKeys}
-              lists {@link CaptureRequest#SENSOR_PIXEL_MODE android.sensor.pixelMode},
+              lists android.sensor.pixelMode,
               android.sensor.info.activeArraySizeMaximumResolution /
               android.sensor.info.preCorrectionActiveArraySizeMaximumResolution must be used as the
               coordinate system for requests where android.sensor.pixelMode is set to
@@ -3961,6 +4089,132 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
       </dynamic>
+      <controls>
+        <entry name="zoomMethod" type="byte" visibility="fwk_public" enum="true"
+            hwlevel="limited" aconfig_flag="zoom_method" hal_version="3.11">
+          <enum>
+            <value id="0">AUTO
+            <notes>
+              The camera device automatically detects whether the application does zoom with
+              android.scaler.cropRegion or android.control.zoomRatio, and in turn decides which
+              metadata tag reflects the effective zoom level.
+            </notes></value>
+            <value id="1">ZOOM_RATIO
+            <notes>
+              The application intends to control zoom via android.control.zoomRatio, and
+              the effective zoom level is reflected by android.control.zoomRatio in capture results.
+            </notes></value>
+          </enum>
+          <description>
+            Whether the application uses android.scaler.cropRegion or android.control.zoomRatio
+            to control zoom levels.
+          </description>
+          <details>
+            If set to AUTO, the camera device detects which capture request key the application uses
+            to do zoom, android.scaler.cropRegion or android.control.zoomRatio. If
+            the application doesn't set android.scaler.zoomRatio or sets it to 1.0 in the capture
+            request, the effective zoom level is reflected in android.scaler.cropRegion in capture
+            results. If android.control.zoomRatio is set to values other than 1.0, the effective
+            zoom level is reflected in android.control.zoomRatio. AUTO is the default value
+            for this control, and also the behavior of the OS before Android version
+            {@link android.os.Build.VERSION_CODES#BAKLAVA BAKLAVA}.
+
+            If set to ZOOM_RATIO, the application explicitly specifies zoom level be controlled
+            by android.control.zoomRatio, and the effective zoom level is reflected in
+            android.control.zoomRatio in capture results. This addresses an ambiguity with AUTO,
+            with which the camera device cannot know if the application is using cropRegion or
+            zoomRatio at 1.0x.
+          </details>
+          <hal_details>
+            Do not use this key directly. It's for camera framework usage,
+            and not for HAL consumption.
+          </hal_details>
+        </entry>
+      </controls>
+      <dynamic>
+        <clone entry="android.control.zoomMethod" kind="controls">
+        </clone>
+      </dynamic>
+      <controls>
+        <entry name="aePriorityMode" type="byte" visibility="public"
+            optional="true" enum="true" aconfig_flag="ae_priority" hal_version="3.11">
+          <enum>
+            <value>OFF
+              <notes>
+                Disable AE priority mode. This is the default value.
+              </notes>
+            </value>
+            <value>SENSOR_SENSITIVITY_PRIORITY
+              <notes>
+              The camera device's auto-exposure routine is active and
+              prioritizes the application-selected ISO (android.sensor.sensitivity).
+
+              The application has control over android.sensor.sensitivity while
+              the application's values for android.sensor.exposureTime and
+              android.sensor.frameDuration are ignored.
+              </notes>
+            </value>
+            <value>SENSOR_EXPOSURE_TIME_PRIORITY
+              <notes>
+              The camera device's auto-exposure routine is active and
+              prioritizes the application-selected exposure time
+              (android.sensor.exposureTime).
+
+              The application has control over android.sensor.exposureTime while
+              the application's values for android.sensor.sensitivity and
+              android.sensor.frameDuration are ignored.
+              </notes>
+            </value>
+          </enum>
+          <description>
+            Turn on AE priority mode.
+          </description>
+          <details>
+            This control is only effective if android.control.mode is
+            AUTO and android.control.aeMode is set to one of its
+            ON modes, with the exception of ON_LOW_LIGHT_BOOST_BRIGHTNESS_PRIORITY.
+
+            When a priority mode is enabled, the camera device's
+            auto-exposure routine will maintain the application's
+            selected parameters relevant to the priority mode while overriding
+            the remaining exposure parameters
+            (android.sensor.exposureTime, android.sensor.sensitivity, and
+            android.sensor.frameDuration). For example, if
+            SENSOR_SENSITIVITY_PRIORITY mode is enabled, the camera device will
+            maintain the application-selected android.sensor.sensitivity
+            while adjusting android.sensor.exposureTime
+            and android.sensor.frameDuration. The overridden fields for a
+            given capture will be available in its CaptureResult.
+          </details>
+          <hal_details>
+          The total sensitivity applied for SENSOR_SENSITIVITY_PRIORITY should not be
+          adjusted by any HAL applied android.control.postRawSensitivityBoost.
+          </hal_details>
+        </entry>
+      </controls>
+      <dynamic>
+        <clone entry="android.control.aePriorityMode" kind="controls">
+        </clone>
+      </dynamic>
+      <static>
+        <entry name="aeAvailablePriorityModes" type="byte" visibility="public"
+               type_notes="list of enums" container="array" typedef="enumList"
+               aconfig_flag="ae_priority" hal_version="3.11">
+          <array>
+            <size>n</size>
+          </array>
+          <description>
+            List of auto-exposure priority modes for android.control.aePriorityMode
+            that are supported by this camera device.
+          </description>
+          <range>Any value listed in android.control.aePriorityMode</range>
+          <details>
+            This entry lists the valid modes for
+            android.control.aePriorityMode for this camera device.
+            If no AE priority modes are available for a device, this will only list OFF.
+          </details>
+        </entry>
+      </static>
     </section>
     <section name="demosaic">
       <controls>
@@ -7625,8 +7879,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             For camera devices with the
             {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR}
             capability or devices where {@link CameraCharacteristics#getAvailableCaptureRequestKeys}
-            lists {@link CaptureRequest#SENSOR_PIXEL_MODE android.sensor.pixelMode}
-
+            lists android.sensor.pixelMode,
             android.sensor.info.activeArraySizeMaximumResolution /
             android.sensor.info.preCorrectionActiveArraySizeMaximumResolution must be used as the
             coordinate system for requests where android.sensor.pixelMode is set to
@@ -9546,7 +9799,9 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           The final exposure time used will be available in the output capture result.
 
           This control is only effective if android.control.aeMode or android.control.mode is set to
-          OFF; otherwise the auto-exposure algorithm will override this value.
+          OFF; otherwise the auto-exposure algorithm will override this value. However, in the
+          case that android.control.aePriorityMode is set to SENSOR_EXPOSURE_TIME_PRIORITY, this
+          control will be effective and not controlled by the auto-exposure algorithm.
           </details>
           <tag id="V1" />
         </entry>
@@ -9658,7 +9913,9 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           output capture result.
 
           This control is only effective if android.control.aeMode or android.control.mode is set to
-          OFF; otherwise the auto-exposure algorithm will override this value.
+          OFF; otherwise the auto-exposure algorithm will override this value. However, in the
+          case that android.control.aePriorityMode is set to SENSOR_SENSITIVITY_PRIORITY, this
+          control will be effective and not controlled by the auto-exposure algorithm.
 
           Note that for devices supporting postRawSensitivityBoost, the total sensitivity applied
           to the final processed image is the combination of android.sensor.sensitivity and
@@ -10090,7 +10347,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             This key will only be present for devices which advertise the
             {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR}
             capability or devices where {@link CameraCharacteristics#getAvailableCaptureRequestKeys}
-            lists {@link CaptureRequest#SENSOR_PIXEL_MODE android.sensor.pixelMode}
+            lists android.sensor.pixelMode.
             </details>
             <ndk_details>
             The data representation is `int[4]`, which maps to `(left, top, width, height)`.
@@ -10123,7 +10380,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             This key will only be present for devices which advertise the
             {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR}
             capability or devices where {@link CameraCharacteristics#getAvailableCaptureRequestKeys}
-            lists {@link CaptureRequest#SENSOR_PIXEL_MODE android.sensor.pixelMode}
+            lists android.sensor.pixelMode.
             </details>
             <tag id="RAW" />
           </entry>
@@ -10148,7 +10405,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             This key will only be present for devices which advertise the
             {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR}
             capability or devices where {@link CameraCharacteristics#getAvailableCaptureRequestKeys}
-            lists {@link CaptureRequest#SENSOR_PIXEL_MODE android.sensor.pixelMode}
+            lists android.sensor.pixelMode.
             </details>
             <ndk_details>
             The data representation is `int[4]`, which maps to `(left, top, width, height)`.
@@ -10192,7 +10449,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
 
             * This key will be present if
               {@link CameraCharacteristics#getAvailableCaptureRequestKeys}
-              lists {@link CaptureRequest#SENSOR_PIXEL_MODE android.sensor.pixelMode}, since RAW
+              lists android.sensor.pixelMode, since RAW
               images may not necessarily have a regular bayer pattern when
               {@link CaptureRequest#SENSOR_PIXEL_MODE android.sensor.pixelMode} is set to
               {@link android.hardware.camera2.CameraMetadata#SENSOR_PIXEL_MODE_MAXIMUM_RESOLUTION}.
@@ -12124,6 +12381,15 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           height dimensions are given in android.sensor.info.pixelArraySize.
           This may include hot pixels that lie outside of the active array
           bounds given by android.sensor.info.activeArraySize.
+
+          For camera devices with the
+          {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR}
+          capability or devices where
+          {@link CameraCharacteristics#getAvailableCaptureRequestKeys}
+          lists android.sensor.pixelMode,
+          android.sensor.info.pixelArraySizeMaximumResolution will be used as the
+          pixel array size if the corresponding request sets android.sensor.pixelMode to
+          {@link android.hardware.camera2.CameraMetadata#SENSOR_PIXEL_MODE_MAXIMUM_RESOLUTION}.
           </details>
           <hal_details>
           A hotpixel map contains the coordinates of pixels on the camera
@@ -12985,7 +13251,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               HIDL ICameraDevice version 3.5.
               </notes>
             </value>
-            <value hal_version="3.10" aconfig_flag="session_hal_buf_manager">
+            <value hal_version="3.10">
               SESSION_CONFIGURABLE
               <notes>
               This camera device supports the buffer management APIs provided by AIDL ICameraDevice
@@ -13040,6 +13306,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           <enum>
             <value id="34">UPSIDE_DOWN_CAKE</value>
             <value id="35">VANILLA_ICE_CREAM</value>
+            <value id="36" hal_version="3.11">BAKLAVA</value>
           </enum>
           <description>The version of the session configuration query
           {@link android.hardware.camera2.CameraDevice.CameraDeviceSetup#isSessionConfigurationSupported}
@@ -13104,6 +13371,15 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           All of the above configurations can be set up with a SessionConfiguration. The list of
           OutputConfiguration contains the stream configurations and DYNAMIC_RANGE_PROFILE, and
           the AE_TARGET_FPS_RANGE and VIDEO_STABILIZATION_MODE are set as session parameters.
+
+          When set to BAKLAVA, the additional stream combinations below are verified
+          by the compliance tests:
+
+          Target 1    |     Size      | Target 2        |     Size     |
+          :----------:|:-------------:|:---------------:|:------------:|
+          PRIV        | S1080P        | PRIV            | S1080P       |
+          PRIV        | S1080P        | PRIV            | S1440P       |
+
           </details>
           <hal_details>
           Preview stabilization must be orthogonal to other features. In other words, if preview
@@ -13999,8 +14275,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           For camera devices with the
           {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_ULTRA_HIGH_RESOLUTION_SENSOR}
           capability or devices where {@link CameraCharacteristics#getAvailableCaptureRequestKeys}
-          lists {@link CaptureRequest#SENSOR_PIXEL_MODE android.sensor.pixelMode}
-          , the current active physical device
+          lists android.sensor.pixelMode,
+          the current active physical device
           android.sensor.info.activeArraySizeMaximumResolution /
           android.sensor.info.preCorrectionActiveArraySizeMaximumResolution must be used as the
           coordinate system for requests where android.sensor.pixelMode is set to
@@ -14378,6 +14654,151 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </hal_details>
           <tag id="HEIC" />
         </entry>
+        <entry name="availableHeicUltraHdrStreamConfigurations" type="int32" visibility="ndk_public"
+            enum="true" container="array" typedef="streamConfiguration" hwlevel="limited"
+            aconfig_flag="camera_heif_gainmap" hal_version="3.11">
+          <array>
+            <size>n</size>
+            <size>4</size>
+          </array>
+          <enum>
+            <value>OUTPUT</value>
+            <value>INPUT</value>
+          </enum>
+          <description>The available HEIC (ISO/IEC 23008-12/24) UltraHDR stream
+          configurations that this camera device supports
+          (i.e. format, width, height, output/input stream).
+          </description>
+          <details>
+          The configurations are listed as `(format, width, height, input?)` tuples.
+
+          All the static, control, and dynamic metadata tags related to JPEG apply to HEIC formats.
+          Configuring JPEG and HEIC streams at the same time is not supported.
+          </details>
+          <ndk_details>
+          All the configuration tuples `(format, width, height, input?)` will contain
+          AIMAGE_FORMAT_HEIC format as OUTPUT only.
+          </ndk_details>
+          <hal_details>
+          These are output stream configurations for use with dataSpace DATASPACE_HEIF_ULTRAHDR.
+          </hal_details>
+         <tag id="HEIC" />
+        </entry>
+        <entry name="availableHeicUltraHdrMinFrameDurations" type="int64" visibility="ndk_public"
+               container="array" typedef="streamConfigurationDuration" hwlevel="limited"
+               aconfig_flag="camera_heif_gainmap" hal_version="3.11">
+          <array>
+            <size>4</size>
+            <size>n</size>
+          </array>
+          <description>This lists the minimum frame duration for each
+          format/size combination for HEIC UltraHDR output formats.
+          </description>
+          <units>(format, width, height, ns) x n</units>
+          <details>
+          This should correspond to the frame duration when only that
+          stream is active, with all processing (typically in android.*.mode)
+          set to either OFF or FAST.
+
+          When multiple streams are used in a request, the minimum frame
+          duration will be max(individual stream min durations).
+
+          See android.sensor.frameDuration and
+          android.scaler.availableStallDurations for more details about
+          calculating the max frame rate.
+          </details>
+          <tag id="HEIC" />
+        </entry>
+        <entry name="availableHeicUltraHdrStallDurations" type="int64" visibility="ndk_public"
+               container="array" typedef="streamConfigurationDuration" hwlevel="limited"
+               aconfig_flag="camera_heif_gainmap" hal_version="3.11">
+          <array>
+            <size>4</size>
+            <size>n</size>
+          </array>
+          <description>This lists the maximum stall duration for each
+          output format/size combination for HEIC UltraHDR streams.
+          </description>
+          <units>(format, width, height, ns) x n</units>
+          <details>
+          A stall duration is how much extra time would get added
+          to the normal minimum frame duration for a repeating request
+          that has streams with non-zero stall.
+
+          This functions similarly to
+          android.scaler.availableStallDurations for HEIC UltraHDR
+          streams.
+
+          All HEIC output stream formats may have a nonzero stall
+          duration.
+          </details>
+          <tag id="HEIC" />
+        </entry>
+        <entry name="availableHeicUltraHdrStreamConfigurationsMaximumResolution" type="int32"
+          visibility="ndk_public" enum="true" container="array" typedef="streamConfiguration"
+          aconfig_flag="camera_heif_gainmap" hal_version="3.11">
+          <array>
+            <size>n</size>
+            <size>4</size>
+          </array>
+          <enum>
+            <value>OUTPUT</value>
+            <value>INPUT</value>
+          </enum>
+          <description>The available HEIC (ISO/IEC 23008-12/24) UltraHDR stream
+          configurations that this camera device supports
+          (i.e. format, width, height, output/input stream) for CaptureRequests where
+          android.sensor.pixelMode is set to
+          {@link android.hardware.camera2.CameraMetadata#SENSOR_PIXEL_MODE_MAXIMUM_RESOLUTION}.
+          </description>
+          <details>
+          Refer to android.heic.availableHeicStreamConfigurations for details.
+          </details>
+          <ndk_details>
+          All the configuration tuples `(format, width, height, input?)` will contain
+          AIMAGE_FORMAT_HEIC format as OUTPUT only.
+          </ndk_details>
+          <hal_details>
+          These are output stream configurations for use with dataSpace DATASPACE_HEIF_ULTRAHDR.
+          </hal_details>
+         <tag id="HEIC" />
+        </entry>
+        <entry name="availableHeicUltraHdrMinFrameDurationsMaximumResolution" type="int64"
+          visibility="ndk_public" container="array" typedef="streamConfigurationDuration"
+          aconfig_flag="camera_heif_gainmap" hal_version="3.11">
+          <array>
+            <size>4</size>
+            <size>n</size>
+          </array>
+          <description>This lists the minimum frame duration for each
+          format/size combination for HEIC UltraHDR output formats for CaptureRequests where
+          android.sensor.pixelMode is set to
+          {@link android.hardware.camera2.CameraMetadata#SENSOR_PIXEL_MODE_MAXIMUM_RESOLUTION}.
+          </description>
+          <units>(format, width, height, ns) x n</units>
+          <details>
+          Refer to android.heic.availableHeicMinFrameDurations for details.
+          </details>
+          <tag id="HEIC" />
+        </entry>
+        <entry name="availableHeicUltraHdrStallDurationsMaximumResolution" type="int64"
+          visibility="ndk_public" container="array" typedef="streamConfigurationDuration"
+          aconfig_flag="camera_heif_gainmap" hal_version="3.11">
+          <array>
+            <size>4</size>
+            <size>n</size>
+          </array>
+          <description>This lists the maximum stall duration for each
+          output format/size combination for HEIC UltraHDR streams for CaptureRequests where
+          android.sensor.pixelMode is set to
+          {@link android.hardware.camera2.CameraMetadata#SENSOR_PIXEL_MODE_MAXIMUM_RESOLUTION}.
+          </description>
+          <units>(format, width, height, ns) x n</units>
+          <details>
+          Refer to android.heic.availableHeicStallDurations for details.
+          </details>
+          <tag id="HEIC" />
+        </entry>
       </static>
     </section>
     <section name="automotive">
@@ -14647,6 +15068,52 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
         </entry>
         <clone entry="android.extension.strength" kind="controls">
         </clone>
+        <entry name="nightModeIndicator" type="int32" visibility="public" optional="true"
+               enum="true" aconfig_flag="night_mode_indicator" hal_version="3.11">
+          <enum>
+            <value>UNKNOWN
+              <notes>
+                The camera can't accurately assess the scene's lighting to determine if a Night Mode
+                Camera Extension capture would improve the photo. This can happen when the current
+                camera configuration doesn't support night mode indicator detection, such as when
+                the auto exposure mode is ON_AUTO_FLASH, ON_ALWAYS_FLASH, ON_AUTO_FLASH_REDEYE, or
+                ON_EXTERNAL_FLASH.
+              </notes>
+            </value>
+            <value>OFF
+              <notes>
+                The camera has detected lighting conditions that are sufficiently bright. Night
+                Mode Camera Extensions is available but may not be able to optimize the camera
+                settings to take a higher quality photo.
+              </notes>
+            </value>
+            <value>ON
+              <notes>
+                The camera has detected low-light conditions. It is recommended to use Night Mode
+                Camera Extension to optimize the camera settings to take a high-quality photo in
+                the dark.
+              </notes>
+            </value>
+          </enum>
+          <description>Indicates when to activate Night Mode Camera Extension for high-quality
+          still captures in low-light conditions.</description>
+          <details>
+            Provides awareness to the application when the current scene can benefit from using a
+            Night Mode Camera Extension to take a high-quality photo.
+
+            Support for this capture result can be queried via
+            {@link android.hardware.camera2.CameraCharacteristics#getAvailableCaptureResultKeys}.
+
+            If the device supports this capability then it will also support
+            {@link android.hardware.camera2.CameraExtensionCharacteristics#EXTENSION_NIGHT NIGHT}
+            and will be available in both
+            {@link android.hardware.camera2.CameraCaptureSession sessions} and
+            {@link android.hardware.camera2.CameraExtensionSession sessions}.
+
+            The value will be {@code UNKNOWN} in the following auto exposure modes: ON_AUTO_FLASH,
+            ON_ALWAYS_FLASH, ON_AUTO_FLASH_REDEYE, or ON_EXTERNAL_FLASH.
+          </details>
+        </entry>
       </dynamic>
     </section>
     <section name="jpegr">
@@ -14787,6 +15254,178 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
       </static>
+    </section>
+    <section name="sharedSession">
+      <static>
+        <entry name="colorSpace" type="byte" visibility="fwk_only" optional="true"
+          enum="true" aconfig_flag="camera_multi_client" hal_version="3.11">
+          <enum>
+            <value id="-1">UNSPECIFIED</value>
+            <value id="0">SRGB</value>
+            <value id="7">DISPLAY_P3</value>
+            <value id="16">BT2020_HLG</value>
+          </enum>
+          <description>Color space used for shared session configuration for all the output targets
+            when camera is opened in shared mode. This should be one of the values specified in
+            availableColorSpaceProfilesMap.
+          </description>
+          <hal_details>
+            Do not set this property directly. Android camera framework will generate this tag if the
+            camera device can be opened in shared mode.
+          </hal_details>
+        </entry>
+        <entry name="outputConfigurations" type="int64" visibility="fwk_only"
+          optional="true" container="array" aconfig_flag="camera_multi_client"
+          hal_version="3.11">
+          <array>
+            <size>n</size>
+          </array>
+          <description>List of shared output configurations that this camera device supports when
+            camera is opened in shared mode. Array contains following entries for each supported
+            shared configuration:
+            1) surface type
+            2) width
+            3) height
+            4) format
+            5) mirrorMode
+            6) useReadoutTimestamp
+            7) timestampBase
+            8) dataspace
+            9) usage
+            10) streamUsecase
+            11) physical camera id len
+            12) physical camera id as UTF-8 null terminated string.
+          </description>
+          <hal_details>
+            Do not set this property directly. Android camera framework will generate this tag if the
+            camera device can be opened in shared mode.
+          </hal_details>
+        </entry>
+        <entry name="configuration" type="byte" visibility="fwk_system_public"
+          synthetic="true" optional="true" typedef="sharedSessionConfiguration"
+          aconfig_flag="camera_multi_client">
+          <description>The available stream configurations that this camera device supports for
+            shared capture session when camera is opened in shared mode. Android camera framework
+            will generate this tag if the camera device can be opened in shared mode.
+          </description>
+          <hal_details>
+            Do not set this property directly (it is synthetic and will not be available at the
+            HAL layer);
+          </hal_details>
+        </entry>
+      </static>
+    </section>
+    <section name="desktopEffects">
+      <static>
+        <entry name="capabilities" type="byte" visibility="system" optional="true"
+            enum="true" type_notes="list of enums" container="array" typedef="enumList"
+            aconfig_flag="desktop_effects">
+          <array>
+            <size>n</size>
+          </array>
+          <enum>
+            <value>BACKGROUND_BLUR
+              <notes>
+                Background blur can be activated via android.desktopEffects.backgroundBlurMode
+              </notes>
+            </value>
+            <value>FACE_RETOUCH
+              <notes>
+                Face retouch can be activated via android.desktopEffects.faceRetouchMode
+              </notes>
+            </value>
+            <value>PORTRAIT_RELIGHT
+              <notes>
+                Portrait relight can be activated via android.desktopEffects.portraitRelightMode
+              </notes>
+            </value>
+          </enum>
+          <description>
+            List of special effects supported by the camera device.
+          </description>
+          <details>
+            Available features supported by the camera device for large screen video conferencing.
+          </details>
+        </entry>
+        <entry name="backgroundBlurModes" type="byte" visibility="system" optional="true"
+            type_notes="list of enums (android.desktopEffects.backgroundBlurMode)" container="array"
+            typedef="enumList" aconfig_flag="desktop_effects">
+          <array>
+            <size>n</size>
+          </array>
+          <description>
+            List of background blur modes supported by the camera device. The key will only exist
+            if BACKGROUND_BLUR is listed by android.desktopEffects.capabilities.
+          </description>
+          <range>Any value listed in android.desktopEffects.backgroundBlurMode</range>
+          <details>
+            Lists the valid modes for android.desktopEffects.backgroundBlurMode.
+          </details>
+        </entry>
+      </static>
+      <controls>
+        <entry name="backgroundBlurMode" type="byte" visibility="system"
+            optional="true" enum="true" aconfig_flag="desktop_effects">
+          <enum>
+            <value>OFF
+              <notes>
+                Don't use background blur
+              </notes>
+            </value>
+            <value>LIGHT
+              <notes>
+                Blur the background with light blur strength
+              </notes>
+            </value>
+            <value>FULL
+              <notes>
+                Blur the background with full blur strength
+              </notes>
+            </value>
+          </enum>
+          <description>Control how the background should be blurred. Supported modes are listed in
+            android.desktopEffects.backgroundBlurModes by the camera device.</description>
+        </entry>
+        <entry name="faceRetouchMode" type="byte" visibility="system"
+            optional="true" enum="true" typedef="boolean" aconfig_flag="desktop_effects">
+          <enum>
+            <value>OFF
+              <notes>
+                Turn off face retouch
+              </notes>
+            </value>
+            <value>ON
+              <notes>
+                Turn on face retouch. A strength can be set by android.desktopEffects.faceRetouchStrength
+              </notes>
+            </value>
+          </enum>
+          <description>Whether to enable face retouch effect.</description>
+        </entry>
+        <entry name="faceRetouchStrength" type="byte" visibility="system"
+            optional="true" aconfig_flag="desktop_effects">
+          <description>Control the strength of face retouch applied to the frames. If
+            android.desktopEffects.faceRetouchMode in ON without a faceRetouchStrength,
+            a default will be set by the camera device.</description>
+          <units>1-100; 100 is maximum strength.</units>
+        </entry>
+        <entry name="portraitRelightMode" type="byte" visibility="system"
+            optional="true" enum="true" typedef="boolean" aconfig_flag="desktop_effects">
+          <enum>
+            <value>OFF
+              <notes>
+                Do not use portrait relight
+              </notes>
+            </value>
+            <value>ON
+              <notes>
+                Use portrait relight
+              </notes>
+            </value>
+          </enum>
+          <description>Whether to enable portrait relighting effect.</description>
+        </entry>
+      </controls>
     </section>
   </namespace>
 </metadata>

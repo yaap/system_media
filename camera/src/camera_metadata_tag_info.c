@@ -66,6 +66,8 @@ const char *camera_metadata_section_names[ANDROID_SECTION_COUNT] = {
     [ANDROID_AUTOMOTIVE_LENS]      = "android.automotive.lens",
     [ANDROID_EXTENSION]            = "android.extension",
     [ANDROID_JPEGR]                = "android.jpegr",
+    [ANDROID_SHARED_SESSION]       = "android.sharedSession",
+    [ANDROID_DESKTOP_EFFECTS]      = "android.desktopEffects",
 };
 
 unsigned int camera_metadata_section_bounds[ANDROID_SECTION_COUNT][2] = {
@@ -138,6 +140,10 @@ unsigned int camera_metadata_section_bounds[ANDROID_SECTION_COUNT][2] = {
                                        ANDROID_EXTENSION_END },
     [ANDROID_JPEGR]                = { ANDROID_JPEGR_START,
                                        ANDROID_JPEGR_END },
+    [ANDROID_SHARED_SESSION]       = { ANDROID_SHARED_SESSION_START,
+                                       ANDROID_SHARED_SESSION_END },
+    [ANDROID_DESKTOP_EFFECTS]      = { ANDROID_DESKTOP_EFFECTS_START,
+                                       ANDROID_DESKTOP_EFFECTS_END },
 };
 
 static tag_info_t android_color_correction[ANDROID_COLOR_CORRECTION_END -
@@ -153,6 +159,14 @@ static tag_info_t android_color_correction[ANDROID_COLOR_CORRECTION_END -
     { "aberrationMode",                TYPE_BYTE   },
     [ ANDROID_COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES - ANDROID_COLOR_CORRECTION_START ] =
     { "availableAberrationModes",      TYPE_BYTE   },
+    [ ANDROID_COLOR_CORRECTION_COLOR_TEMPERATURE - ANDROID_COLOR_CORRECTION_START ] =
+    { "colorTemperature",              TYPE_INT32  },
+    [ ANDROID_COLOR_CORRECTION_COLOR_TINT - ANDROID_COLOR_CORRECTION_START ] =
+    { "colorTint",                     TYPE_INT32  },
+    [ ANDROID_COLOR_CORRECTION_COLOR_TEMPERATURE_RANGE - ANDROID_COLOR_CORRECTION_START ] =
+    { "colorTemperatureRange",         TYPE_INT32  },
+    [ ANDROID_COLOR_CORRECTION_AVAILABLE_MODES - ANDROID_COLOR_CORRECTION_START ] =
+    { "availableModes",                TYPE_BYTE   },
 };
 
 static tag_info_t android_control[ANDROID_CONTROL_END -
@@ -284,6 +298,12 @@ static tag_info_t android_control[ANDROID_CONTROL_END -
                                         TYPE_FLOAT  },
     [ ANDROID_CONTROL_LOW_LIGHT_BOOST_STATE - ANDROID_CONTROL_START ] =
     { "lowLightBoostState",            TYPE_BYTE   },
+    [ ANDROID_CONTROL_ZOOM_METHOD - ANDROID_CONTROL_START ] =
+    { "zoomMethod",                    TYPE_BYTE   },
+    [ ANDROID_CONTROL_AE_PRIORITY_MODE - ANDROID_CONTROL_START ] =
+    { "aePriorityMode",                TYPE_BYTE   },
+    [ ANDROID_CONTROL_AE_AVAILABLE_PRIORITY_MODES - ANDROID_CONTROL_START ] =
+    { "aeAvailablePriorityModes",      TYPE_BYTE   },
 };
 
 static tag_info_t android_demosaic[ANDROID_DEMOSAIC_END -
@@ -933,6 +953,24 @@ static tag_info_t android_heic[ANDROID_HEIC_END -
     [ ANDROID_HEIC_AVAILABLE_HEIC_STALL_DURATIONS_MAXIMUM_RESOLUTION - ANDROID_HEIC_START ] =
     { "availableHeicStallDurationsMaximumResolution",
                                         TYPE_INT64  },
+    [ ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS - ANDROID_HEIC_START ] =
+    { "availableHeicUltraHdrStreamConfigurations",
+                                        TYPE_INT32  },
+    [ ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_MIN_FRAME_DURATIONS - ANDROID_HEIC_START ] =
+    { "availableHeicUltraHdrMinFrameDurations",
+                                        TYPE_INT64  },
+    [ ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STALL_DURATIONS - ANDROID_HEIC_START ] =
+    { "availableHeicUltraHdrStallDurations",
+                                        TYPE_INT64  },
+    [ ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION - ANDROID_HEIC_START ] =
+    { "availableHeicUltraHdrStreamConfigurationsMaximumResolution",
+                                        TYPE_INT32  },
+    [ ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_MIN_FRAME_DURATIONS_MAXIMUM_RESOLUTION - ANDROID_HEIC_START ] =
+    { "availableHeicUltraHdrMinFrameDurationsMaximumResolution",
+                                        TYPE_INT64  },
+    [ ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STALL_DURATIONS_MAXIMUM_RESOLUTION - ANDROID_HEIC_START ] =
+    { "availableHeicUltraHdrStallDurationsMaximumResolution",
+                                        TYPE_INT64  },
 };
 
 static tag_info_t android_heic_info[ANDROID_HEIC_INFO_END -
@@ -961,6 +999,8 @@ static tag_info_t android_extension[ANDROID_EXTENSION_END -
     { "strength",                      TYPE_INT32  },
     [ ANDROID_EXTENSION_CURRENT_TYPE - ANDROID_EXTENSION_START ] =
     { "currentType",                   TYPE_INT32  },
+    [ ANDROID_EXTENSION_NIGHT_MODE_INDICATOR - ANDROID_EXTENSION_START ] =
+    { "nightModeIndicator",            TYPE_INT32  },
 };
 
 static tag_info_t android_jpegr[ANDROID_JPEGR_END -
@@ -982,6 +1022,30 @@ static tag_info_t android_jpegr[ANDROID_JPEGR_END -
     [ ANDROID_JPEGR_AVAILABLE_JPEG_R_STALL_DURATIONS_MAXIMUM_RESOLUTION - ANDROID_JPEGR_START ] =
     { "availableJpegRStallDurationsMaximumResolution",
                                         TYPE_INT64  },
+};
+
+static tag_info_t android_shared_session[ANDROID_SHARED_SESSION_END -
+        ANDROID_SHARED_SESSION_START] = {
+    [ ANDROID_SHARED_SESSION_COLOR_SPACE - ANDROID_SHARED_SESSION_START ] =
+    { "colorSpace",                    TYPE_BYTE   },
+    [ ANDROID_SHARED_SESSION_OUTPUT_CONFIGURATIONS - ANDROID_SHARED_SESSION_START ] =
+    { "outputConfigurations",          TYPE_INT64  },
+};
+
+static tag_info_t android_desktop_effects[ANDROID_DESKTOP_EFFECTS_END -
+        ANDROID_DESKTOP_EFFECTS_START] = {
+    [ ANDROID_DESKTOP_EFFECTS_CAPABILITIES - ANDROID_DESKTOP_EFFECTS_START ] =
+    { "capabilities",                  TYPE_BYTE   },
+    [ ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODES - ANDROID_DESKTOP_EFFECTS_START ] =
+    { "backgroundBlurModes",           TYPE_BYTE   },
+    [ ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODE - ANDROID_DESKTOP_EFFECTS_START ] =
+    { "backgroundBlurMode",            TYPE_BYTE   },
+    [ ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_MODE - ANDROID_DESKTOP_EFFECTS_START ] =
+    { "faceRetouchMode",               TYPE_BYTE   },
+    [ ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_STRENGTH - ANDROID_DESKTOP_EFFECTS_START ] =
+    { "faceRetouchStrength",           TYPE_BYTE   },
+    [ ANDROID_DESKTOP_EFFECTS_PORTRAIT_RELIGHT_MODE - ANDROID_DESKTOP_EFFECTS_START ] =
+    { "portraitRelightMode",           TYPE_BYTE   },
 };
 
 
@@ -1020,6 +1084,8 @@ tag_info_t *tag_info[ANDROID_SECTION_COUNT] = {
     android_automotive_lens,
     android_extension,
     android_jpegr,
+    android_shared_session,
+    android_desktop_effects,
 };
 
 static int32_t tag_permission_needed[18] = {
@@ -1065,6 +1131,10 @@ int camera_metadata_enum_snprint(uint32_t tag,
                     msg = "HIGH_QUALITY";
                     ret = 0;
                     break;
+                case ANDROID_COLOR_CORRECTION_MODE_CCT:
+                    msg = "CCT";
+                    ret = 0;
+                    break;
                 default:
                     msg = "error: enum value out of range";
             }
@@ -1096,6 +1166,18 @@ int camera_metadata_enum_snprint(uint32_t tag,
             break;
         }
         case ANDROID_COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES: {
+            break;
+        }
+        case ANDROID_COLOR_CORRECTION_COLOR_TEMPERATURE: {
+            break;
+        }
+        case ANDROID_COLOR_CORRECTION_COLOR_TINT: {
+            break;
+        }
+        case ANDROID_COLOR_CORRECTION_COLOR_TEMPERATURE_RANGE: {
+            break;
+        }
+        case ANDROID_COLOR_CORRECTION_AVAILABLE_MODES: {
             break;
         }
 
@@ -1917,6 +1999,43 @@ int camera_metadata_enum_snprint(uint32_t tag,
                 default:
                     msg = "error: enum value out of range";
             }
+            break;
+        }
+        case ANDROID_CONTROL_ZOOM_METHOD: {
+            switch (value) {
+                case ANDROID_CONTROL_ZOOM_METHOD_AUTO:
+                    msg = "AUTO";
+                    ret = 0;
+                    break;
+                case ANDROID_CONTROL_ZOOM_METHOD_ZOOM_RATIO:
+                    msg = "ZOOM_RATIO";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
+            break;
+        }
+        case ANDROID_CONTROL_AE_PRIORITY_MODE: {
+            switch (value) {
+                case ANDROID_CONTROL_AE_PRIORITY_MODE_OFF:
+                    msg = "OFF";
+                    ret = 0;
+                    break;
+                case ANDROID_CONTROL_AE_PRIORITY_MODE_SENSOR_SENSITIVITY_PRIORITY:
+                    msg = "SENSOR_SENSITIVITY_PRIORITY";
+                    ret = 0;
+                    break;
+                case ANDROID_CONTROL_AE_PRIORITY_MODE_SENSOR_EXPOSURE_TIME_PRIORITY:
+                    msg = "SENSOR_EXPOSURE_TIME_PRIORITY";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
+            break;
+        }
+        case ANDROID_CONTROL_AE_AVAILABLE_PRIORITY_MODES: {
             break;
         }
 
@@ -3613,6 +3732,10 @@ int camera_metadata_enum_snprint(uint32_t tag,
                     msg = "VANILLA_ICE_CREAM";
                     ret = 0;
                     break;
+                case ANDROID_INFO_SESSION_CONFIGURATION_QUERY_VERSION_BAKLAVA:
+                    msg = "BAKLAVA";
+                    ret = 0;
+                    break;
                 default:
                     msg = "error: enum value out of range";
             }
@@ -3872,6 +3995,48 @@ int camera_metadata_enum_snprint(uint32_t tag,
         case ANDROID_HEIC_AVAILABLE_HEIC_STALL_DURATIONS_MAXIMUM_RESOLUTION: {
             break;
         }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS: {
+            switch (value) {
+                case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_OUTPUT:
+                    msg = "OUTPUT";
+                    ret = 0;
+                    break;
+                case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_INPUT:
+                    msg = "INPUT";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
+            break;
+        }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_MIN_FRAME_DURATIONS: {
+            break;
+        }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STALL_DURATIONS: {
+            break;
+        }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION: {
+            switch (value) {
+                case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION_OUTPUT:
+                    msg = "OUTPUT";
+                    ret = 0;
+                    break;
+                case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION_INPUT:
+                    msg = "INPUT";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
+            break;
+        }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_MIN_FRAME_DURATIONS_MAXIMUM_RESOLUTION: {
+            break;
+        }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STALL_DURATIONS_MAXIMUM_RESOLUTION: {
+            break;
+        }
 
         case ANDROID_HEIC_INFO_SUPPORTED: {
             switch (value) {
@@ -4018,6 +4183,25 @@ int camera_metadata_enum_snprint(uint32_t tag,
         case ANDROID_EXTENSION_CURRENT_TYPE: {
             break;
         }
+        case ANDROID_EXTENSION_NIGHT_MODE_INDICATOR: {
+            switch (value) {
+                case ANDROID_EXTENSION_NIGHT_MODE_INDICATOR_UNKNOWN:
+                    msg = "UNKNOWN";
+                    ret = 0;
+                    break;
+                case ANDROID_EXTENSION_NIGHT_MODE_INDICATOR_OFF:
+                    msg = "OFF";
+                    ret = 0;
+                    break;
+                case ANDROID_EXTENSION_NIGHT_MODE_INDICATOR_ON:
+                    msg = "ON";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
+            break;
+        }
 
         case ANDROID_JPEGR_AVAILABLE_JPEG_R_STREAM_CONFIGURATIONS: {
             switch (value) {
@@ -4062,6 +4246,108 @@ int camera_metadata_enum_snprint(uint32_t tag,
             break;
         }
 
+        case ANDROID_SHARED_SESSION_COLOR_SPACE: {
+            switch (value) {
+                case ANDROID_SHARED_SESSION_COLOR_SPACE_UNSPECIFIED:
+                    msg = "UNSPECIFIED";
+                    ret = 0;
+                    break;
+                case ANDROID_SHARED_SESSION_COLOR_SPACE_SRGB:
+                    msg = "SRGB";
+                    ret = 0;
+                    break;
+                case ANDROID_SHARED_SESSION_COLOR_SPACE_DISPLAY_P3:
+                    msg = "DISPLAY_P3";
+                    ret = 0;
+                    break;
+                case ANDROID_SHARED_SESSION_COLOR_SPACE_BT2020_HLG:
+                    msg = "BT2020_HLG";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
+            break;
+        }
+        case ANDROID_SHARED_SESSION_OUTPUT_CONFIGURATIONS: {
+            break;
+        }
+
+        case ANDROID_DESKTOP_EFFECTS_CAPABILITIES: {
+            switch (value) {
+                case ANDROID_DESKTOP_EFFECTS_CAPABILITIES_BACKGROUND_BLUR:
+                    msg = "BACKGROUND_BLUR";
+                    ret = 0;
+                    break;
+                case ANDROID_DESKTOP_EFFECTS_CAPABILITIES_FACE_RETOUCH:
+                    msg = "FACE_RETOUCH";
+                    ret = 0;
+                    break;
+                case ANDROID_DESKTOP_EFFECTS_CAPABILITIES_PORTRAIT_RELIGHT:
+                    msg = "PORTRAIT_RELIGHT";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
+            break;
+        }
+        case ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODES: {
+            break;
+        }
+        case ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODE: {
+            switch (value) {
+                case ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODE_OFF:
+                    msg = "OFF";
+                    ret = 0;
+                    break;
+                case ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODE_LIGHT:
+                    msg = "LIGHT";
+                    ret = 0;
+                    break;
+                case ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODE_FULL:
+                    msg = "FULL";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
+            break;
+        }
+        case ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_MODE: {
+            switch (value) {
+                case ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_MODE_OFF:
+                    msg = "OFF";
+                    ret = 0;
+                    break;
+                case ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_MODE_ON:
+                    msg = "ON";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
+            break;
+        }
+        case ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_STRENGTH: {
+            break;
+        }
+        case ANDROID_DESKTOP_EFFECTS_PORTRAIT_RELIGHT_MODE: {
+            switch (value) {
+                case ANDROID_DESKTOP_EFFECTS_PORTRAIT_RELIGHT_MODE_OFF:
+                    msg = "OFF";
+                    ret = 0;
+                    break;
+                case ANDROID_DESKTOP_EFFECTS_PORTRAIT_RELIGHT_MODE_ON:
+                    msg = "ON";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
+            break;
+        }
+
     }
 
     strncpy(dst, msg, size - 1);
@@ -4101,6 +4387,12 @@ int camera_metadata_enum_value(uint32_t tag,
                     ret = 0;
                     break;
                 }
+                enumName = "CCT";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_COLOR_CORRECTION_MODE_CCT;
+                    ret = 0;
+                    break;
+                }
             break;
         }
         case ANDROID_COLOR_CORRECTION_TRANSFORM: {
@@ -4131,6 +4423,18 @@ int camera_metadata_enum_value(uint32_t tag,
             break;
         }
         case ANDROID_COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES: {
+            break;
+        }
+        case ANDROID_COLOR_CORRECTION_COLOR_TEMPERATURE: {
+            break;
+        }
+        case ANDROID_COLOR_CORRECTION_COLOR_TINT: {
+            break;
+        }
+        case ANDROID_COLOR_CORRECTION_COLOR_TEMPERATURE_RANGE: {
+            break;
+        }
+        case ANDROID_COLOR_CORRECTION_AVAILABLE_MODES: {
             break;
         }
 
@@ -5098,6 +5402,45 @@ int camera_metadata_enum_value(uint32_t tag,
                     ret = 0;
                     break;
                 }
+            break;
+        }
+        case ANDROID_CONTROL_ZOOM_METHOD: {
+                enumName = "AUTO";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_CONTROL_ZOOM_METHOD_AUTO;
+                    ret = 0;
+                    break;
+                }
+                enumName = "ZOOM_RATIO";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_CONTROL_ZOOM_METHOD_ZOOM_RATIO;
+                    ret = 0;
+                    break;
+                }
+            break;
+        }
+        case ANDROID_CONTROL_AE_PRIORITY_MODE: {
+                enumName = "OFF";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_CONTROL_AE_PRIORITY_MODE_OFF;
+                    ret = 0;
+                    break;
+                }
+                enumName = "SENSOR_SENSITIVITY_PRIORITY";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_CONTROL_AE_PRIORITY_MODE_SENSOR_SENSITIVITY_PRIORITY;
+                    ret = 0;
+                    break;
+                }
+                enumName = "SENSOR_EXPOSURE_TIME_PRIORITY";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_CONTROL_AE_PRIORITY_MODE_SENSOR_EXPOSURE_TIME_PRIORITY;
+                    ret = 0;
+                    break;
+                }
+            break;
+        }
+        case ANDROID_CONTROL_AE_AVAILABLE_PRIORITY_MODES: {
             break;
         }
 
@@ -7011,6 +7354,12 @@ int camera_metadata_enum_value(uint32_t tag,
                     ret = 0;
                     break;
                 }
+                enumName = "BAKLAVA";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_INFO_SESSION_CONFIGURATION_QUERY_VERSION_BAKLAVA;
+                    ret = 0;
+                    break;
+                }
             break;
         }
         case ANDROID_INFO_DEVICE_ID: {
@@ -7269,6 +7618,48 @@ int camera_metadata_enum_value(uint32_t tag,
         case ANDROID_HEIC_AVAILABLE_HEIC_STALL_DURATIONS_MAXIMUM_RESOLUTION: {
             break;
         }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS: {
+                enumName = "OUTPUT";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_OUTPUT;
+                    ret = 0;
+                    break;
+                }
+                enumName = "INPUT";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_INPUT;
+                    ret = 0;
+                    break;
+                }
+            break;
+        }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_MIN_FRAME_DURATIONS: {
+            break;
+        }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STALL_DURATIONS: {
+            break;
+        }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION: {
+                enumName = "OUTPUT";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION_OUTPUT;
+                    ret = 0;
+                    break;
+                }
+                enumName = "INPUT";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STREAM_CONFIGURATIONS_MAXIMUM_RESOLUTION_INPUT;
+                    ret = 0;
+                    break;
+                }
+            break;
+        }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_MIN_FRAME_DURATIONS_MAXIMUM_RESOLUTION: {
+            break;
+        }
+        case ANDROID_HEIC_AVAILABLE_HEIC_ULTRA_HDR_STALL_DURATIONS_MAXIMUM_RESOLUTION: {
+            break;
+        }
 
         case ANDROID_HEIC_INFO_SUPPORTED: {
                 enumName = "FALSE";
@@ -7459,6 +7850,27 @@ int camera_metadata_enum_value(uint32_t tag,
         case ANDROID_EXTENSION_CURRENT_TYPE: {
             break;
         }
+        case ANDROID_EXTENSION_NIGHT_MODE_INDICATOR: {
+                enumName = "UNKNOWN";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_EXTENSION_NIGHT_MODE_INDICATOR_UNKNOWN;
+                    ret = 0;
+                    break;
+                }
+                enumName = "OFF";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_EXTENSION_NIGHT_MODE_INDICATOR_OFF;
+                    ret = 0;
+                    break;
+                }
+                enumName = "ON";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_EXTENSION_NIGHT_MODE_INDICATOR_ON;
+                    ret = 0;
+                    break;
+                }
+            break;
+        }
 
         case ANDROID_JPEGR_AVAILABLE_JPEG_R_STREAM_CONFIGURATIONS: {
                 enumName = "OUTPUT";
@@ -7500,6 +7912,116 @@ int camera_metadata_enum_value(uint32_t tag,
             break;
         }
         case ANDROID_JPEGR_AVAILABLE_JPEG_R_STALL_DURATIONS_MAXIMUM_RESOLUTION: {
+            break;
+        }
+
+        case ANDROID_SHARED_SESSION_COLOR_SPACE: {
+                enumName = "UNSPECIFIED";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_SHARED_SESSION_COLOR_SPACE_UNSPECIFIED;
+                    ret = 0;
+                    break;
+                }
+                enumName = "SRGB";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_SHARED_SESSION_COLOR_SPACE_SRGB;
+                    ret = 0;
+                    break;
+                }
+                enumName = "DISPLAY_P3";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_SHARED_SESSION_COLOR_SPACE_DISPLAY_P3;
+                    ret = 0;
+                    break;
+                }
+                enumName = "BT2020_HLG";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_SHARED_SESSION_COLOR_SPACE_BT2020_HLG;
+                    ret = 0;
+                    break;
+                }
+            break;
+        }
+        case ANDROID_SHARED_SESSION_OUTPUT_CONFIGURATIONS: {
+            break;
+        }
+
+        case ANDROID_DESKTOP_EFFECTS_CAPABILITIES: {
+                enumName = "BACKGROUND_BLUR";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_DESKTOP_EFFECTS_CAPABILITIES_BACKGROUND_BLUR;
+                    ret = 0;
+                    break;
+                }
+                enumName = "FACE_RETOUCH";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_DESKTOP_EFFECTS_CAPABILITIES_FACE_RETOUCH;
+                    ret = 0;
+                    break;
+                }
+                enumName = "PORTRAIT_RELIGHT";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_DESKTOP_EFFECTS_CAPABILITIES_PORTRAIT_RELIGHT;
+                    ret = 0;
+                    break;
+                }
+            break;
+        }
+        case ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODES: {
+            break;
+        }
+        case ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODE: {
+                enumName = "OFF";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODE_OFF;
+                    ret = 0;
+                    break;
+                }
+                enumName = "LIGHT";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODE_LIGHT;
+                    ret = 0;
+                    break;
+                }
+                enumName = "FULL";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODE_FULL;
+                    ret = 0;
+                    break;
+                }
+            break;
+        }
+        case ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_MODE: {
+                enumName = "OFF";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_MODE_OFF;
+                    ret = 0;
+                    break;
+                }
+                enumName = "ON";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_MODE_ON;
+                    ret = 0;
+                    break;
+                }
+            break;
+        }
+        case ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_STRENGTH: {
+            break;
+        }
+        case ANDROID_DESKTOP_EFFECTS_PORTRAIT_RELIGHT_MODE: {
+                enumName = "OFF";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_DESKTOP_EFFECTS_PORTRAIT_RELIGHT_MODE_OFF;
+                    ret = 0;
+                    break;
+                }
+                enumName = "ON";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_DESKTOP_EFFECTS_PORTRAIT_RELIGHT_MODE_ON;
+                    ret = 0;
+                    break;
+                }
             break;
         }
 

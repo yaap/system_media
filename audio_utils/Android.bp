@@ -17,6 +17,7 @@ cc_defaults {
     cflags: [
         "-Wall",
         "-Werror",
+        "-Wthread-safety",
     ],
 }
 
@@ -48,6 +49,7 @@ cc_library {
         "MelProcessor.cpp",
         "Metadata.cpp",
         "PowerLog.cpp",
+        "StringUtils.cpp",
         "channels.cpp",
         "fifo.cpp",
         "fifo_index.cpp",
