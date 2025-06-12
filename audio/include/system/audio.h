@@ -127,6 +127,8 @@ typedef struct {
 } __attribute__((packed)) audio_attributes_t; // sent through Binder;
 /** The separator for tags. */
 static const char AUDIO_ATTRIBUTES_TAGS_SEPARATOR = ';';
+/** Tag value for GMAP bidirectional mode indication */
+static const char* AUDIO_ATTRIBUTES_TAG_GMAP_BIDIRECTIONAL = "bidirectional";
 
 // Keep sync with android/media/AudioProductStrategy.java
 static const audio_flags_mask_t AUDIO_FLAGS_AFFECT_STRATEGY_SELECTION =
@@ -367,7 +369,7 @@ static inline CONSTEXPR bool audio_channel_mask_contains_stereo(audio_channel_ma
  * AUDIO_CHANNEL_OUT_7POINT1POINT4
  * AUDIO_CHANNEL_OUT_9POINT1POINT4
  * AUDIO_CHANNEL_OUT_9POINT1POINT6
- * AUDIO_CHANNEL_OUT_13POINT_360RA
+ * AUDIO_CHANNEL_OUT_13POINT0
  * AUDIO_CHANNEL_OUT_22POINT2
  */
 static inline CONSTEXPR bool audio_is_channel_mask_spatialized(audio_channel_mask_t channelMask) {
@@ -2528,6 +2530,9 @@ __END_DECLS
 #define AUDIO_OFFLOAD_CODEC_DOWN_SAMPLING  "music_offload_down_sampling"
 #define AUDIO_OFFLOAD_CODEC_DELAY_SAMPLES  "delay_samples"
 #define AUDIO_OFFLOAD_CODEC_PADDING_SAMPLES  "padding_samples"
+
+#define AUDIO_PARAMETER_CLIP_TRANSITION_SUPPORT "aosp.clipTransitionSupport"
+#define AUDIO_PARAMETER_CREATE_MMAP_BUFFER "aosp.createMmapBuffer"
 
 /**
  * The maximum supported audio sample rate.
