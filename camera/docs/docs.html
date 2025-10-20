@@ -16770,7 +16770,7 @@ to the requested value.<wbr/> While the filter density is still changing,<wbr/>
                 
           <tr class="entry" id="controls_android.lens.focalLength">
             <td class="entry_name
-             " rowspan="5">
+             " rowspan="3">
               android.<wbr/>lens.<wbr/>focal<wbr/>Length
             </td>
             <td class="entry_type">
@@ -16787,7 +16787,7 @@ to the requested value.<wbr/> While the filter density is still changing,<wbr/>
             </td> <!-- entry_type -->
 
             <td class="entry_description">
-              <p>The desired lens focal length; used for optical zoom.<wbr/></p>
+              <p>The desired lens focal length</p>
             </td>
 
             <td class="entry_units">
@@ -16814,36 +16814,29 @@ to the requested value.<wbr/> While the filter density is still changing,<wbr/>
           </tr>
           <tr class="entry_cont">
             <td class="entry_details" colspan="6">
-              <p>This setting controls the physical focal length of the camera
-device's lens.<wbr/> Changing the focal length changes the field of
-view of the camera device,<wbr/> and is usually used for optical zoom.<wbr/></p>
-<p>Like <a href="#controls_android.lens.focusDistance">android.<wbr/>lens.<wbr/>focus<wbr/>Distance</a> and <a href="#controls_android.lens.aperture">android.<wbr/>lens.<wbr/>aperture</a>,<wbr/> this
-setting won't be applied instantaneously,<wbr/> and it may take several
-frames before the lens can change to the requested focal length.<wbr/>
-While the focal length is still changing,<wbr/> <a href="#dynamic_android.lens.state">android.<wbr/>lens.<wbr/>state</a> will
-be set to MOVING.<wbr/></p>
-<p>Optical zoom via this control will not be supported on most devices.<wbr/> Starting from API
-level 30,<wbr/> the camera device may combine optical and digital zoom through the
-<a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a> control.<wbr/></p>
+              <p>Focal length is the distance from the optical center of the lens to the
+focal point for a thin lens approximation of the camera optical system.<wbr/>
+The definition assumes the lens is focused at infinity.<wbr/></p>
+<p>The horizontal field-of-view of the processed full frame camera outputs
+can be derived as:</p>
+<pre><code>fov = 2 * atan2(sw /<wbr/> 2,<wbr/> fl)
+</code></pre>
+<p>where:</p>
+<ul>
+<li><code>sw</code> is the <a href="#static_android.sensor.info.physicalSize">android.<wbr/>sensor.<wbr/>info.<wbr/>physical<wbr/>Size</a> width,<wbr/></li>
+<li><code>fl</code> is <a href="#controls_android.lens.focalLength">android.<wbr/>lens.<wbr/>focal<wbr/>Length</a>.<wbr/></li>
+</ul>
+<p>Using this control to switch between lenses is not supported on most
+devices.<wbr/> Starting from API level 30,<wbr/> the application is strongly recommended
+to use <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a> for combined optical and digital zoom.<wbr/> To
+exclusively use a particular focal length lens in a logical multi-camera,<wbr/>
+applications can iterate over the physical cameras exposed by the logical
+multi-camera device via
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html#getPhysicalCameraIds">CameraCharacteristics#getPhysicalCameraIds</a>
+and select the one with the desired focal length.<wbr/></p>
             </td>
           </tr>
 
-          <tr class="entries_header">
-            <th class="th_details" colspan="6">HAL Implementation Details</th>
-          </tr>
-          <tr class="entry_cont">
-            <td class="entry_details" colspan="6">
-              <p>For a logical camera device supporting both optical and digital zoom,<wbr/> if focalLength and
-cropRegion change in the same request,<wbr/> the camera device must make sure that the new
-focalLength and cropRegion take effect in the same frame.<wbr/> This is to make sure that there
-is no visible field-of-view jump during zoom.<wbr/> For example,<wbr/> if cropRegion is applied
-immediately,<wbr/> but focalLength takes more than 1 frame to take effect,<wbr/> the camera device
-will delay the cropRegion so that it's synchronized with focalLength.<wbr/></p>
-<p>Starting from API level 30,<wbr/> it's strongly recommended for HAL to implement the
-combination of optical and digital zoom using the new <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a> API,<wbr/> in
-lieu of using <a href="#controls_android.lens.focalLength">android.<wbr/>lens.<wbr/>focal<wbr/>Length</a> and <a href="#controls_android.scaler.cropRegion">android.<wbr/>scaler.<wbr/>crop<wbr/>Region</a>.<wbr/></p>
-            </td>
-          </tr>
 
           <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
            <!-- end of entry -->
@@ -17210,10 +17203,9 @@ device.<wbr/></p>
           </tr>
           <tr class="entry_cont">
             <td class="entry_details" colspan="6">
-              <p>If optical zoom is not supported,<wbr/> this list will only contain
-a single value corresponding to the fixed focal length of the
-device.<wbr/> Otherwise,<wbr/> this list will include every focal length supported
-by the camera device,<wbr/> in ascending order.<wbr/></p>
+              <p>In most cases this list will only contain a single value corresponding
+to the fixed focal length of the device.<wbr/> Otherwise,<wbr/> this list will include
+every focal length supported by the camera device,<wbr/> in ascending order.<wbr/></p>
             </td>
           </tr>
 
@@ -18470,7 +18462,7 @@ to the requested value.<wbr/> While the filter density is still changing,<wbr/>
                 
           <tr class="entry" id="dynamic_android.lens.focalLength">
             <td class="entry_name
-             " rowspan="5">
+             " rowspan="3">
               android.<wbr/>lens.<wbr/>focal<wbr/>Length
             </td>
             <td class="entry_type">
@@ -18487,7 +18479,7 @@ to the requested value.<wbr/> While the filter density is still changing,<wbr/>
             </td> <!-- entry_type -->
 
             <td class="entry_description">
-              <p>The desired lens focal length; used for optical zoom.<wbr/></p>
+              <p>The desired lens focal length</p>
             </td>
 
             <td class="entry_units">
@@ -18514,36 +18506,29 @@ to the requested value.<wbr/> While the filter density is still changing,<wbr/>
           </tr>
           <tr class="entry_cont">
             <td class="entry_details" colspan="6">
-              <p>This setting controls the physical focal length of the camera
-device's lens.<wbr/> Changing the focal length changes the field of
-view of the camera device,<wbr/> and is usually used for optical zoom.<wbr/></p>
-<p>Like <a href="#controls_android.lens.focusDistance">android.<wbr/>lens.<wbr/>focus<wbr/>Distance</a> and <a href="#controls_android.lens.aperture">android.<wbr/>lens.<wbr/>aperture</a>,<wbr/> this
-setting won't be applied instantaneously,<wbr/> and it may take several
-frames before the lens can change to the requested focal length.<wbr/>
-While the focal length is still changing,<wbr/> <a href="#dynamic_android.lens.state">android.<wbr/>lens.<wbr/>state</a> will
-be set to MOVING.<wbr/></p>
-<p>Optical zoom via this control will not be supported on most devices.<wbr/> Starting from API
-level 30,<wbr/> the camera device may combine optical and digital zoom through the
-<a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a> control.<wbr/></p>
+              <p>Focal length is the distance from the optical center of the lens to the
+focal point for a thin lens approximation of the camera optical system.<wbr/>
+The definition assumes the lens is focused at infinity.<wbr/></p>
+<p>The horizontal field-of-view of the processed full frame camera outputs
+can be derived as:</p>
+<pre><code>fov = 2 * atan2(sw /<wbr/> 2,<wbr/> fl)
+</code></pre>
+<p>where:</p>
+<ul>
+<li><code>sw</code> is the <a href="#static_android.sensor.info.physicalSize">android.<wbr/>sensor.<wbr/>info.<wbr/>physical<wbr/>Size</a> width,<wbr/></li>
+<li><code>fl</code> is <a href="#controls_android.lens.focalLength">android.<wbr/>lens.<wbr/>focal<wbr/>Length</a>.<wbr/></li>
+</ul>
+<p>Using this control to switch between lenses is not supported on most
+devices.<wbr/> Starting from API level 30,<wbr/> the application is strongly recommended
+to use <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a> for combined optical and digital zoom.<wbr/> To
+exclusively use a particular focal length lens in a logical multi-camera,<wbr/>
+applications can iterate over the physical cameras exposed by the logical
+multi-camera device via
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html#getPhysicalCameraIds">CameraCharacteristics#getPhysicalCameraIds</a>
+and select the one with the desired focal length.<wbr/></p>
             </td>
           </tr>
 
-          <tr class="entries_header">
-            <th class="th_details" colspan="6">HAL Implementation Details</th>
-          </tr>
-          <tr class="entry_cont">
-            <td class="entry_details" colspan="6">
-              <p>For a logical camera device supporting both optical and digital zoom,<wbr/> if focalLength and
-cropRegion change in the same request,<wbr/> the camera device must make sure that the new
-focalLength and cropRegion take effect in the same frame.<wbr/> This is to make sure that there
-is no visible field-of-view jump during zoom.<wbr/> For example,<wbr/> if cropRegion is applied
-immediately,<wbr/> but focalLength takes more than 1 frame to take effect,<wbr/> the camera device
-will delay the cropRegion so that it's synchronized with focalLength.<wbr/></p>
-<p>Starting from API level 30,<wbr/> it's strongly recommended for HAL to implement the
-combination of optical and digital zoom using the new <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a> API,<wbr/> in
-lieu of using <a href="#controls_android.lens.focalLength">android.<wbr/>lens.<wbr/>focal<wbr/>Length</a> and <a href="#controls_android.scaler.cropRegion">android.<wbr/>scaler.<wbr/>crop<wbr/>Region</a>.<wbr/></p>
-            </td>
-          </tr>
 
           <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
            <!-- end of entry -->
@@ -18824,8 +18809,7 @@ If all these lens parameters are not changeable for a camera device,<wbr/> as li
 <ul>
 <li>Fixed focus (<code><a href="#static_android.lens.info.minimumFocusDistance">android.<wbr/>lens.<wbr/>info.<wbr/>minimum<wbr/>Focus<wbr/>Distance</a> == 0</code>),<wbr/> which means
 <a href="#controls_android.lens.focusDistance">android.<wbr/>lens.<wbr/>focus<wbr/>Distance</a> parameter will always be 0.<wbr/></li>
-<li>Fixed focal length (<a href="#static_android.lens.info.availableFocalLengths">android.<wbr/>lens.<wbr/>info.<wbr/>available<wbr/>Focal<wbr/>Lengths</a> contains single value),<wbr/>
-which means the optical zoom is not supported.<wbr/></li>
+<li>Fixed focal length (<a href="#static_android.lens.info.availableFocalLengths">android.<wbr/>lens.<wbr/>info.<wbr/>available<wbr/>Focal<wbr/>Lengths</a> contains single value).<wbr/></li>
 <li>No ND filter (<a href="#static_android.lens.info.availableFilterDensities">android.<wbr/>lens.<wbr/>info.<wbr/>available<wbr/>Filter<wbr/>Densities</a> contains only 0).<wbr/></li>
 <li>Fixed aperture (<a href="#static_android.lens.info.availableApertures">android.<wbr/>lens.<wbr/>info.<wbr/>available<wbr/>Apertures</a> contains single value).<wbr/></li>
 </ul>
@@ -21614,15 +21598,10 @@ physical camera.<wbr/></p>
 <p>The field of view of non-RAW physical streams must not be smaller than that of the
 non-RAW logical streams,<wbr/> or the maximum field-of-view of the physical camera,<wbr/>
 whichever is smaller.<wbr/> The application should check the physical capture result
-metadata for how the physical streams are cropped or zoomed.<wbr/> More specifically,<wbr/> given
-the physical camera result metadata,<wbr/> the effective horizontal field-of-view of the
-physical camera is:</p>
-<pre><code>fov = 2 * atan2(cropW * sensorW /<wbr/> (2 * zoomRatio * activeArrayW),<wbr/> focalLength)
-</code></pre>
-<p>where the equation parameters are the physical camera's crop region width,<wbr/> physical
-sensor width,<wbr/> zoom ratio,<wbr/> active array width,<wbr/> and focal length respectively.<wbr/> Typically
-the physical stream of active physical camera has the same field-of-view as the
-logical streams.<wbr/> However,<wbr/> the same may not be true for physical streams from
+metadata and physical camera characteristics for how the physical streams are cropped
+or zoomed.<wbr/> See <a href="#controls_android.lens.focalLength">android.<wbr/>lens.<wbr/>focal<wbr/>Length</a> on how field-of-view is calculated.<wbr/></p>
+<p>Typically the physical stream of active physical camera has the same field-of-view as
+the logical streams.<wbr/> However,<wbr/> the same may not be true for physical streams from
 non-active physical cameras.<wbr/> For example,<wbr/> if the logical camera has a wide-ultrawide
 configuration where the wide lens is the default,<wbr/> when the crop region is set to the
 logical camera's active array size,<wbr/> (and the zoom ratio set to 1.<wbr/>0 starting from
@@ -35389,7 +35368,7 @@ is needed.<wbr/></p>
             <td class="entry_details" colspan="6">
               <p>Contains an array of intra-frame <a href="#static_android.lens.intrinsicCalibration">android.<wbr/>lens.<wbr/>intrinsic<wbr/>Calibration</a> updates.<wbr/> This must
 not be confused or compared to <a href="#dynamic_android.statistics.oisSamples">android.<wbr/>statistics.<wbr/>ois<wbr/>Samples</a>.<wbr/> Although OIS could be the
-main driver,<wbr/> all relevant factors such as focus distance and optical zoom must also
+main driver,<wbr/> all relevant factors such as focus distance and focal length must also
 be included.<wbr/> Do note that OIS samples must not be applied on top of the lens intrinsic
 samples.<wbr/>
 Support for this capture result can be queried via

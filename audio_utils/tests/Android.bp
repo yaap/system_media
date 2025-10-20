@@ -239,6 +239,35 @@ cc_test {
 }
 
 cc_test {
+    name: "audio_time_tests",
+
+    srcs: [
+        "audio_time_tests.cpp",
+    ],
+
+    shared_libs: [
+        // go/keep-sorted start
+        "libbase",
+        "liblog",
+        "libutils",
+        // go/keep-sorted end
+    ],
+
+    static_libs: [
+        "libaudioutils",
+    ],
+
+    cflags: [
+        // go/keep-sorted start
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-Wthread-safety",
+        // go/keep-sorted end
+    ],
+}
+
+cc_test {
     name: "audio_trace_tests",
     host_supported: true,
     srcs: ["audio_trace_tests.cpp"],

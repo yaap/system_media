@@ -4992,37 +4992,34 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
         </entry>
         <entry name="focalLength" type="float" visibility="public" hwlevel="legacy">
           <description>
-          The desired lens focal length; used for optical zoom.
+          The desired lens focal length
           </description>
           <units>Millimeters</units>
           <range>android.lens.info.availableFocalLengths</range>
           <details>
-          This setting controls the physical focal length of the camera
-          device's lens. Changing the focal length changes the field of
-          view of the camera device, and is usually used for optical zoom.
+          Focal length is the distance from the optical center of the lens to the
+          focal point for a thin lens approximation of the camera optical system.
+          The definition assumes the lens is focused at infinity.
 
-          Like android.lens.focusDistance and android.lens.aperture, this
-          setting won't be applied instantaneously, and it may take several
-          frames before the lens can change to the requested focal length.
-          While the focal length is still changing, android.lens.state will
-          be set to MOVING.
+          The horizontal field-of-view of the processed full frame camera outputs
+          can be derived as:
 
-          Optical zoom via this control will not be supported on most devices. Starting from API
-          level 30, the camera device may combine optical and digital zoom through the
-          android.control.zoomRatio control.
+              fov = 2 * atan2(sw / 2, fl)
+
+          where:
+
+            * `sw` is the android.sensor.info.physicalSize width,
+            * `fl` is android.lens.focalLength.
+
+          Using this control to switch between lenses is not supported on most
+          devices. Starting from API level 30, the application is strongly recommended
+          to use android.control.zoomRatio for combined optical and digital zoom. To
+          exclusively use a particular focal length lens in a logical multi-camera,
+          applications can iterate over the physical cameras exposed by the logical
+          multi-camera device via
+          {@link android.hardware.camera2.CameraCharacteristics#getPhysicalCameraIds}
+          and select the one with the desired focal length.
           </details>
-          <hal_details>
-          For a logical camera device supporting both optical and digital zoom, if focalLength and
-          cropRegion change in the same request, the camera device must make sure that the new
-          focalLength and cropRegion take effect in the same frame. This is to make sure that there
-          is no visible field-of-view jump during zoom. For example, if cropRegion is applied
-          immediately, but focalLength takes more than 1 frame to take effect, the camera device
-          will delay the cropRegion so that it's synchronized with focalLength.
-
-          Starting from API level 30, it's strongly recommended for HAL to implement the
-          combination of optical and digital zoom using the new android.control.zoomRatio API, in
-          lieu of using android.lens.focalLength and android.scaler.cropRegion.
-          </hal_details>
           <tag id="V1" />
         </entry>
         <entry name="focusDistance" type="float" visibility="public" hwlevel="full">
@@ -5147,10 +5144,9 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             Values are &amp;gt; 0
             </range>
             <details>
-            If optical zoom is not supported, this list will only contain
-            a single value corresponding to the fixed focal length of the
-            device. Otherwise, this list will include every focal length supported
-            by the camera device, in ascending order.
+            In most cases this list will only contain a single value corresponding
+            to the fixed focal length of the device. Otherwise, this list will include
+            every focal length supported by the camera device, in ascending order.
             </details>
             <tag id="BC" />
             <tag id="V1" />
@@ -5467,8 +5463,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
 
           * Fixed focus (`android.lens.info.minimumFocusDistance == 0`), which means
           android.lens.focusDistance parameter will always be 0.
-          * Fixed focal length (android.lens.info.availableFocalLengths contains single value),
-          which means the optical zoom is not supported.
+          * Fixed focal length (android.lens.info.availableFocalLengths contains single value).
           * No ND filter (android.lens.info.availableFilterDensities contains only 0).
           * Fixed aperture (android.lens.info.availableApertures contains single value).
 
@@ -6878,16 +6873,11 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               The field of view of non-RAW physical streams must not be smaller than that of the
               non-RAW logical streams, or the maximum field-of-view of the physical camera,
               whichever is smaller. The application should check the physical capture result
-              metadata for how the physical streams are cropped or zoomed. More specifically, given
-              the physical camera result metadata, the effective horizontal field-of-view of the
-              physical camera is:
+              metadata and physical camera characteristics for how the physical streams are cropped
+              or zoomed. See android.lens.focalLength on how field-of-view is calculated.
 
-                  fov = 2 * atan2(cropW * sensorW / (2 * zoomRatio * activeArrayW), focalLength)
-
-              where the equation parameters are the physical camera's crop region width, physical
-              sensor width, zoom ratio, active array width, and focal length respectively. Typically
-              the physical stream of active physical camera has the same field-of-view as the
-              logical streams. However, the same may not be true for physical streams from
+              Typically the physical stream of active physical camera has the same field-of-view as
+              the logical streams. However, the same may not be true for physical streams from
               non-active physical cameras. For example, if the logical camera has a wide-ultrawide
               configuration where the wide lens is the default, when the crop region is set to the
               logical camera's active array size, (and the zoom ratio set to 1.0 starting from
@@ -12565,7 +12555,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           <details>
           Contains an array of intra-frame android.lens.intrinsicCalibration updates. This must
           not be confused or compared to android.statistics.oisSamples. Although OIS could be the
-          main driver, all relevant factors such as focus distance and optical zoom must also
+          main driver, all relevant factors such as focus distance and focal length must also
           be included. Do note that OIS samples must not be applied on top of the lens intrinsic
           samples.
           Support for this capture result can be queried via

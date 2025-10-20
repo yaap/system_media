@@ -50,6 +50,7 @@ cc_library {
         "Metadata.cpp",
         "PowerLog.cpp",
         "StringUtils.cpp",
+        "Time.cpp",
         "TimerQueue.cpp",
         "channels.cpp",
         "fifo.cpp",

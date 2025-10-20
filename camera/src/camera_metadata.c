@@ -1186,6 +1186,10 @@ static void print_data(int fd, const uint8_t *data_ptr, uint32_t tag, int type,
             value_offset = 3 * type_size;
             entry_size = 4 * type_size;
             break;
+        case ANDROID_SCALER_AVAILABLE_RECOMMENDED_STREAM_CONFIGURATIONS:
+            value_offset = 4 * type_size;
+            entry_size = 5 * type_size;
+            break;
         default:
             value_offset = 0;
             entry_size = 0;
