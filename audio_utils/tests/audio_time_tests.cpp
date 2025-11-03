@@ -87,3 +87,45 @@ TEST(time_utilities, BootTime) {
     const int64_t offset = systemTime(SYSTEM_TIME_REALTIME) - systemTime(SYSTEM_TIME_BOOTTIME);
     EXPECT_NEAR(offset, getBootTimeToSystemTimeOffset(), 3'000'000'000LL); // 3 seconds
 }
+
+TEST(time_utilities, adjustTimeOffset) {
+    // We can't directly mock computeTimeOffset, so we'll test its interaction
+    // with adjustTimeOffset by manipulating the initial offset value.
+
+    // Realtime and Boottime differences should be relatively fixed
+    // even during suspend.
+
+    // 100ms near tolerance for test stability
+    constexpr int64_t kOffsetToleranceNs = 100'000'000;
+
+    // Scenario 1: Initial offset is far from the actual measured offset, should update.
+    int64_t currentOffset = 0; // Arbitrary initial value
+    // The actual measured offset will be around
+    // systemTime(SYSTEM_TIME_REALTIME) - systemTime(SYSTEM_TIME_BOOTTIME)
+    // which is typically a large number (e.g., billions of nanoseconds) for the realtime clock.
+    // So, 0 is far enough to trigger an update.
+    adjustTimeOffset(SYSTEM_TIME_REALTIME, SYSTEM_TIME_BOOTTIME, &currentOffset);
+    // Expect currentOffset to be updated to a value close to the actual system time offset.
+    EXPECT_LT(currentOffset, 0);  // need to subtract from realtime to get boottime.
+    EXPECT_NEAR(currentOffset, getSystemTimeToBootTimeOffset(), kOffsetToleranceNs);
+
+    // Scenario 2: Initial offset is close to the actual measured offset, should NOT update.
+    // Set currentOffset to be very close to the actual offset, within kToleranceNs (10us).
+    currentOffset = getSystemTimeToBootTimeOffset();
+    // Add a small delta, less than kToleranceNs (10us)
+    currentOffset += 5'000; // 5us
+
+    int64_t originalOffset = currentOffset;
+    adjustTimeOffset(SYSTEM_TIME_REALTIME, SYSTEM_TIME_BOOTTIME, &currentOffset);
+    // Expect currentOffset to remain unchanged because the difference is within tolerance.
+    EXPECT_EQ(originalOffset, currentOffset);
+
+    // Scenario 3: Initial offset is far from the actual measured offset, should update.
+    currentOffset = getSystemTimeToBootTimeOffset();
+    // Add a large delta, more than kToleranceNs (10us)
+    currentOffset += 20'000; // 20us
+
+    adjustTimeOffset(SYSTEM_TIME_REALTIME, SYSTEM_TIME_BOOTTIME, &currentOffset);
+    // Expect currentOffset to be updated to a value close to the actual system time offset.
+    EXPECT_NEAR(currentOffset, getSystemTimeToBootTimeOffset(), kOffsetToleranceNs);
+}

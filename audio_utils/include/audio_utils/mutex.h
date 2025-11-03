@@ -1807,16 +1807,28 @@ public:
     std::cv_status wait_for(unique_lock<Mutex>& lock,
             const std::chrono::duration<Rep, Period>& rel_time,
             pid_t notifier_tid = kInvalidTid) {
+        constexpr auto limit = std::chrono::steady_clock::duration::max() / 2;
         typename Mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
-        return cv_.wait_for(lock.std_unique_lock(), rel_time);
+        if (rel_time > limit) {  // consider this "infinite"
+            cv_.wait(lock.std_unique_lock());
+            return std::cv_status::no_timeout;
+        } else {
+            return cv_.wait_for(lock.std_unique_lock(), rel_time);
+        }
     }
 
     template<typename Mutex, typename Rep, typename Period, typename Predicate>
     bool wait_for(unique_lock<Mutex>& lock,
             const std::chrono::duration<Rep, Period>& rel_time,
             Predicate stop_waiting, pid_t notifier_tid = kInvalidTid) {
+        constexpr auto limit = std::chrono::steady_clock::duration::max() / 2;
         typename Mutex::cv_wait_scoped_stat_t ws(lock.native_mutex(), notifier_tid);
-        return cv_.wait_for(lock.std_unique_lock(), rel_time, std::move(stop_waiting));
+        if (rel_time > limit) {  // consider this "infinite"
+            cv_.wait(lock.std_unique_lock(), std::move(stop_waiting));
+            return true; // Predicate must be true for wait to return
+        } else {
+            return cv_.wait_for(lock.std_unique_lock(), rel_time, std::move(stop_waiting));
+        }
     }
 
     template<typename Mutex, typename Clock, typename Duration>

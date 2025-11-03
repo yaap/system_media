@@ -22,7 +22,6 @@
 // go/keep-sorted start
 #include <atomic>
 #include <utils/Log.h>
-#include <utils/Timers.h>
 // go/keep-sorted end
 
 namespace android::audio_utils {
@@ -58,26 +57,10 @@ public:
     }
 
     void updateSystemTimeToBootTimeOffset() {
-        adjustOffset(SYSTEM_TIME_REALTIME, SYSTEM_TIME_BOOTTIME, &mSystemTimeToBootTime);
+        adjustTimeOffset(SYSTEM_TIME_REALTIME, SYSTEM_TIME_BOOTTIME, &mSystemTimeToBootTime);
     }
 
 protected:
-    void adjustOffset(int id1, int id2, std::atomic_int64_t* offset) {
-        const int64_t measured = computeTimeOffset(id1, id2);
-        // To avoid micro-adjusting, we don't change the timebase
-        // unless it is significantly different.
-        //
-        // The tolerance should be less than 500us to
-        // prevent making a noticeable difference in the
-        // logcat printing.
-        constexpr int64_t kToleranceNs = 10'000; // 10 us
-        if (std::abs(*offset - measured) > kToleranceNs) {
-            ALOGV("Adjusting timebase offset old: %lld  new: %lld",
-                  (long long) *offset, (long long) measured);
-            *offset = measured;
-        }
-    }
-
     mutable std::atomic_int64_t mSystemTimeToBootTime = 0;  // set only in ctor
     mutable std::atomic_int64_t mMonotonicTimeToBootTime = 0;
 };

@@ -24,6 +24,7 @@
 #include <functional>
 #include <string>
 #include <string_view>
+#include <utils/Timers.h>
 // go/keep-sorted end
 
 namespace android::audio_utils {
@@ -66,6 +67,39 @@ void updateSystemTimeToBootTimeOffset();
  *         to get a timestamp from clock id2.
  */
 int64_t computeTimeOffset(int id1, int id2);
+
+/**
+ * @brief Adjusts a time offset by re-computing it and applying a tolerance.
+ *
+ * This templated function re-computes the offset between two clocks using
+ * `computeTimeOffset` and updates the provided `offset` pointer only if the
+ * measured difference is greater than a specified tolerance.
+ * This prevents frequent, minor adjustments due to small drifts.
+ * The time offset is expected to change most for the MONOTONIC clock, as it does not
+ * increment on suspend.
+ *
+ * @tparam Offset The type of the offset, typically an (atomic) `int64_t*`.
+ * @param id1 The identifier for the first clock (e.g., `SYSTEM_TIME_MONOTONIC`).
+ * @param id2 The identifier for the second clock (e.g., `SYSTEM_TIME_BOOTTIME`).
+ * @param offset A pointer to the offset variable to be adjusted. This value
+ *               will be updated with the `measured` offset if the absolute
+ *               difference between the current `*offset` and `measured` is
+ *               greater than `kToleranceNs`.
+ */
+template <typename Offset>
+void adjustTimeOffset(int id1, int id2, Offset* offset) {
+    const int64_t measured = computeTimeOffset(id1, id2);
+    // To avoid micro-adjusting, we don't change the timebase
+    // unless it is significantly different.
+    //
+    // The tolerance should be less than 500us to
+    // prevent making a noticeable difference in the
+    // logcat printing.
+    constexpr int64_t kToleranceNs = 10'000; // 10 us
+    if (std::abs(*offset - measured) > kToleranceNs) {
+        *offset = measured;
+    }
+}
 
 /**
  * Formats a system time in nanoseconds into a human-readable string.

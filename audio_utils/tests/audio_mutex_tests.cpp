@@ -643,6 +643,53 @@ TEST_P(MutexTestSuite, TimedLock) {
     }
 }
 
+TEST_P(MutexTestSuite, ConditionVariableWaitFor) {
+    using ConditionVariable = android::audio_utils::condition_variable;
+    using Mutex = android::audio_utils::mutex;
+    using UniqueLock = android::audio_utils::unique_lock<Mutex>;
+    const bool priority_inheritance = GetParam();
+
+    Mutex m{priority_inheritance};
+    ConditionVariable cv;
+    bool notified = false; // GUARDED_BY(m)
+    bool thread_done = false; // GUARDED_BY(m)
+
+    std::thread t([&]() {
+        UniqueLock ul(m);
+        // Test timeout
+        bool status = cv.wait_for(ul, 100ms, [&]{ return notified; });
+        EXPECT_FALSE(status); // Should time out, so predicate is false
+
+        // Reset for next test
+        notified = false;
+
+        // Test notification
+        status = cv.wait_for(ul, 100ms, [&]{ return notified; });
+        EXPECT_TRUE(status); // Should be notified, so predicate is true
+
+        thread_done = true;
+        cv.notify_one(); // Notify main thread that this thread is done
+    });
+
+    // Wait for the thread to complete its first wait_for (timeout)
+    std::this_thread::sleep_for(200ms);
+
+    // Notify the thread for its second wait_for
+    {
+        UniqueLock ul(m);
+        notified = true;
+        cv.notify_one();
+    }
+
+    // Wait for the thread to finish its work
+    {
+        UniqueLock ul(m);
+        cv.wait(ul, [&]{ return thread_done; });
+    }
+
+    t.join();
+}
+
 // Test the deadlock detection algorithm for a single wait chain
 // (no cycle).
 
