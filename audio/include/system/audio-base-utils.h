@@ -188,6 +188,7 @@ static CONST_ARRAY audio_devices_t AUDIO_DEVICE_OUT_ALL_ARRAY[] = {
     AUDIO_DEVICE_OUT_BLE_HEADSET,               // 0x20000000u
     AUDIO_DEVICE_OUT_BLE_SPEAKER,               // 0x20000001u
     AUDIO_DEVICE_OUT_BLE_BROADCAST,             // 0x20000002u
+    AUDIO_DEVICE_OUT_BLE_HEARING_AID,           // 0x20000004u
     AUDIO_DEVICE_OUT_DEFAULT,                   // 0x40000000u, BIT_DEFAULT
 };
 
@@ -231,11 +232,13 @@ static CONST_ARRAY audio_devices_t AUDIO_DEVICE_OUT_ALL_BLE_ARRAY[] = {
     AUDIO_DEVICE_OUT_BLE_HEADSET,               // 0x20000000u
     AUDIO_DEVICE_OUT_BLE_SPEAKER,               // 0x20000001u
     AUDIO_DEVICE_OUT_BLE_BROADCAST,             // 0x20000002u
+    AUDIO_DEVICE_OUT_BLE_HEARING_AID,           // 0x20000004u
 };
 
 static CONST_ARRAY audio_devices_t AUDIO_DEVICE_OUT_BLE_UNICAST_ARRAY[] = {
     AUDIO_DEVICE_OUT_BLE_HEADSET,               // 0x20000000u
     AUDIO_DEVICE_OUT_BLE_SPEAKER,               // 0x20000001u
+    AUDIO_DEVICE_OUT_BLE_HEARING_AID,           // 0x20000004u
 };
 
 static CONST_ARRAY audio_devices_t AUDIO_DEVICE_OUT_BLE_BROADCAST_ARRAY[] = {
@@ -257,6 +260,7 @@ static CONST_ARRAY audio_devices_t AUDIO_DEVICE_OUT_PICK_FOR_VOLUME_ARRAY[] = {
     AUDIO_DEVICE_OUT_BLE_HEADSET,               // 0x20000000u
     AUDIO_DEVICE_OUT_BLE_SPEAKER,               // 0x20000001u
     AUDIO_DEVICE_OUT_BLE_BROADCAST,             // 0x20000002u
+    AUDIO_DEVICE_OUT_BLE_HEARING_AID            // 0x20000004u
 };
 
 // inline constexpr
@@ -289,6 +293,7 @@ static CONST_ARRAY audio_devices_t AUDIO_DEVICE_IN_ALL_ARRAY[] = {
     AUDIO_DEVICE_IN_HDMI_EARC,                  // 0x88000001u
     AUDIO_DEVICE_IN_ECHO_REFERENCE,             // 0x90000000u
     AUDIO_DEVICE_IN_BLE_HEADSET,                // 0xA0000000u
+    AUDIO_DEVICE_IN_BLE_HEARING_AID,            // 0xA0000001u
     AUDIO_DEVICE_IN_DEFAULT,                    // 0xC0000000u
 };
 
@@ -320,6 +325,7 @@ static CONST_ARRAY audio_devices_t AUDIO_DEVICE_IN_ALL_DIGITAL_ARRAY[] = {
 
 static CONST_ARRAY audio_devices_t AUDIO_DEVICE_IN_ALL_BLE_ARRAY[] = {
     AUDIO_DEVICE_IN_BLE_HEADSET,                // 0xA0000000u
+    AUDIO_DEVICE_IN_BLE_HEARING_AID,            // 0xA0000001u
 };
 
 
