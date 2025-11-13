@@ -17,6 +17,7 @@
 #pragma once
 
 #include <android-base/thread_annotations.h>
+#include <audio_utils/atomic.h>
 #include <audio_utils/safe_math.h>
 #include <audio_utils/threads.h>
 #include <utils/Log.h>
@@ -24,10 +25,12 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cmath>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <sys/syscall.h>
 #include <unordered_map>
 #include <unordered_set>
@@ -119,6 +122,47 @@ inline constexpr const char* const gMutexNames[] = {
 class AudioMutexAttributes;
 template <typename T> class mutex_impl;
 using mutex = mutex_impl<AudioMutexAttributes>;
+
+// fair_mutex is a mutex that guarantees fairness: threads acquire the lock in the
+// order they attempt to acquire it.
+//
+// This is implemented by maintaining a queue of threads waiting to acquire the
+// lock. When a thread attempts to acquire the lock, it adds itself to the
+// queue and waits until it is at the front of the queue if waiting is needed.
+// When a thread releases the lock, it notifies the next thread in the queue.
+class CAPABILITY("mutex") fair_mutex {
+public:
+    void lock() ACQUIRE() {
+        std::unique_lock ul(mutex_);
+        if (++clients_ == 1) return;  // we're the only one.
+        auto cvp = std::make_shared<std::pair<bool, std::condition_variable>>();
+        queue_.push(cvp);
+        while (!cvp->first) {
+            cvp->second.wait(ul);
+        }
+    }
+
+    void unlock() RELEASE() {
+        std::shared_ptr<std::pair<bool, std::condition_variable>> cvp;
+        {
+            std::lock_guard lg(mutex_);
+            if (--clients_ == 0) return;  // noone else.
+            LOG_ALWAYS_FATAL_IF(clients_ < 0,
+                    "%s: unlock called too many times (%lld)",
+                    __func__, (long long)clients_);
+            cvp = queue_.front();
+            cvp->first = true;
+            queue_.pop();
+        }
+        cvp->second.notify_all();
+    }
+
+private:
+    std::mutex mutex_;
+    std::queue<std::shared_ptr<std::pair<bool, std::condition_variable>>>
+            queue_ GUARDED_BY(mutex_);
+    int64_t clients_ GUARDED_BY(mutex_) = 0;
+};
 
 // Capabilities in priority order
 // (declaration only, value is nullptr)
@@ -400,80 +444,6 @@ public:
     static constexpr bool abort_on_invalid_unlock_ = true;
 };
 
-// relaxed_atomic implements the same features as std::atomic<T> but using
-// std::memory_order_relaxed as default.
-//
-// This is the minimum consistency for the multiple writer multiple reader case.
-
-template <typename T>
-class relaxed_atomic : private std::atomic<T> {
-public:
-    constexpr relaxed_atomic(T desired = {}) : std::atomic<T>(desired) {}
-    operator T() const { return std::atomic<T>::load(std::memory_order_relaxed); }
-    T operator=(T desired) {
-        std::atomic<T>::store(desired, std::memory_order_relaxed); return desired;
-    }
-
-    T operator--() { return std::atomic<T>::fetch_sub(1, std::memory_order_relaxed) - 1; }
-    T operator++() { return std::atomic<T>::fetch_add(1, std::memory_order_relaxed) + 1;  }
-    T operator+=(const T value) {
-        return std::atomic<T>::fetch_add(value, std::memory_order_relaxed) + value;
-    }
-
-    T load(std::memory_order order = std::memory_order_relaxed) const {
-        return std::atomic<T>::load(order);
-    }
-    T fetch_add(T arg, std::memory_order order =std::memory_order_relaxed) {
-        return std::atomic<T>::fetch_add(arg, order);
-    }
-    bool compare_exchange_weak(
-            T& expected, T desired, std::memory_order order = std::memory_order_relaxed) {
-        return std::atomic<T>::compare_exchange_weak(expected, desired, order);
-    }
-};
-
-// unordered_atomic implements data storage such that memory reads have a value
-// consistent with a memory write in some order, i.e. not having values
-// "out of thin air".
-//
-// Unordered memory reads and writes may not actually take place but be implicitly cached.
-// Nevertheless, a memory read should return at least as contemporaneous a value
-// as the last memory write before the write thread memory barrier that
-// preceded the most recent read thread memory barrier.
-//
-// This is weaker than relaxed_atomic and has no equivalent C++ terminology.
-// unordered_atomic would be used for a single writer, multiple reader case,
-// where data access of type T would be a implemented by the compiler and
-// hw architecture with a single "uninterruptible" memory operation.
-// (The current implementation holds true for general realized CPU architectures).
-// Note that multiple writers would cause read-modify-write unordered_atomic
-// operations to have inconsistent results.
-//
-// unordered_atomic is implemented with normal operations such that compiler
-// optimizations can take place which would otherwise be discouraged for atomics.
-// https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0062r1.html
-
-// VT may be volatile qualified, if desired, or a normal arithmetic type.
-template <typename VT>
-class unordered_atomic {
-    using T = std::decay_t<VT>;
-    static_assert(std::atomic<T>::is_always_lock_free);
-public:
-    constexpr unordered_atomic(T desired = {}) : t_(desired) {}
-    operator T() const { return t_; }
-    T operator=(T desired) { t_ = desired; return desired; }
-
-    // a volatile ++t_ or t_ += 1 is deprecated in C++20.
-    T operator--() { return operator=(t_ - 1); }
-    T operator++() { return operator=(t_ + 1); }
-    T operator+=(const T value) { return operator=(t_ + value); }
-
-    T load(std::memory_order order = std::memory_order_relaxed) const { (void)order; return t_; }
-
-private:
-    VT t_;
-};
-
 inline constexpr pid_t kInvalidTid = -1;
 
 // While std::atomic with the default std::memory_order_seq_cst
@@ -487,7 +457,7 @@ inline constexpr pid_t kInvalidTid = -1;
 //
 // We used relaxed_atomic instead of std::atomic/memory_order_seq_cst here.
 template <typename T>
-using stats_atomic = relaxed_atomic<T>;
+using stats_atomic = atomic<T, memory_order_relaxed>;
 
 // thread_atomic is a single writer multiple reader object.
 //
@@ -497,7 +467,7 @@ using stats_atomic = relaxed_atomic<T>;
 //
 // We use unordered_atomic instead of std::atomic/memory_order_seq_cst here.
 template <typename T>
-using thread_atomic = unordered_atomic<T>;
+using thread_atomic = atomic<T, memory_order_unordered>;
 
 inline void compiler_memory_barrier() {
     // Reads or writes are not migrated or cached by the compiler across this barrier.
@@ -524,56 +494,10 @@ inline void compiler_memory_barrier() {
 inline void metadata_memory_barrier_if_needed() {
     // check the level of atomicity used for thread metadata to alter the
     // use of a barrier here.
-    if constexpr (std::is_same_v<thread_atomic<int32_t>, unordered_atomic<int32_t>>
-            || std::is_same_v<thread_atomic<int32_t>, relaxed_atomic<int32_t>>) {
+    if constexpr (std::is_same_v<thread_atomic<int32_t>, atomic<int32_t, memory_order_unordered>>
+            || std::is_same_v<thread_atomic<int32_t>, atomic<int32_t, memory_order_relaxed>>) {
         compiler_memory_barrier();
     }
-}
-
-/**
- * Helper method to accumulate floating point values to an atomic
- * prior to C++23 support of atomic<float> atomic<double> accumulation.
- */
-template <typename AccumulateType, typename ValueType>
-requires std::is_floating_point<AccumulateType>::value
-void atomic_add_to(std::atomic<AccumulateType> &dst, ValueType src,
-        std::memory_order order = std::memory_order_seq_cst) {
-    static_assert(std::atomic<AccumulateType>::is_always_lock_free);
-    AccumulateType expected;
-    do {
-        expected = dst;
-    } while (!dst.compare_exchange_weak(expected, expected + src, order));
-}
-
-template <typename AccumulateType, typename ValueType>
-requires std::is_integral<AccumulateType>::value
-void atomic_add_to(std::atomic<AccumulateType> &dst, ValueType src,
-        std::memory_order order = std::memory_order_seq_cst) {
-    dst.fetch_add(src, order);
-}
-
-template <typename AccumulateType, typename ValueType>
-requires std::is_floating_point<AccumulateType>::value
-void atomic_add_to(relaxed_atomic<AccumulateType> &dst, ValueType src,
-        std::memory_order order = std::memory_order_relaxed) {
-    AccumulateType expected;
-    do {
-        expected = dst;
-    } while (!dst.compare_exchange_weak(expected, expected + src, order));
-}
-
-template <typename AccumulateType, typename ValueType>
-requires std::is_integral<AccumulateType>::value
-void atomic_add_to(relaxed_atomic<AccumulateType> &dst, ValueType src,
-        std::memory_order order = std::memory_order_relaxed) {
-    dst.fetch_add(src, order);
-}
-
-template <typename AccumulateType, typename ValueType>
-void atomic_add_to(unordered_atomic<AccumulateType> &dst, ValueType src,
-        std::memory_order order = std::memory_order_relaxed) {
-    (void)order; // unused
-    dst = dst + src;
 }
 
 /**
@@ -601,8 +525,8 @@ struct mutex_stat {
     template <typename WaitTimeType>
     void add_wait_time(WaitTimeType wait_ns) {
         AccumulatorType value_ns = wait_ns;
-        atomic_add_to(wait_sum_ns, value_ns);
-        atomic_add_to(wait_sumsq_ns, value_ns * value_ns);
+        (void) wait_sum_ns.fetch_add(value_ns);
+        (void) wait_sumsq_ns.fetch_add(value_ns * value_ns);
     }
 
     std::string to_string() const {

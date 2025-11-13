@@ -3235,7 +3235,12 @@ conditions.<wbr/></p>
 (triggered by <a href="#controls_android.control.aePrecaptureTrigger">android.<wbr/>control.<wbr/>ae<wbr/>Precapture<wbr/>Trigger</a>) and
 may be fired for captures for which the
 <a href="#controls_android.control.captureIntent">android.<wbr/>control.<wbr/>capture<wbr/>Intent</a> field is set to
-STILL_<wbr/>CAPTURE</p></span>
+STILL_<wbr/>CAPTURE.<wbr/></p>
+<p>It's important to wait for the precapture sequence
+to complete (i.<wbr/>e.,<wbr/> <a href="#dynamic_android.control.aeState">android.<wbr/>control.<wbr/>ae<wbr/>State</a> reaches
+FLASH_<wbr/>REQUIRED,<wbr/> CONVERGED,<wbr/> or LOCKED) before submitting a
+STILL_<wbr/>CAPTURE request.<wbr/> Otherwise,<wbr/> in low-light conditions,<wbr/>
+the image captures with flash fired won't have correct exposures.<wbr/></p></span>
                   </li>
                   <li>
                     <span class="entry_type_enum_name">ON_ALWAYS_FLASH (v3.2)</span>
@@ -3246,7 +3251,12 @@ captures.<wbr/></p>
 (triggered by <a href="#controls_android.control.aePrecaptureTrigger">android.<wbr/>control.<wbr/>ae<wbr/>Precapture<wbr/>Trigger</a>) and
 will always be fired for captures for which the
 <a href="#controls_android.control.captureIntent">android.<wbr/>control.<wbr/>capture<wbr/>Intent</a> field is set to
-STILL_<wbr/>CAPTURE</p></span>
+STILL_<wbr/>CAPTURE.<wbr/></p>
+<p>It's important to wait for the precapture sequence
+to complete (i.<wbr/>e.,<wbr/> <a href="#dynamic_android.control.aeState">android.<wbr/>control.<wbr/>ae<wbr/>State</a> reaches
+FLASH_<wbr/>REQUIRED,<wbr/> CONVERGED,<wbr/> or LOCKED) Dbefore submitting a
+STILL_<wbr/>CAPTURE request.<wbr/> Otherwise,<wbr/> in low-light conditions,<wbr/>
+the image captures with flash fired won't have correct exposures.<wbr/></p></span>
                   </li>
                   <li>
                     <span class="entry_type_enum_name">ON_AUTO_FLASH_REDEYE (v3.2)</span>
@@ -6269,7 +6279,7 @@ to control zoom levels.<wbr/></p>
             <td class="entry_details" colspan="6">
               <p>If set to AUTO,<wbr/> the camera device detects which capture request key the application uses
 to do zoom,<wbr/> <a href="#controls_android.scaler.cropRegion">android.<wbr/>scaler.<wbr/>crop<wbr/>Region</a> or <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a>.<wbr/> If
-the application doesn't set android.<wbr/>scaler.<wbr/>zoom<wbr/>Ratio or sets it to 1.<wbr/>0 in the capture
+the application doesn't set <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a> or sets it to 1.<wbr/>0 in the capture
 request,<wbr/> the effective zoom level is reflected in <a href="#controls_android.scaler.cropRegion">android.<wbr/>scaler.<wbr/>crop<wbr/>Region</a> in capture
 results.<wbr/> If <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a> is set to values other than 1.<wbr/>0,<wbr/> the effective
 zoom level is reflected in <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a>.<wbr/> AUTO is the default value
@@ -6299,7 +6309,7 @@ and not for HAL consumption.<wbr/></p>
                 
           <tr class="entry" id="controls_android.control.aePriorityMode">
             <td class="entry_name
-             " rowspan="5">
+             " rowspan="3">
               android.<wbr/>control.<wbr/>ae<wbr/>Priority<wbr/>Mode
             </td>
             <td class="entry_type">
@@ -6377,15 +6387,6 @@ given capture will be available in its CaptureResult.<wbr/></p>
             </td>
           </tr>
 
-          <tr class="entries_header">
-            <th class="th_details" colspan="6">HAL Implementation Details</th>
-          </tr>
-          <tr class="entry_cont">
-            <td class="entry_details" colspan="6">
-              <p>The total sensitivity applied for SENSOR_<wbr/>SENSITIVITY_<wbr/>PRIORITY should not be
-adjusted by any HAL applied <a href="#controls_android.control.postRawSensitivityBoost">android.<wbr/>control.<wbr/>post<wbr/>Raw<wbr/>Sensitivity<wbr/>Boost</a>.<wbr/></p>
-            </td>
-          </tr>
 
           <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
            <!-- end of entry -->
@@ -8873,7 +8874,12 @@ conditions.<wbr/></p>
 (triggered by <a href="#controls_android.control.aePrecaptureTrigger">android.<wbr/>control.<wbr/>ae<wbr/>Precapture<wbr/>Trigger</a>) and
 may be fired for captures for which the
 <a href="#controls_android.control.captureIntent">android.<wbr/>control.<wbr/>capture<wbr/>Intent</a> field is set to
-STILL_<wbr/>CAPTURE</p></span>
+STILL_<wbr/>CAPTURE.<wbr/></p>
+<p>It's important to wait for the precapture sequence
+to complete (i.<wbr/>e.,<wbr/> <a href="#dynamic_android.control.aeState">android.<wbr/>control.<wbr/>ae<wbr/>State</a> reaches
+FLASH_<wbr/>REQUIRED,<wbr/> CONVERGED,<wbr/> or LOCKED) before submitting a
+STILL_<wbr/>CAPTURE request.<wbr/> Otherwise,<wbr/> in low-light conditions,<wbr/>
+the image captures with flash fired won't have correct exposures.<wbr/></p></span>
                   </li>
                   <li>
                     <span class="entry_type_enum_name">ON_ALWAYS_FLASH (v3.2)</span>
@@ -8884,7 +8890,12 @@ captures.<wbr/></p>
 (triggered by <a href="#controls_android.control.aePrecaptureTrigger">android.<wbr/>control.<wbr/>ae<wbr/>Precapture<wbr/>Trigger</a>) and
 will always be fired for captures for which the
 <a href="#controls_android.control.captureIntent">android.<wbr/>control.<wbr/>capture<wbr/>Intent</a> field is set to
-STILL_<wbr/>CAPTURE</p></span>
+STILL_<wbr/>CAPTURE.<wbr/></p>
+<p>It's important to wait for the precapture sequence
+to complete (i.<wbr/>e.,<wbr/> <a href="#dynamic_android.control.aeState">android.<wbr/>control.<wbr/>ae<wbr/>State</a> reaches
+FLASH_<wbr/>REQUIRED,<wbr/> CONVERGED,<wbr/> or LOCKED) Dbefore submitting a
+STILL_<wbr/>CAPTURE request.<wbr/> Otherwise,<wbr/> in low-light conditions,<wbr/>
+the image captures with flash fired won't have correct exposures.<wbr/></p></span>
                   </li>
                   <li>
                     <span class="entry_type_enum_name">ON_AUTO_FLASH_REDEYE (v3.2)</span>
@@ -13021,7 +13032,7 @@ to control zoom levels.<wbr/></p>
             <td class="entry_details" colspan="6">
               <p>If set to AUTO,<wbr/> the camera device detects which capture request key the application uses
 to do zoom,<wbr/> <a href="#controls_android.scaler.cropRegion">android.<wbr/>scaler.<wbr/>crop<wbr/>Region</a> or <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a>.<wbr/> If
-the application doesn't set android.<wbr/>scaler.<wbr/>zoom<wbr/>Ratio or sets it to 1.<wbr/>0 in the capture
+the application doesn't set <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a> or sets it to 1.<wbr/>0 in the capture
 request,<wbr/> the effective zoom level is reflected in <a href="#controls_android.scaler.cropRegion">android.<wbr/>scaler.<wbr/>crop<wbr/>Region</a> in capture
 results.<wbr/> If <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a> is set to values other than 1.<wbr/>0,<wbr/> the effective
 zoom level is reflected in <a href="#controls_android.control.zoomRatio">android.<wbr/>control.<wbr/>zoom<wbr/>Ratio</a>.<wbr/> AUTO is the default value
@@ -13051,7 +13062,7 @@ and not for HAL consumption.<wbr/></p>
                 
           <tr class="entry" id="dynamic_android.control.aePriorityMode">
             <td class="entry_name
-             " rowspan="5">
+             " rowspan="3">
               android.<wbr/>control.<wbr/>ae<wbr/>Priority<wbr/>Mode
             </td>
             <td class="entry_type">
@@ -13129,15 +13140,6 @@ given capture will be available in its CaptureResult.<wbr/></p>
             </td>
           </tr>
 
-          <tr class="entries_header">
-            <th class="th_details" colspan="6">HAL Implementation Details</th>
-          </tr>
-          <tr class="entry_cont">
-            <td class="entry_details" colspan="6">
-              <p>The total sensitivity applied for SENSOR_<wbr/>SENSITIVITY_<wbr/>PRIORITY should not be
-adjusted by any HAL applied <a href="#controls_android.control.postRawSensitivityBoost">android.<wbr/>control.<wbr/>post<wbr/>Raw<wbr/>Sensitivity<wbr/>Boost</a>.<wbr/></p>
-            </td>
-          </tr>
 
           <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
            <!-- end of entry -->
