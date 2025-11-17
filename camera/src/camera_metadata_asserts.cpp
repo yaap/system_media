@@ -110,6 +110,7 @@
 #include <aidl/android/hardware/camera/metadata/DepthAvailableDepthStreamConfigurationsMaximumResolution.h>
 #include <aidl/android/hardware/camera/metadata/DepthAvailableDynamicDepthStreamConfigurationsMaximumResolution.h>
 #include <aidl/android/hardware/camera/metadata/LogicalMultiCameraSensorSyncType.h>
+#include <aidl/android/hardware/camera/metadata/LogicalMultiCameraAdditionalResults.h>
 #include <aidl/android/hardware/camera/metadata/DistortionCorrectionMode.h>
 #include <aidl/android/hardware/camera/metadata/HeicAvailableHeicStreamConfigurations.h>
 #include <aidl/android/hardware/camera/metadata/HeicAvailableHeicStreamConfigurationsMaximumResolution.h>
@@ -884,6 +885,8 @@ static_assert(static_cast<int>(ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID));
 static_assert(static_cast<int>(ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_SENSOR_CROP_REGION)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_SENSOR_CROP_REGION));
+static_assert(static_cast<int>(ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS)
+        == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS));
 static_assert(static_cast<int>(ANDROID_DISTORTION_CORRECTION_MODE)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_DISTORTION_CORRECTION_MODE));
 static_assert(static_cast<int>(ANDROID_DISTORTION_CORRECTION_AVAILABLE_MODES)
@@ -1745,6 +1748,11 @@ static_assert(static_cast<int32_t>(ANDROID_LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::LogicalMultiCameraSensorSyncType::ANDROID_LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_APPROXIMATE));
 static_assert(static_cast<int32_t>(ANDROID_LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_CALIBRATED)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::LogicalMultiCameraSensorSyncType::ANDROID_LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_CALIBRATED));
+
+static_assert(static_cast<int32_t>(ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_OFF)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::LogicalMultiCameraAdditionalResults::ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_OFF));
+static_assert(static_cast<int32_t>(ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_ON)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::LogicalMultiCameraAdditionalResults::ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_ON));
 
 static_assert(static_cast<int32_t>(ANDROID_DISTORTION_CORRECTION_MODE_OFF)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::DistortionCorrectionMode::ANDROID_DISTORTION_CORRECTION_MODE_OFF));

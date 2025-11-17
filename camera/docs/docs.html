@@ -1388,6 +1388,15 @@
             ><a href="#dynamic_android.logicalMultiCamera.activePhysicalId">android.logicalMultiCamera.activePhysicalId</a></li>
             <li
             ><a href="#dynamic_android.logicalMultiCamera.activePhysicalSensorCropRegion">android.logicalMultiCamera.activePhysicalSensorCropRegion</a></li>
+            <li
+            ><a href="#dynamic_android.logicalMultiCamera.additionalResults">android.logicalMultiCamera.additionalResults</a></li>
+          </ul>
+        </li>
+        <li>
+          <span class="toc_kind_header">controls</span>
+          <ul class="toc_section">
+            <li
+            ><a href="#controls_android.logicalMultiCamera.additionalResults">android.logicalMultiCamera.additionalResults</a></li>
           </ul>
         </li>
       </ul> <!-- toc_section -->
@@ -40298,6 +40307,194 @@ larger than active pixel array.<wbr/> Width and height may be
 rounded to nearest larger supportable width,<wbr/> especially
 for raw output,<wbr/> where only a few fixed scales may be
 possible.<wbr/></p>
+            </td>
+          </tr>
+
+          <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
+           <!-- end of entry -->
+        
+                
+          <tr class="entry" id="dynamic_android.logicalMultiCamera.additionalResults">
+            <td class="entry_name
+             " rowspan="5">
+              android.<wbr/>logical<wbr/>Multi<wbr/>Camera.<wbr/>additional<wbr/>Results
+            </td>
+            <td class="entry_type">
+                <span class="entry_type_name entry_type_name_enum">byte</span>
+
+              <span class="entry_type_visibility"> [public as boolean]</span>
+
+
+
+
+
+                <ul class="entry_type_enum">
+                  <li>
+                    <span class="entry_type_enum_name">OFF (v3.12)</span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">ON (v3.12)</span>
+                  </li>
+                </ul>
+
+            </td> <!-- entry_type -->
+
+            <td class="entry_description">
+              <p>Controls whether the camera device could also return additional
+physical cameras' metadata in the results.<wbr/></p>
+            </td>
+
+            <td class="entry_units">
+            </td>
+
+            <td class="entry_range">
+            </td>
+
+            <td class="entry_hal_version">
+              <p>3.<wbr/>12</p>
+            </td>
+
+            <td class="entry_tags">
+            </td>
+
+          </tr>
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>This control must only be turned on when device is using logical camera,<wbr/>
+which are devices that have
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html#REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA">Camera<wbr/>Metadata#REQUEST_<wbr/>AVAILABLE_<wbr/>CAPABILITIES_<wbr/>LOGICAL_<wbr/>MULTI_<wbr/>CAMERA</a>
+capability and the key is supported in the device's
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html#getAvailableCaptureRequestKeys">CameraCharacteristics#getAvailableCaptureRequestKeys</a>.<wbr/>
+Once this key is set to ON,<wbr/> if the camera device has
+multiple physical cameras active,<wbr/> the TotalCaptureResult will contain
+additional physical camera metadata in the result.<wbr/> One of such
+scenario is at the time of lens switch during zoom,<wbr/> where in addition
+to the active physical camera,<wbr/> a secondary physical camera runs as a
+"follower" and produces an additional physical camera CaptureResult.<wbr/>
+The application can call <a href="https://developer.android.com/reference/android/hardware/camera2/TotalCaptureResult.html#getPhysicalCameraTotalResults">TotalCaptureResult#getPhysicalCameraTotalResults</a>
+to get the additional results.<wbr/></p>
+            </td>
+          </tr>
+
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">HAL Implementation Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>This key may only be included in a logical multi-camera's available
+request and result keys.<wbr/> It must not be included if the camera device
+is not a logical multi-camera.<wbr/></p>
+            </td>
+          </tr>
+
+          <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
+           <!-- end of entry -->
+        
+        
+
+      <!-- end of kind -->
+      </tbody>
+      <tr><td colspan="7" class="kind">controls</td></tr>
+
+      <thead class="entries_header">
+        <tr>
+          <th class="th_name">Property Name</th>
+          <th class="th_type">Type</th>
+          <th class="th_description">Description</th>
+          <th class="th_units">Units</th>
+          <th class="th_range">Range</th>
+          <th class="th_hal_version">Initial HIDL HAL version</th>
+          <th class="th_tags">Tags</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        
+
+        
+
+        
+
+        
+
+                
+          <tr class="entry" id="controls_android.logicalMultiCamera.additionalResults">
+            <td class="entry_name
+             " rowspan="5">
+              android.<wbr/>logical<wbr/>Multi<wbr/>Camera.<wbr/>additional<wbr/>Results
+            </td>
+            <td class="entry_type">
+                <span class="entry_type_name entry_type_name_enum">byte</span>
+
+              <span class="entry_type_visibility"> [public as boolean]</span>
+
+
+
+
+
+                <ul class="entry_type_enum">
+                  <li>
+                    <span class="entry_type_enum_name">OFF (v3.12)</span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">ON (v3.12)</span>
+                  </li>
+                </ul>
+
+            </td> <!-- entry_type -->
+
+            <td class="entry_description">
+              <p>Controls whether the camera device could also return additional
+physical cameras' metadata in the results.<wbr/></p>
+            </td>
+
+            <td class="entry_units">
+            </td>
+
+            <td class="entry_range">
+            </td>
+
+            <td class="entry_hal_version">
+              <p>3.<wbr/>12</p>
+            </td>
+
+            <td class="entry_tags">
+            </td>
+
+          </tr>
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>This control must only be turned on when device is using logical camera,<wbr/>
+which are devices that have
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html#REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA">Camera<wbr/>Metadata#REQUEST_<wbr/>AVAILABLE_<wbr/>CAPABILITIES_<wbr/>LOGICAL_<wbr/>MULTI_<wbr/>CAMERA</a>
+capability and the key is supported in the device's
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html#getAvailableCaptureRequestKeys">CameraCharacteristics#getAvailableCaptureRequestKeys</a>.<wbr/>
+Once this key is set to ON,<wbr/> if the camera device has
+multiple physical cameras active,<wbr/> the TotalCaptureResult will contain
+additional physical camera metadata in the result.<wbr/> One of such
+scenario is at the time of lens switch during zoom,<wbr/> where in addition
+to the active physical camera,<wbr/> a secondary physical camera runs as a
+"follower" and produces an additional physical camera CaptureResult.<wbr/>
+The application can call <a href="https://developer.android.com/reference/android/hardware/camera2/TotalCaptureResult.html#getPhysicalCameraTotalResults">TotalCaptureResult#getPhysicalCameraTotalResults</a>
+to get the additional results.<wbr/></p>
+            </td>
+          </tr>
+
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">HAL Implementation Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>This key may only be included in a logical multi-camera's available
+request and result keys.<wbr/> It must not be included if the camera device
+is not a logical multi-camera.<wbr/></p>
             </td>
           </tr>
 

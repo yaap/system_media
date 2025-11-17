@@ -560,6 +560,7 @@ typedef enum camera_metadata_tag {
     ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID,  // byte         | public       | HIDL v3.4
     ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_SENSOR_CROP_REGION,
                                                       // int32[]      | public       | HIDL v3.10
+    ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS,  // enum         | public       | HIDL v3.12
     ANDROID_LOGICAL_MULTI_CAMERA_END,
 
     ANDROID_DISTORTION_CORRECTION_MODE =              // enum         | public       | HIDL v3.3
@@ -1445,6 +1446,12 @@ typedef enum camera_metadata_enum_android_logical_multi_camera_sensor_sync_type 
     ANDROID_LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_APPROXIMATE       , // HIDL v3.3
     ANDROID_LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_CALIBRATED        , // HIDL v3.3
 } camera_metadata_enum_android_logical_multi_camera_sensor_sync_type_t;
+
+// ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS
+typedef enum camera_metadata_enum_android_logical_multi_camera_additional_results {
+    ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_OFF             , // HIDL v3.12
+    ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_ON              , // HIDL v3.12
+} camera_metadata_enum_android_logical_multi_camera_additional_results_t;
 
 
 // ANDROID_DISTORTION_CORRECTION_MODE

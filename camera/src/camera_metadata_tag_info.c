@@ -924,6 +924,8 @@ static tag_info_t android_logical_multi_camera[ANDROID_LOGICAL_MULTI_CAMERA_END 
     [ ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_SENSOR_CROP_REGION - ANDROID_LOGICAL_MULTI_CAMERA_START ] =
     { "activePhysicalSensorCropRegion",
                                         TYPE_INT32  },
+    [ ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS - ANDROID_LOGICAL_MULTI_CAMERA_START ] =
+    { "additionalResults",             TYPE_BYTE   },
 };
 
 static tag_info_t android_distortion_correction[ANDROID_DISTORTION_CORRECTION_END -
@@ -3927,6 +3929,21 @@ int camera_metadata_enum_snprint(uint32_t tag,
             break;
         }
         case ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_SENSOR_CROP_REGION: {
+            break;
+        }
+        case ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS: {
+            switch (value) {
+                case ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_OFF:
+                    msg = "OFF";
+                    ret = 0;
+                    break;
+                case ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_ON:
+                    msg = "ON";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
             break;
         }
 
@@ -7548,6 +7565,21 @@ int camera_metadata_enum_value(uint32_t tag,
             break;
         }
         case ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_SENSOR_CROP_REGION: {
+            break;
+        }
+        case ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS: {
+                enumName = "OFF";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_OFF;
+                    ret = 0;
+                    break;
+                }
+                enumName = "ON";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_ON;
+                    ret = 0;
+                    break;
+                }
             break;
         }
 

@@ -155,6 +155,60 @@ status_t effect_command_with_status(
 }
 
 /**
+ * Invoke an effect command with a parameter and return value(s), with status reply.
+ */
+template <typename P, typename... Rs>
+requires (std::is_trivially_copyable_v<P> && (std::is_trivially_copyable_v<Rs> && ...))
+status_t effect_command_with_reply_status(
+        effect_handle_t handle, uint32_t command, const P& p, Rs&... rs) {
+    constexpr size_t psize = sizeof(p);
+    constexpr size_t padding = effect_padding_size_v<P>;
+    constexpr size_t rvsize = effect_value_size_v<Rs...>; // Expected size of the reply value
+    constexpr size_t cmd_dsize = sizeof(effect_param_t) + psize + padding; // pCmdData
+    constexpr size_t reply_dsize = cmd_dsize + rvsize; // pReplyData
+
+    uint8_t cmdParamData[cmd_dsize];
+    auto cmdParam = reinterpret_cast<effect_param_t*>(cmdParamData);
+
+    // Prepare pCmdData
+    cmdParam->psize = psize;
+    cmdParam->vsize = rvsize; // Inform the effect about the expected reply value size
+    memcpy(&cmdParam->data[0], &p, psize);
+    if constexpr (padding) memset(&cmdParam->data[psize], 0, padding);
+
+    uint8_t replyParamData[reply_dsize];
+    auto replyParam = reinterpret_cast<effect_param_t*>(replyParamData);
+    uint32_t replySize = reply_dsize;
+
+    const int32_t status = (*handle)->command(
+            handle, command, cmd_dsize, cmdParam, &replySize, replyParam);
+
+    if (status) return status;
+    if (replyParam->status) return replyParam->status;
+
+    // Copy the returned value to rs
+    if (replySize >= (cmd_dsize + replyParam->vsize) &&
+            replyParam->vsize <= rvsize) {
+        const size_t offset = psize + padding;
+        size_t argsize = 0;
+        auto copyArg = [&](auto& r) {
+            // we only allow trivially copyable values at the moment.
+            // allowing special containers requires changing this and the vsize computation above.
+            static_assert(std::is_trivially_copyable_v<std::decay_t<decltype(r)>>);
+            if (argsize + sizeof(r) <= replyParam->vsize) {
+                memcpy(&r, &replyParam->data[offset + argsize], sizeof(r));
+            }
+            argsize += sizeof(r);
+        };
+        (copyArg(rs), ...);
+    } else {
+        // Handle error if reply size or value size mismatch
+        return BAD_VALUE;
+    }
+    return NO_ERROR;
+}
+
+/**
  * Enable the effect.
  */
 //==================================================================================================
@@ -197,6 +251,29 @@ inline status_t effect_disable(effect_handle_t handle) {
 }
 
 /**
+ * Gets an effect parameter.
+ */
+//==================================================================================================
+// command: EFFECT_CMD_GET_PARAM
+//--------------------------------------------------------------------------------------------------
+// description:
+//  Get a parameter and its value
+//--------------------------------------------------------------------------------------------------
+// command format:
+//  size: sizeof(effect_param_t) + size of param
+//  data: effect_param_t + param. See effect_param_t definition below for value offset
+//--------------------------------------------------------------------------------------------------
+// reply format:
+//  size: sizeof(effect_param_t) + size of param and value
+//  data: effect_param_t + param + value
+//==================================================================================================
+template <typename P, typename... Rs>
+requires (std::is_trivially_copyable_v<P> && (std::is_trivially_copyable_v<Rs> && ...))
+status_t effect_get_param(effect_handle_t handle, const P& p, Rs&... rs) {
+    return effect_command_with_reply_status(handle, EFFECT_CMD_GET_PARAM, p, rs...);
+}
+
+/**
  * Sets an effect parameter.
  */
 //==================================================================================================
@@ -214,7 +291,7 @@ inline status_t effect_disable(effect_handle_t handle) {
 //  data: status
 //==================================================================================================
 template <typename P, typename... Vs>
-requires (std::is_trivially_copyable_v<P>)
+requires (std::is_trivially_copyable_v<P> && (std::is_trivially_copyable_v<Vs> && ...))
 status_t effect_set_param(effect_handle_t handle, const P& p, const Vs&... vs) {
     return effect_command_with_status(handle, EFFECT_CMD_SET_PARAM, p, vs...);
 }
