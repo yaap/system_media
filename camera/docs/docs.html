@@ -22675,6 +22675,90 @@ capture Mode.<wbr/></p></span>
                     <span class="entry_type_enum_value">0x1000</span>
                     <span class="entry_type_enum_notes"></span>
                   </li>
+                  <li>
+                    <span class="entry_type_enum_name">STANDARD_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x2000</span>
+                    <span class="entry_type_enum_notes"><p>8-bit profile with additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">HLG10_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x4000</span>
+                    <span class="entry_type_enum_notes"><p>10-bit pixel samples encoded using the Hybrid log-gamma transfer function with
+additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">HDR10_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x8000</span>
+                    <span class="entry_type_enum_notes"><p>10-bit pixel samples encoded using the SMPTE ST 2084 transfer function.<wbr/>
+This profile utilizes internal static metadata to increase the quality
+of the capture and also includes SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">HDR10_PLUS_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x10000</span>
+                    <span class="entry_type_enum_notes"><p>10-bit pixel samples encoded using the SMPTE ST 2084 transfer function.<wbr/>
+In contrast to HDR10,<wbr/> this profile uses internal per-frame metadata
+to further enhance the quality of the capture and includes
+additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_10B_HDR_REF_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x20000</span>
+                    <span class="entry_type_enum_notes"><p>This is a camera mode for Dolby Vision capture optimized for a more scene
+accurate capture.<wbr/> This would typically differ from what a specific device
+might want to tune for a consumer optimized Dolby Vision general capture and
+also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_10B_HDR_REF_PO_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x40000</span>
+                    <span class="entry_type_enum_notes"><p>This is the power optimized mode for 10-bit Dolby Vision HDR Reference Mode
+with additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_10B_HDR_OEM_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x80000</span>
+                    <span class="entry_type_enum_notes"><p>This is the camera mode for the default Dolby Vision capture mode for the
+specific device.<wbr/> This would be tuned by each specific device for consumer
+pleasing results that resonate with their particular audience.<wbr/> We expect
+that each specific device would have a different look for their default
+Dolby Vision capture and also include additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_10B_HDR_OEM_PO_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x100000</span>
+                    <span class="entry_type_enum_notes"><p>This is the power optimized mode for 10-bit Dolby Vision HDR device specific
+capture Mode and also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_8B_HDR_REF_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x200000</span>
+                    <span class="entry_type_enum_notes"><p>This is the 8-bit version of the Dolby Vision reference capture mode optimized
+for scene accuracy and also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_8B_HDR_REF_PO_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x400000</span>
+                    <span class="entry_type_enum_notes"><p>This is the power optimized mode for 8-bit Dolby Vision HDR Reference Mode and
+also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_8B_HDR_OEM_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x800000</span>
+                    <span class="entry_type_enum_notes"><p>This is the 8-bit version of device specific tuned and optimized Dolby Vision
+capture mode and also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_8B_HDR_OEM_PO_AGTM (v3.12)</span>
+                    <span class="entry_type_enum_value">0x1000000</span>
+                    <span class="entry_type_enum_notes"><p>This is the power optimized mode for 8-bit Dolby Vision HDR device specific
+capture Mode and also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">MAX_312 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x2000000</span>
+                    <span class="entry_type_enum_notes"></span>
+                  </li>
                 </ul>
 
             </td> <!-- entry_type -->

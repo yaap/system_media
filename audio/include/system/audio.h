@@ -2355,6 +2355,22 @@ inline CONSTEXPR bool audio_output_is_mixed_output_flags(audio_output_flags_t fl
             AUDIO_OUTPUT_FLAG_BIT_PERFECT)) == 0;
 }
 
+static inline bool audio_is_system_usage(audio_usage_t audioUsage)
+{
+    switch (audioUsage) {
+        case AUDIO_USAGE_EMERGENCY:
+        case AUDIO_USAGE_SAFETY:
+        case AUDIO_USAGE_VEHICLE_STATUS:
+        case AUDIO_USAGE_ANNOUNCEMENT:
+        case AUDIO_USAGE_SPEAKER_CLEANUP:
+        case AUDIO_USAGE_NOTIFICATION_VIBRATION:
+        case AUDIO_USAGE_RINGTONE_VIBRATION:
+            return true;
+        default:
+            return false;
+    }
+}
+
 __END_DECLS
 
 /**

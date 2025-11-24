@@ -1087,6 +1087,29 @@ typedef enum camera_metadata_enum_android_request_available_dynamic_range_profil
     ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_PO
                                                                       = 0x800, // HIDL v3.8
     ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_MAX         = 0x1000, // HIDL v3.8
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_STANDARD_AGTM
+                                                                      = 0x2000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HLG10_AGTM  = 0x4000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_AGTM  = 0x8000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_PLUS_AGTM
+                                                                      = 0x10000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_AGTM
+                                                                      = 0x20000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_PO_AGTM
+                                                                      = 0x40000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_AGTM
+                                                                      = 0x80000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_PO_AGTM
+                                                                      = 0x100000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_AGTM
+                                                                      = 0x200000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_PO_AGTM
+                                                                      = 0x400000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_AGTM
+                                                                      = 0x800000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_PO_AGTM
+                                                                      = 0x1000000, // HIDL v3.12
+    ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_MAX_312     = 0x2000000, // HIDL v3.12
 } camera_metadata_enum_android_request_available_dynamic_range_profiles_map_t;
 
 // ANDROID_REQUEST_AVAILABLE_COLOR_SPACE_PROFILES_MAP
