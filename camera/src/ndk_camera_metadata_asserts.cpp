@@ -593,6 +593,9 @@ static_assert(static_cast<int>(ANDROID_SCALER_AVAILABLE_STREAM_USE_CASES)
 static_assert(static_cast<int>(ANDROID_SCALER_RAW_CROP_REGION)
         == static_cast<int>(ACAMERA_SCALER_RAW_CROP_REGION));
 
+static_assert(static_cast<int>(ANDROID_SCALER_CONCURRENT_MULTI_RESOLUTION_FORMATS)
+        == static_cast<int>(ACAMERA_SCALER_CONCURRENT_MULTI_RESOLUTION_FORMATS));
+
 static_assert(static_cast<int>(ANDROID_SENSOR_EXPOSURE_TIME)
         == static_cast<int>(ACAMERA_SENSOR_EXPOSURE_TIME));
 
@@ -820,6 +823,9 @@ static_assert(static_cast<int>(ANDROID_INFO_VERSION)
 
 static_assert(static_cast<int>(ANDROID_INFO_DEVICE_STATE_ORIENTATIONS)
         == static_cast<int>(ACAMERA_INFO_DEVICE_STATE_ORIENTATIONS));
+
+static_assert(static_cast<int>(ANDROID_INFO_DEVICE_TYPE)
+        == static_cast<int>(ACAMERA_INFO_DEVICE_TYPE));
 
 static_assert(static_cast<int>(ANDROID_BLACK_LEVEL_LOCK)
         == static_cast<int>(ACAMERA_BLACK_LEVEL_LOCK));
@@ -1589,6 +1595,14 @@ static_assert(static_cast<int32_t>(ANDROID_INFO_SUPPORTED_HARDWARE_LEVEL_3)
         == static_cast<int32_t>(ACAMERA_INFO_SUPPORTED_HARDWARE_LEVEL_3));
 static_assert(static_cast<int32_t>(ANDROID_INFO_SUPPORTED_HARDWARE_LEVEL_EXTERNAL)
         == static_cast<int32_t>(ACAMERA_INFO_SUPPORTED_HARDWARE_LEVEL_EXTERNAL));
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_BUILT_IN)
+        == static_cast<int32_t>(ACAMERA_INFO_DEVICE_TYPE_BUILT_IN));
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_EXTERNAL)
+        == static_cast<int32_t>(ACAMERA_INFO_DEVICE_TYPE_EXTERNAL));
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_VIRTUAL)
+        == static_cast<int32_t>(ACAMERA_INFO_DEVICE_TYPE_VIRTUAL));
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_UNKNOWN)
+        == static_cast<int32_t>(ACAMERA_INFO_DEVICE_TYPE_UNKNOWN));
 
 static_assert(static_cast<int32_t>(ANDROID_BLACK_LEVEL_LOCK_OFF)
         == static_cast<int32_t>(ACAMERA_BLACK_LEVEL_LOCK_OFF));

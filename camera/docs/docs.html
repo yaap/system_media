@@ -880,6 +880,8 @@
             ><a href="#static_android.scaler.availableStreamUseCases">android.scaler.availableStreamUseCases</a></li>
             <li
             ><a href="#static_android.scaler.mandatoryUseCaseStreamCombinations">android.scaler.mandatoryUseCaseStreamCombinations</a></li>
+            <li
+            ><a href="#static_android.scaler.concurrentMultiResolutionFormats">android.scaler.concurrentMultiResolutionFormats</a></li>
           </ul>
         </li>
         <li>
@@ -1261,6 +1263,15 @@
             ><a href="#static_android.info.sessionConfigurationQueryVersion">android.info.sessionConfigurationQueryVersion</a></li>
             <li
             ><a href="#static_android.info.deviceId">android.info.deviceId</a></li>
+            <li
+            ><a href="#static_android.info.deviceType">android.info.deviceType</a></li>
+          </ul>
+        </li>
+        <li>
+          <span class="toc_kind_header">dynamic</span>
+          <ul class="toc_section">
+            <li
+            ><a href="#dynamic_android.info.deviceType">android.info.deviceType</a></li>
           </ul>
         </li>
       </ul> <!-- toc_section -->
@@ -27201,6 +27212,60 @@ capability.<wbr/></p>
           <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
            <!-- end of entry -->
         
+                
+          <tr class="entry" id="static_android.scaler.concurrentMultiResolutionFormats">
+            <td class="entry_name
+             " rowspan="3">
+              android.<wbr/>scaler.<wbr/>concurrent<wbr/>Multi<wbr/>Resolution<wbr/>Formats
+            </td>
+            <td class="entry_type">
+                <span class="entry_type_name">int32</span>
+                <span class="entry_type_container">x</span>
+
+                <span class="entry_type_array">
+                  n
+                </span>
+              <span class="entry_type_visibility"> [ndk_public]</span>
+
+
+
+
+
+
+            </td> <!-- entry_type -->
+
+            <td class="entry_description">
+              <p>The MultiResolutionImageReader formats supporting concurrent readers.<wbr/></p>
+            </td>
+
+            <td class="entry_units">
+            </td>
+
+            <td class="entry_range">
+            </td>
+
+            <td class="entry_hal_version">
+              <p>3.<wbr/>12</p>
+            </td>
+
+            <td class="entry_tags">
+            </td>
+
+          </tr>
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>Among all of the MultiResolutionImageReader formats this camera device supports,<wbr/>
+this list contains the formats that support concurrent reader outputs.<wbr/></p>
+            </td>
+          </tr>
+
+
+          <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
+           <!-- end of entry -->
+        
         
 
       <!-- end of kind -->
@@ -38001,6 +38066,242 @@ search space for feature combination queries.<wbr/></p>
 owning the camera.<wbr/> For any other camera,<wbr/> this key would not be present.<wbr/>
 Callers should assume <a href="https://developer.android.com/reference/android/content/Context.html#DEVICE_ID_DEFAULT">Context#DEVICE_<wbr/>ID_<wbr/>DEFAULT</a>
 in case this key is not present.<wbr/></p>
+            </td>
+          </tr>
+
+
+          <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
+           <!-- end of entry -->
+        
+                
+          <tr class="entry" id="static_android.info.deviceType">
+            <td class="entry_name
+             " rowspan="3">
+              android.<wbr/>info.<wbr/>device<wbr/>Type
+            </td>
+            <td class="entry_type">
+                <span class="entry_type_name entry_type_name_enum">byte</span>
+
+              <span class="entry_type_visibility"> [public]</span>
+
+
+              <span class="entry_type_hwlevel">[legacy] </span>
+
+
+
+                <ul class="entry_type_enum">
+                  <li>
+                    <span class="entry_type_enum_name">BUILT_IN (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device is physically a part of this Android device,<wbr/> and the data produced
+is always within the device's control before it reaches the application requesting it.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">EXTERNAL (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device is not permanently connected to this Android device.<wbr/>  It may be
+connected by a wired connection,<wbr/> such as a USB webcam,<wbr/> or it might be connected
+wirelessly,<wbr/> such as via WiFi or other communication mechanism.<wbr/></p>
+<p>The provenance of the image data from the external camera cannot be guaranteed,<wbr/> since it
+is produced by hardware that is not controlled by this Android device.<wbr/></p>
+<p>Note that an <code>EXTERNAL</code> <code><a href="#static_android.info.deviceType">android.<wbr/>info.<wbr/>device<wbr/>Type</a></code> does not mean the
+<code><a href="#static_android.info.supportedHardwareLevel">android.<wbr/>info.<wbr/>supported<wbr/>Hardware<wbr/>Level</a></code> must be <code>EXTERNAL</code>.<wbr/> A basic USB webcam would
+likely have an <code>EXTERNAL</code> hardware level,<wbr/> but more sophisticated remote camera systems
+may have more capabilities than that,<wbr/> and be listed with a <code>LIMITED</code> or better
+hardware level.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">VIRTUAL (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device produces purely virtual images,<wbr/> though they may be based on the
+output of a real hardware camera in some cases.<wbr/> For example,<wbr/> a virtual reality headset
+may have a virtual camera as the front-facing camera,<wbr/> producing a virtual avatar to
+represent the user,<wbr/> which is animated based on sensors on the headset.<wbr/></p>
+<p>The image data should not be assumed to be real.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">UNKNOWN (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device has an unknown classification.<wbr/></p>
+<p>This value will be used when new device classifications need to be added in future
+Android versions,<wbr/> so that applications targeting older SDK levels do not have to
+handle unknown enumeration values.<wbr/></p></span>
+                  </li>
+                </ul>
+
+            </td> <!-- entry_type -->
+
+            <td class="entry_description">
+              <p>A classification of the underlying hardware and source of image data for this
+camera device,<wbr/> or for a specific camera output frame.<wbr/></p>
+            </td>
+
+            <td class="entry_units">
+            </td>
+
+            <td class="entry_range">
+            </td>
+
+            <td class="entry_hal_version">
+              <p>3.<wbr/>12</p>
+            </td>
+
+            <td class="entry_tags">
+            </td>
+
+          </tr>
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>Historically,<wbr/> camera devices listed by the camera2 API could be assumed to be built-in
+cameras on the Android device,<wbr/> or in the case of the <code>EXTERNAL</code>
+<code><a href="#static_android.info.supportedHardwareLevel">android.<wbr/>info.<wbr/>supported<wbr/>Hardware<wbr/>Level</a></code>,<wbr/> USB webcams.<wbr/></p>
+<p>However,<wbr/> it is increasingly possible for camera devices to not be restricted to
+device-internal sensors and processing pipelines.<wbr/> Such devices can provide a wide range
+of useful capabilities to applications,<wbr/> but may also not be suitable for all camera use
+cases.<wbr/></p>
+<p>This key provides a basic classification of the type of camera this camera ID
+represents,<wbr/> so that applications may decide on the appropriate level of trust to extend
+to the image data produced by it.<wbr/></p>
+<p>Note that in some cases,<wbr/> it is possible for the user to swap the definition of a camera
+ID to a different one,<wbr/> such as when connecting a remote camera to act as the front
+camera of the device.<wbr/> This is normally transparent to the camera-using application to
+minimize user friction,<wbr/> but applications that care about this possibility should always
+verify the value of this key in the
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html">CameraCharacteristics</a> before opening
+a camera,<wbr/> instead of caching it,<wbr/> and should also watch the value of this key in
+<a href="https://developer.android.com/reference/android/hardware/camera2/CaptureResult.html">CaptureResults</a> as well,<wbr/> since it may
+change mid-session.<wbr/></p>
+            </td>
+          </tr>
+
+
+          <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
+           <!-- end of entry -->
+        
+        
+
+      <!-- end of kind -->
+      </tbody>
+      <tr><td colspan="7" class="kind">dynamic</td></tr>
+
+      <thead class="entries_header">
+        <tr>
+          <th class="th_name">Property Name</th>
+          <th class="th_type">Type</th>
+          <th class="th_description">Description</th>
+          <th class="th_units">Units</th>
+          <th class="th_range">Range</th>
+          <th class="th_hal_version">Initial HIDL HAL version</th>
+          <th class="th_tags">Tags</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        
+
+        
+
+        
+
+        
+
+                
+          <tr class="entry" id="dynamic_android.info.deviceType">
+            <td class="entry_name
+             " rowspan="3">
+              android.<wbr/>info.<wbr/>device<wbr/>Type
+            </td>
+            <td class="entry_type">
+                <span class="entry_type_name entry_type_name_enum">byte</span>
+
+              <span class="entry_type_visibility"> [public]</span>
+
+
+              <span class="entry_type_hwlevel">[legacy] </span>
+
+
+
+                <ul class="entry_type_enum">
+                  <li>
+                    <span class="entry_type_enum_name">BUILT_IN (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device is physically a part of this Android device,<wbr/> and the data produced
+is always within the device's control before it reaches the application requesting it.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">EXTERNAL (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device is not permanently connected to this Android device.<wbr/>  It may be
+connected by a wired connection,<wbr/> such as a USB webcam,<wbr/> or it might be connected
+wirelessly,<wbr/> such as via WiFi or other communication mechanism.<wbr/></p>
+<p>The provenance of the image data from the external camera cannot be guaranteed,<wbr/> since it
+is produced by hardware that is not controlled by this Android device.<wbr/></p>
+<p>Note that an <code>EXTERNAL</code> <code><a href="#static_android.info.deviceType">android.<wbr/>info.<wbr/>device<wbr/>Type</a></code> does not mean the
+<code><a href="#static_android.info.supportedHardwareLevel">android.<wbr/>info.<wbr/>supported<wbr/>Hardware<wbr/>Level</a></code> must be <code>EXTERNAL</code>.<wbr/> A basic USB webcam would
+likely have an <code>EXTERNAL</code> hardware level,<wbr/> but more sophisticated remote camera systems
+may have more capabilities than that,<wbr/> and be listed with a <code>LIMITED</code> or better
+hardware level.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">VIRTUAL (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device produces purely virtual images,<wbr/> though they may be based on the
+output of a real hardware camera in some cases.<wbr/> For example,<wbr/> a virtual reality headset
+may have a virtual camera as the front-facing camera,<wbr/> producing a virtual avatar to
+represent the user,<wbr/> which is animated based on sensors on the headset.<wbr/></p>
+<p>The image data should not be assumed to be real.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">UNKNOWN (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device has an unknown classification.<wbr/></p>
+<p>This value will be used when new device classifications need to be added in future
+Android versions,<wbr/> so that applications targeting older SDK levels do not have to
+handle unknown enumeration values.<wbr/></p></span>
+                  </li>
+                </ul>
+
+            </td> <!-- entry_type -->
+
+            <td class="entry_description">
+              <p>A classification of the underlying hardware and source of image data for this
+camera device,<wbr/> or for a specific camera output frame.<wbr/></p>
+            </td>
+
+            <td class="entry_units">
+            </td>
+
+            <td class="entry_range">
+            </td>
+
+            <td class="entry_hal_version">
+              <p>3.<wbr/>12</p>
+            </td>
+
+            <td class="entry_tags">
+            </td>
+
+          </tr>
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>Historically,<wbr/> camera devices listed by the camera2 API could be assumed to be built-in
+cameras on the Android device,<wbr/> or in the case of the <code>EXTERNAL</code>
+<code><a href="#static_android.info.supportedHardwareLevel">android.<wbr/>info.<wbr/>supported<wbr/>Hardware<wbr/>Level</a></code>,<wbr/> USB webcams.<wbr/></p>
+<p>However,<wbr/> it is increasingly possible for camera devices to not be restricted to
+device-internal sensors and processing pipelines.<wbr/> Such devices can provide a wide range
+of useful capabilities to applications,<wbr/> but may also not be suitable for all camera use
+cases.<wbr/></p>
+<p>This key provides a basic classification of the type of camera this camera ID
+represents,<wbr/> so that applications may decide on the appropriate level of trust to extend
+to the image data produced by it.<wbr/></p>
+<p>Note that in some cases,<wbr/> it is possible for the user to swap the definition of a camera
+ID to a different one,<wbr/> such as when connecting a remote camera to act as the front
+camera of the device.<wbr/> This is normally transparent to the camera-using application to
+minimize user friction,<wbr/> but applications that care about this possibility should always
+verify the value of this key in the
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html">CameraCharacteristics</a> before opening
+a camera,<wbr/> instead of caching it,<wbr/> and should also watch the value of this key in
+<a href="https://developer.android.com/reference/android/hardware/camera2/CaptureResult.html">CaptureResults</a> as well,<wbr/> since it may
+change mid-session.<wbr/></p>
             </td>
           </tr>
 

@@ -101,6 +101,7 @@
 #include <aidl/android/hardware/camera/metadata/LedAvailableLeds.h>
 #include <aidl/android/hardware/camera/metadata/InfoSupportedHardwareLevel.h>
 #include <aidl/android/hardware/camera/metadata/InfoSupportedBufferManagementVersion.h>
+#include <aidl/android/hardware/camera/metadata/InfoDeviceType.h>
 #include <aidl/android/hardware/camera/metadata/BlackLevelLock.h>
 #include <aidl/android/hardware/camera/metadata/SyncFrameNumber.h>
 #include <aidl/android/hardware/camera/metadata/SyncMaxLatency.h>
@@ -639,6 +640,8 @@ static_assert(static_cast<int>(ANDROID_SCALER_AVAILABLE_STREAM_USE_CASES)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_SCALER_AVAILABLE_STREAM_USE_CASES));
 static_assert(static_cast<int>(ANDROID_SCALER_RAW_CROP_REGION)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_SCALER_RAW_CROP_REGION));
+static_assert(static_cast<int>(ANDROID_SCALER_CONCURRENT_MULTI_RESOLUTION_FORMATS)
+        == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_SCALER_CONCURRENT_MULTI_RESOLUTION_FORMATS));
 static_assert(static_cast<int>(ANDROID_SENSOR_EXPOSURE_TIME)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_SENSOR_EXPOSURE_TIME));
 static_assert(static_cast<int>(ANDROID_SENSOR_FRAME_DURATION)
@@ -837,6 +840,8 @@ static_assert(static_cast<int>(ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION));
 static_assert(static_cast<int>(ANDROID_INFO_DEVICE_STATE_ORIENTATIONS)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_INFO_DEVICE_STATE_ORIENTATIONS));
+static_assert(static_cast<int>(ANDROID_INFO_DEVICE_TYPE)
+        == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_INFO_DEVICE_TYPE));
 static_assert(static_cast<int>(ANDROID_BLACK_LEVEL_LOCK)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_BLACK_LEVEL_LOCK));
 static_assert(static_cast<int>(ANDROID_SYNC_FRAME_NUMBER)
@@ -1729,6 +1734,15 @@ static_assert(static_cast<int32_t>(ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERS
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoSupportedBufferManagementVersion::ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION_AIDL_DEVICE));
 static_assert(static_cast<int32_t>(ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION_SESSION_CONFIGURABLE)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoSupportedBufferManagementVersion::ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION_SESSION_CONFIGURABLE));
+
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_BUILT_IN)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoDeviceType::ANDROID_INFO_DEVICE_TYPE_BUILT_IN));
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_EXTERNAL)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoDeviceType::ANDROID_INFO_DEVICE_TYPE_EXTERNAL));
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_VIRTUAL)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoDeviceType::ANDROID_INFO_DEVICE_TYPE_VIRTUAL));
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_UNKNOWN)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoDeviceType::ANDROID_INFO_DEVICE_TYPE_UNKNOWN));
 
 static_assert(static_cast<int32_t>(ANDROID_BLACK_LEVEL_LOCK_OFF)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::BlackLevelLock::ANDROID_BLACK_LEVEL_LOCK_OFF));
