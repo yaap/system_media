@@ -19,18 +19,7 @@
 #define LOG_TAG "audio_utils::mutex"
 #include <utils/Log.h>
 
-#include <com_android_media_audioserver.h>
-
 namespace android::audio_utils {
-
-bool mutex_get_enable_flag() {
-    static const bool enable = []() {
-        const bool flag = com::android::media::audioserver::mutex_priority_inheritance();
-        ALOGD("get_enable_flag: mutex_priority_inheritance: %s", flag ? "true" : "false");
-        return flag;
-    }();
-    return enable;
-}
 
 // Define mutex::get_mutex_stat_array here because header-only ODR inline linking
 // results in multiple objects if included into multiple shared libraries.

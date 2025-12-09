@@ -19,8 +19,13 @@
 
 #ifdef __cplusplus
 
+#include <algorithm>
+#include <memory>
 #include <mutex>
+#include <string>
+#include <utility>
 #include <vector>
+
 #include <system/audio.h>
 #include <utils/Errors.h>
 

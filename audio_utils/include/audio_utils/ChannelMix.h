@@ -17,6 +17,7 @@
 #pragma once
 #include "channels.h"
 #include <math.h>
+#include <memory>
 
 namespace android::audio_utils::channels {
 

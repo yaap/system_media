@@ -16,6 +16,8 @@
 
 #include <audio_utils/ChannelMix.h>
 
+#include <memory>
+
 namespace android::audio_utils::channels {
 
 /**

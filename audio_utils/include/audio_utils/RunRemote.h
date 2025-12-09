@@ -16,8 +16,10 @@
 
 #pragma once
 #include <functional>
+#include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <utility>
 
 namespace android::audio_utils {
 

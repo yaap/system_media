@@ -84,10 +84,11 @@ typedef enum {
     AUDIO_MODE_IN_CALL = HAL_AUDIO_MODE_IN_CALL,
     AUDIO_MODE_IN_COMMUNICATION = HAL_AUDIO_MODE_IN_COMMUNICATION,
     AUDIO_MODE_CALL_SCREEN = HAL_AUDIO_MODE_CALL_SCREEN,
+    AUDIO_MODE_ASSISTANT_CONVERSATION = 7,
 #ifndef AUDIO_NO_SYSTEM_DECLARATIONS
     AUDIO_MODE_CALL_REDIRECT = 5,
     AUDIO_MODE_COMMUNICATION_REDIRECT = 6,
-    AUDIO_MODE_MAX            = AUDIO_MODE_COMMUNICATION_REDIRECT,
+    AUDIO_MODE_MAX            = AUDIO_MODE_ASSISTANT_CONVERSATION,
     AUDIO_MODE_CNT            = AUDIO_MODE_MAX + 1,
 #endif // AUDIO_NO_SYSTEM_DECLARATIONS
 } audio_mode_t;
@@ -128,7 +129,7 @@ typedef struct {
 /** The separator for tags. */
 static const char AUDIO_ATTRIBUTES_TAGS_SEPARATOR = ';';
 /** Tag value for GMAP bidirectional mode indication */
-static const char* AUDIO_ATTRIBUTES_TAG_GMAP_BIDIRECTIONAL = "bidirectional";
+static const char* AUDIO_ATTRIBUTES_TAG_GMAP_BIDIRECTIONAL = "VX_AOSP_bidirectional";
 
 // Keep sync with android/media/AudioProductStrategy.java
 static const audio_flags_mask_t AUDIO_FLAGS_AFFECT_STRATEGY_SELECTION =

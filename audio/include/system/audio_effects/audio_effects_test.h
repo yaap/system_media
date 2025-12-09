@@ -132,7 +132,7 @@ status_t effect_command_with_status(
     param->psize = psize;
     param->vsize = vsize;
     memcpy(&param->data[0], &p, psize);
-    if (padding) memset(&param->data[psize], 0, padding);
+    if constexpr (padding) memset(&param->data[psize], 0, padding);
 
     // Write each value in turn to param.
     const size_t offset = psize + padding;

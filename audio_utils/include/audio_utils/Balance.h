@@ -19,8 +19,11 @@
 
 #include <audio_utils/channels.h>
 #include <functional>
+#include <limits>
 #include <math.h>       /* expf */
 #include <sstream>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace android::audio_utils {

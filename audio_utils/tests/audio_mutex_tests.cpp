@@ -21,12 +21,10 @@
 
 using namespace std::chrono_literals;
 
-// Currently tests mutex priority-inheritance (or not) based on flag
-// adb shell setprop \
-// persist.device_config.aconfig_flags.media_audio.\
-// com.android.media.audio.flags.mutex_priority_inheritance true
+// Currently the non-parameterized tests use priority-inheritance PI (or not) based on
+// the default mutex setting kDefaultPriorityInheritance.
 //
-// TODO(b/209491695) enable both PI/non-PI mutex tests regardless of flag.
+// The parameterized tests check mutex with [0] no PI and [1] PI.
 
 namespace android {
 
@@ -526,7 +524,7 @@ class MutexTestSuite : public testing::TestWithParam<bool> {};
 TEST_P(MutexTestSuite, FatalRecursiveMutex)
 NO_THREAD_SAFETY_ANALYSIS {
     if (!android::audio_utils::AudioMutexAttributes::abort_on_recursion_check_
-            || !audio_utils::mutex_get_enable_flag()) {
+            || !audio_utils::mutex::kDefaultPriorityInheritance) {
         ALOGD("Test FatalRecursiveMutex skipped");
         return;
     }
@@ -547,7 +545,7 @@ NO_THREAD_SAFETY_ANALYSIS {
 TEST_P(MutexTestSuite, FatalLockOrder)
 NO_THREAD_SAFETY_ANALYSIS {
     if (!android::audio_utils::AudioMutexAttributes::abort_on_order_check_
-            || !audio_utils::mutex_get_enable_flag()) {
+            || !audio_utils::mutex::kDefaultPriorityInheritance) {
         ALOGD("Test FatalLockOrder skipped");
         return;
     }
@@ -569,7 +567,7 @@ NO_THREAD_SAFETY_ANALYSIS {
 TEST_P(MutexTestSuite, UnexpectedUnlock)
 NO_THREAD_SAFETY_ANALYSIS {
     if (!android::audio_utils::AudioMutexAttributes::abort_on_invalid_unlock_
-            || !audio_utils::mutex_get_enable_flag()) {
+            || !audio_utils::mutex::kDefaultPriorityInheritance) {
         ALOGD("Test UnexpectedUnlock skipped");
         return;
     }

@@ -27,6 +27,18 @@
 #define WAVE_FORMAT_IEEE_FLOAT  3
 #define WAVE_FORMAT_EXTENSIBLE  0xFFFE
 
+
+// GUIDs for WAVE_FORMAT_EXTENSIBLE SubFormat field
+// First two bytes of the GUID form the sub-code specifying the data format code:
+// 0x0001 WAVE_FORMAT_PCM
+// 0x0003 WAVE_FORMAT_IEEE_FLOAT
+static constexpr unsigned char kWavSubTypePCM[16] = {
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
+    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71};
+static constexpr unsigned char kWavSubTypeIEEEFLOAT[16] = {
+    0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
+    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71};
+
 struct SNDFILE_ {
     int mode;
     uint8_t *temp;  // realloc buffer used for shrinking 16 bits to 8 bits and byte-swapping
@@ -157,7 +169,7 @@ static SNDFILE *sf_open_read(const char *path, SF_INFO *info)
                 minSize = 16;
                 break;
             case WAVE_FORMAT_EXTENSIBLE:
-                minSize = 40;
+                minSize = 24 + 16;
                 break;
             default:
 #ifdef HAVE_STDERR
@@ -222,8 +234,21 @@ static SNDFILE *sf_open_read(const char *path, SF_INFO *info)
             case 32:
                 if (format == WAVE_FORMAT_IEEE_FLOAT)
                     handle->info.format |= SF_FORMAT_FLOAT;
-                else
+                else if (format == WAVE_FORMAT_PCM)
                     handle->info.format |= SF_FORMAT_PCM_32;
+                else if (format == WAVE_FORMAT_EXTENSIBLE) {
+                    const unsigned char* subFormatGuid = &fmt[24];
+                    if (memcmp(subFormatGuid, kWavSubTypeIEEEFLOAT, 16) == 0)
+                        handle->info.format |= SF_FORMAT_FLOAT;
+                    else if (memcmp(subFormatGuid, kWavSubTypePCM, 16) == 0)
+                        handle->info.format |= SF_FORMAT_PCM_32;
+                    else {
+#ifdef HAVE_STDERR
+                        fprintf(stderr, "extensible sub-type not supported\n");
+#endif
+                        goto close;
+                    }
+                }
                 break;
             }
             hadFmt = 1;

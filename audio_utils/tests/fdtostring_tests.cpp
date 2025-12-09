@@ -17,7 +17,11 @@
 #include <audio_utils/FdToString.h>
 
 #include <signal.h>
+
 #include <chrono>
+#include <string>
+#include <thread>
+#include <utility>
 
 #include <gtest/gtest.h>
 

@@ -23,9 +23,13 @@
 #include <algorithm>
 #include <iomanip>
 #include <math.h>
+#include <mutex>
+#include <new>
 #include <sstream>
+#include <string>
 #include <stdint.h>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 
 #include <audio_utils/clock.h>

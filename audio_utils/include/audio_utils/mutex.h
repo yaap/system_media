@@ -1235,8 +1235,6 @@ private:
 // is inefficient.  One is better off making a custom timed implementation using
 // pthread_mutex_timedlock() on the mutex::native_handle().
 
-extern bool mutex_get_enable_flag();
-
 // Returns true if the mutex was locked within the timeout_ns.
 //
 // std::timed_mutex is implemented using a condition variable and doesn't
@@ -1266,9 +1264,11 @@ public:
     // We use composition here.
     // No copy/move ctors as the member std::mutex has it deleted.
 
+    static constexpr bool kDefaultPriorityInheritance = true;
+
     // Constructor selects priority inheritance based on the platform default.
     mutex_impl(typename Attributes::order_t order = Attributes::order_default_)
-        : mutex_impl(mutex_get_enable_flag(), order)
+        : mutex_impl(kDefaultPriorityInheritance, order)
     {}
 
     // Constructor selects priority inheritance based on input argument.
@@ -1369,8 +1369,8 @@ public:
      * Returns the locking statistics per mutex capability category.
      */
     static std::string all_stats_to_string() {
-        std::string out("mutex stats: priority inheritance ");
-        out.append(mutex_get_enable_flag() ? "enabled" : "disabled")
+        std::string out("mutex stats: default priority inheritance ");
+        out.append(kDefaultPriorityInheritance ? "enabled" : "disabled")
             .append("\n");
         const auto& stat_array = get_mutex_stat_array();
         for (size_t i = 0; i < stat_array.size(); ++i) {

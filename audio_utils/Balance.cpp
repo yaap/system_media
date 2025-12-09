@@ -16,6 +16,11 @@
 
 #include <audio_utils/Balance.h>
 
+#include <algorithm>
+#include <sstream>
+#include <string>
+#include <vector>
+
 namespace android::audio_utils {
 
 void Balance::setChannelMask(audio_channel_mask_t channelMask)
