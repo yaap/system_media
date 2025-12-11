@@ -3296,7 +3296,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           Some camera devices support additional digital sensitivity boosting in the
           camera processing pipeline after sensor RAW image is captured.
           Such a boost will be applied to YUV/JPEG format output images but will not
-          have effect on RAW output formats like RAW_SENSOR, RAW10, RAW12 or RAW_OPAQUE.
+          have effect on RAW output formats like RAW_SENSOR, RAW10, RAW12, RAW14
+          or RAW_OPAQUE.
 
           This key will be `null` for devices that do not support any RAW format
           outputs. For devices that do support RAW format outputs, this key will always
@@ -6124,7 +6125,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           * Processed (but stalling): any non-RAW format with a stallDurations &amp;gt; 0.
             Typically {@link android.graphics.ImageFormat#JPEG|AIMAGE_FORMAT_JPEG JPEG format}.
           * Raw formats: {@link android.graphics.ImageFormat#RAW_SENSOR|AIMAGE_FORMAT_RAW16
-            RAW_SENSOR}, {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10 RAW10}, or
+            RAW_SENSOR},
+            {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10 RAW10}, or
             {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12 RAW12}.
           * Processed (but not-stalling): any non-RAW format without a stall duration.  Typically
             {@link android.graphics.ImageFormat#YUV_420_888|AIMAGE_FORMAT_YUV_420_888 YUV_420_888},
@@ -8088,6 +8090,9 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             <value id="0x26" hal_version="3.4">RAW12
               <notes>RAW12</notes>
             </value>
+            <value id="0x2C" hal_version="3.12">RAW14
+              <notes>RAW14</notes>
+            </value>
             <value id="0x20203859" hal_version="3.4">Y8
               <notes>Y8</notes>
             </value>
@@ -8636,8 +8641,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
           <hal_details>
           If possible, it is recommended that all non-JPEG formats
-          (such as RAW16) should not have a stall duration. RAW10, RAW12, RAW_OPAQUE
-          and IMPLEMENTATION_DEFINED must not have stall durations.
+          (such as RAW16) should not have a stall duration. RAW10, RAW12, RAW14,
+          RAW_OPAQUE and IMPLEMENTATION_DEFINED must not have stall durations.
           </hal_details>
           <tag id="V1" />
         </entry>
@@ -9417,8 +9422,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
           <hal_details>
           If possible, it is recommended that all non-JPEG formats
-          (such as RAW16) should not have a stall duration. RAW10, RAW12, RAW_OPAQUE
-          and IMPLEMENTATION_DEFINED must not have stall durations.
+          (such as RAW16) should not have a stall duration. RAW10, RAW12, RAW14,
+          RAW_OPAQUE and IMPLEMENTATION_DEFINED must not have stall durations.
           </hal_details>
         </entry>
         <entry name="streamConfigurationMapMaximumResolution" type="int32" visibility="java_public"
@@ -10074,8 +10079,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
 
             In general, application should always refer to active array size for controls like
             metering regions or crop region. Two exceptions are when the application is dealing with
-            RAW image buffers (RAW_SENSOR, RAW10, RAW12 etc), or when application explicitly set
-            android.distortionCorrection.mode to OFF. In these cases, application should refer
+            RAW image buffers (RAW_SENSOR, RAW10, RAW12, RAW14 etc), or when application explicitly
+            set android.distortionCorrection.mode to OFF. In these cases, application should refer
             to android.sensor.info.preCorrectionActiveArraySize.
             </details>
             <ndk_details>

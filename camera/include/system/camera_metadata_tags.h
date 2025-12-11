@@ -1135,6 +1135,7 @@ typedef enum camera_metadata_enum_android_scaler_available_formats {
     ANDROID_SCALER_AVAILABLE_FORMATS_BLOB                            = 0x21, // HIDL v3.2
     ANDROID_SCALER_AVAILABLE_FORMATS_RAW10                           = 0x25, // HIDL v3.4
     ANDROID_SCALER_AVAILABLE_FORMATS_RAW12                           = 0x26, // HIDL v3.4
+    ANDROID_SCALER_AVAILABLE_FORMATS_RAW14                           = 0x2C, // HIDL v3.12
     ANDROID_SCALER_AVAILABLE_FORMATS_Y8                              = 0x20203859, // HIDL v3.4
 } camera_metadata_enum_android_scaler_available_formats_t;
 

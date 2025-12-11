@@ -2805,6 +2805,10 @@ int camera_metadata_enum_snprint(uint32_t tag,
                     msg = "RAW12";
                     ret = 0;
                     break;
+                case ANDROID_SCALER_AVAILABLE_FORMATS_RAW14:
+                    msg = "RAW14";
+                    ret = 0;
+                    break;
                 case ANDROID_SCALER_AVAILABLE_FORMATS_Y8:
                     msg = "Y8";
                     ret = 0;
@@ -6435,6 +6439,12 @@ int camera_metadata_enum_value(uint32_t tag,
                 enumName = "RAW12";
                 if (strncmp(name, enumName, size) == 0) {
                     *value = ANDROID_SCALER_AVAILABLE_FORMATS_RAW12;
+                    ret = 0;
+                    break;
+                }
+                enumName = "RAW14";
+                if (strncmp(name, enumName, size) == 0) {
+                    *value = ANDROID_SCALER_AVAILABLE_FORMATS_RAW14;
                     ret = 0;
                     break;
                 }

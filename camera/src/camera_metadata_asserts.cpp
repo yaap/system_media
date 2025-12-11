@@ -1480,6 +1480,8 @@ static_assert(static_cast<int32_t>(ANDROID_SCALER_AVAILABLE_FORMATS_RAW10)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::ScalerAvailableFormats::ANDROID_SCALER_AVAILABLE_FORMATS_RAW10));
 static_assert(static_cast<int32_t>(ANDROID_SCALER_AVAILABLE_FORMATS_RAW12)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::ScalerAvailableFormats::ANDROID_SCALER_AVAILABLE_FORMATS_RAW12));
+static_assert(static_cast<int32_t>(ANDROID_SCALER_AVAILABLE_FORMATS_RAW14)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::ScalerAvailableFormats::ANDROID_SCALER_AVAILABLE_FORMATS_RAW14));
 static_assert(static_cast<int32_t>(ANDROID_SCALER_AVAILABLE_FORMATS_Y8)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::ScalerAvailableFormats::ANDROID_SCALER_AVAILABLE_FORMATS_Y8));
 
