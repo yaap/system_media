@@ -271,12 +271,22 @@ enum {
  *     There is no concept of output or input.
  *     It is not permitted for no bits to be set.
  *
+ *   AUDIO_CHANNEL_REPRESENTATION_ACN
+ *     is a channel mask representation of Ambisonics Channel Number (ACN) scheme.
+ *     The platform assumes SN3D normalization is used. The first 8 low-order bits (0..7) set
+ *     the number of channel used. By default full sphere Ambisonics is assumed, thus
+ *     the number of channels used by the order N is (N + 1) ^ 2. To reduce channel usage,
+ *     only horizontal components may be considered, lowering the number of channels to 2 * N + 1,
+ *     this case is encoded with the bit 8 set to 1.
+ *     There is no concept of output or input.
+ *     It is not permitted for no bits to be set.
+ *
  * All other representations are reserved for future use.
  *
- * Warning: current representation distinguishes between input and output, but this will not the be
- * case in future revisions of the platform. Wherever there is an ambiguity between input and output
- * that is currently resolved by checking the channel mask, the implementer should look for ways to
- * fix it with additional information outside of the mask.
+ * Warning: current position-based representation distinguishes between input and output, but this
+ * will not the be case in future revisions of the platform. Wherever there is an ambiguity between
+ * input and output that is currently resolved by checking the channel mask, the implementer should
+ * look for ways to fix it with additional information outside of the mask.
  */
 
 /* log(2) of maximum number of representations, not part of public API */
@@ -290,7 +300,9 @@ static inline CONSTEXPR uint32_t audio_channel_mask_get_bits(audio_channel_mask_
 
 typedef enum {
     AUDIO_CHANNEL_REPRESENTATION_POSITION   = 0x0u,
+    AUDIO_CHANNEL_REPRESENTATION_ACN        = 0x1u,
     AUDIO_CHANNEL_REPRESENTATION_INDEX      = 0x2u,
+    // INVALID = 0x3u
 } audio_channel_representation_t;
 
 /* The return value is undefined if the channel mask is invalid. */
@@ -322,6 +334,7 @@ static inline CONSTEXPR bool audio_channel_mask_is_valid(audio_channel_mask_t ch
     audio_channel_representation_t representation = audio_channel_mask_get_representation(channel);
     switch (representation) {
     case AUDIO_CHANNEL_REPRESENTATION_POSITION:
+    case AUDIO_CHANNEL_REPRESENTATION_ACN:
     case AUDIO_CHANNEL_REPRESENTATION_INDEX:
         break;
     default:
@@ -1553,6 +1566,12 @@ static inline CONSTEXPR bool audio_is_output_channel(audio_channel_mask_t channe
     }
 }
 
+static inline CONSTEXPR uint32_t audio_channel_count_from_acn_mask(audio_channel_mask_t mask) {
+    const audio_channel_representation_t repr = audio_channel_mask_get_representation(mask);
+    if (repr != AUDIO_CHANNEL_REPRESENTATION_ACN) return 0;
+    return audio_channel_mask_get_bits(mask) & AUDIO_ACN_CHANNEL_COUNT_MASK;
+}
+
 /* Returns the number of channels from an input channel mask,
  * used in the context of audio input or recording.
  * If a channel bit is set which could _not_ correspond to an input channel,
@@ -1569,6 +1588,8 @@ static inline CONSTEXPR uint32_t audio_channel_count_from_in_mask(audio_channel_
         FALLTHROUGH_INTENDED;
     case AUDIO_CHANNEL_REPRESENTATION_INDEX:
         return __builtin_popcount(bits);
+    case AUDIO_CHANNEL_REPRESENTATION_ACN:
+        return audio_channel_count_from_acn_mask(channel);
     default:
         return 0;
     }
@@ -1581,7 +1602,6 @@ static inline CONSTEXPR uint32_t audio_channel_count_from_in_mask(uint32_t mask)
     return audio_channel_count_from_in_mask(static_cast<audio_channel_mask_t>(mask));
 }
 #endif
-
 /* Returns the number of channels from an output channel mask,
  * used in the context of audio output or playback.
  * If a channel bit is set which could _not_ correspond to an output channel,
@@ -1598,6 +1618,8 @@ static inline CONSTEXPR uint32_t audio_channel_count_from_out_mask(audio_channel
         FALLTHROUGH_INTENDED;
     case AUDIO_CHANNEL_REPRESENTATION_INDEX:
         return __builtin_popcount(bits);
+    case AUDIO_CHANNEL_REPRESENTATION_ACN:
+        return audio_channel_count_from_acn_mask(channel);
     default:
         return 0;
     }
@@ -1610,6 +1632,17 @@ static inline CONSTEXPR uint32_t audio_channel_count_from_out_mask(uint32_t mask
     return audio_channel_count_from_out_mask(static_cast<audio_channel_mask_t>(mask));
 }
 #endif
+
+/* Returns true if the channel mask is a supported ACN channel mask.
+ */
+static inline CONSTEXPR bool audio_acn_channel_mask_is_supported(audio_channel_mask_t channel)
+{
+    const audio_channel_representation_t repr = audio_channel_mask_get_representation(channel);
+    if (repr != AUDIO_CHANNEL_REPRESENTATION_ACN) return false;
+    // Must be one of the known values.
+    const char* const s = audio_channel_acn_mask_to_string(channel);
+    return s[0] != '\0';
+}
 
 /* Derive a channel mask for index assignment from a channel count.
  * Returns the matching channel mask,
