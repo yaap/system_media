@@ -1539,6 +1539,8 @@ static inline bool audio_is_input_channel(audio_channel_mask_t channel)
         FALLTHROUGH_INTENDED;
     case AUDIO_CHANNEL_REPRESENTATION_INDEX:
         return bits != 0;
+    case AUDIO_CHANNEL_REPRESENTATION_ACN:
+        return (bits & AUDIO_ACN_CHANNEL_COUNT_MASK) != 0;
     default:
         return false;
     }
@@ -1561,6 +1563,8 @@ static inline CONSTEXPR bool audio_is_output_channel(audio_channel_mask_t channe
         FALLTHROUGH_INTENDED;
     case AUDIO_CHANNEL_REPRESENTATION_INDEX:
         return bits != 0;
+    case AUDIO_CHANNEL_REPRESENTATION_ACN:
+        return (bits & AUDIO_ACN_CHANNEL_COUNT_MASK) != 0;
     default:
         return false;
     }
