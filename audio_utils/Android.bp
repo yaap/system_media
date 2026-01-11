@@ -29,6 +29,12 @@ cc_library_headers {
     export_include_dirs: ["include"],
     // referenced from CTS/MTS test suite which must run on sdk 29, make sure it's compatible
     // (revisit if/when we add features to this library that require newer sdk.
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.media",
+        "com.android.media.swcodec",
+    ],
+    min_sdk_version: "29",
     sdk_version: "29",
 }
 
@@ -114,6 +120,36 @@ cc_library {
                 // then add server_configurable_flags as a shared lib.
                 "com.android.media.audioserver-aconfig-cc-ro",
             ],
+        },
+    },
+    min_sdk_version: "29",
+    static: {
+        // library has C++ code that we don't allow across module boundaries
+        // a static link avoids that cross-module peril.
+        apex_available: [
+            "com.android.media",
+            "com.android.media.swcodec",
+        ],
+    },
+}
+
+// there are some stringutils uses that don't reference the rest of libaudioutils
+// and we can do without all the extra dependencies that brings
+cc_library {
+    name: "libaudioutils_stringutils",
+    product_available: true,
+    double_loadable: true,
+    host_supported: true,
+    defaults: [
+        "audio_utils_defaults",
+    ],
+    srcs: [
+        "StringUtils.cpp",
+    ],
+
+    target: {
+        host: {
+            cflags: ["-D__unused=__attribute__((unused))"],
         },
     },
     min_sdk_version: "29",
