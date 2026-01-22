@@ -2680,52 +2680,52 @@ int camera_metadata_enum_snprint(uint32_t tag,
                     msg = "MAX";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_STANDARD_AGTM:
-                    msg = "STANDARD_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_STANDARD_SMPTE_2094_50:
+                    msg = "STANDARD_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HLG10_AGTM:
-                    msg = "HLG10_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HLG10_SMPTE_2094_50:
+                    msg = "HLG10_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_AGTM:
-                    msg = "HDR10_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_SMPTE_2094_50:
+                    msg = "HDR10_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_PLUS_AGTM:
-                    msg = "HDR10_PLUS_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_PLUS_SMPTE_2094_50:
+                    msg = "HDR10_PLUS_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_AGTM:
-                    msg = "DOLBY_VISION_10B_HDR_REF_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50:
+                    msg = "DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_PO_AGTM:
-                    msg = "DOLBY_VISION_10B_HDR_REF_PO_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50:
+                    msg = "DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_AGTM:
-                    msg = "DOLBY_VISION_10B_HDR_OEM_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50:
+                    msg = "DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_PO_AGTM:
-                    msg = "DOLBY_VISION_10B_HDR_OEM_PO_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50:
+                    msg = "DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_AGTM:
-                    msg = "DOLBY_VISION_8B_HDR_REF_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50:
+                    msg = "DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_PO_AGTM:
-                    msg = "DOLBY_VISION_8B_HDR_REF_PO_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50:
+                    msg = "DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_AGTM:
-                    msg = "DOLBY_VISION_8B_HDR_OEM_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50:
+                    msg = "DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50";
                     ret = 0;
                     break;
-                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_PO_AGTM:
-                    msg = "DOLBY_VISION_8B_HDR_OEM_PO_AGTM";
+                case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50:
+                    msg = "DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50";
                     ret = 0;
                     break;
                 case ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_MAX_312:
@@ -6273,75 +6273,75 @@ int camera_metadata_enum_value(uint32_t tag,
                     ret = 0;
                     break;
                 }
-                enumName = "STANDARD_AGTM";
+                enumName = "STANDARD_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_STANDARD_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_STANDARD_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "HLG10_AGTM";
+                enumName = "HLG10_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HLG10_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HLG10_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "HDR10_AGTM";
+                enumName = "HDR10_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "HDR10_PLUS_AGTM";
+                enumName = "HDR10_PLUS_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_PLUS_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_PLUS_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "DOLBY_VISION_10B_HDR_REF_AGTM";
+                enumName = "DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "DOLBY_VISION_10B_HDR_REF_PO_AGTM";
+                enumName = "DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_PO_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "DOLBY_VISION_10B_HDR_OEM_AGTM";
+                enumName = "DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "DOLBY_VISION_10B_HDR_OEM_PO_AGTM";
+                enumName = "DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_PO_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "DOLBY_VISION_8B_HDR_REF_AGTM";
+                enumName = "DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "DOLBY_VISION_8B_HDR_REF_PO_AGTM";
+                enumName = "DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_PO_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "DOLBY_VISION_8B_HDR_OEM_AGTM";
+                enumName = "DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
-                enumName = "DOLBY_VISION_8B_HDR_OEM_PO_AGTM";
+                enumName = "DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50";
                 if (strncmp(name, enumName, size) == 0) {
-                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_PO_AGTM;
+                    *value = ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50;
                     ret = 0;
                     break;
                 }
@@ -8264,4 +8264,4 @@ int camera_metadata_enum_value(uint32_t tag,
 }
 
 
-#define CAMERA_METADATA_ENUM_STRING_MAX_SIZE 39
+#define CAMERA_METADATA_ENUM_STRING_MAX_SIZE 42
