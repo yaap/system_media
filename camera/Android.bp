@@ -11,8 +11,10 @@ subdirs = ["tests"]
 // Note: The static version of libcamera_metadata should be used for testing ONLY.
 cc_library {
     name: "libcamera_metadata",
-    vendor_available: true,
     product_available: true,
+    llndk: {
+        symbol_file: "libcamera_metadata.map.txt",
+    },
     // TODO(b/153609531): remove when no longer needed.
     native_bridge_supported: true,
     host_supported: true,
@@ -52,6 +54,7 @@ cc_library {
             ],
         },
     },
+    version_script: "libcamera_metadata.map.txt",
 }
 
 cc_library_shared {

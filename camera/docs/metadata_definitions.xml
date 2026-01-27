@@ -6126,8 +6126,9 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             Typically {@link android.graphics.ImageFormat#JPEG|AIMAGE_FORMAT_JPEG JPEG format}.
           * Raw formats: {@link android.graphics.ImageFormat#RAW_SENSOR|AIMAGE_FORMAT_RAW16
             RAW_SENSOR},
-            {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10 RAW10}, or
-            {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12 RAW12}.
+            {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10 RAW10},
+            {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12 RAW12}, or
+            {@link android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW12 RAW14}
           * Processed (but not-stalling): any non-RAW format without a stall duration.  Typically
             {@link android.graphics.ImageFormat#YUV_420_888|AIMAGE_FORMAT_YUV_420_888 YUV_420_888},
             {@link android.graphics.ImageFormat#NV21 NV21}, {@link
@@ -6159,6 +6160,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           * {@link android.graphics.ImageFormat#RAW_SENSOR|AIMAGE_FORMAT_RAW16 RAW_SENSOR}
           * {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10 RAW10}
           * {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12 RAW12}
+          * {@link android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW14 RAW14}
 
           LEGACY mode devices (android.info.supportedHardwareLevel `==` LEGACY)
           never support raw streams.
@@ -6569,6 +6571,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               If the device supports the {@link
               android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10}, {@link
               android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12}, {@link
+              android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW14}, {@link
               android.graphics.ImageFormat#Y8|AIMAGE_FORMAT_Y8}, then those can also be
               captured at the same rate as the maximum-size YUV_420_888 resolution is.
 
@@ -6599,6 +6602,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               If the device supports the {@link
               android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10}, {@link
               android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12}, {@link
+              android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW14}, {@link
               android.graphics.ImageFormat#Y8|AIMAGE_FORMAT_Y8}, then those can also be
               captured at the same rate as the maximum-size YUV_420_888 resolution is.
 
@@ -8630,6 +8634,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           * {@link android.graphics.ImageFormat#YUV_420_888|AIMAGE_FORMAT_YUV_420_888}
           * {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10}
           * {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12}
+          * {@link android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW14}
           * {@link android.graphics.ImageFormat#Y8|AIMAGE_FORMAT_Y8}
 
           All other formats may or may not have an allowed stall duration on
@@ -9737,6 +9742,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               * {@link android.graphics.ImageFormat#RAW_SENSOR|AIMAGE_FORMAT_RAW16 RAW_SENSOR}
               * {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10 RAW10}
               * {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12 RAW12}
+              * {@link android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW14 RAW14}
 
               session configuration is not guaranteed to succeed.
 

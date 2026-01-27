@@ -20666,8 +20666,9 @@ into the 3 stream types as below:</p>
 <li>Processed (but stalling): any non-RAW format with a stallDurations &gt; 0.<wbr/>
   Typically <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#JPEG">JPEG format</a>.<wbr/></li>
 <li>Raw formats: <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW_SENSOR">RAW_<wbr/>SENSOR</a>,<wbr/>
-  <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW10">RAW10</a>,<wbr/> or
-  <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW12">RAW12</a>.<wbr/></li>
+  <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW10">RAW10</a>,<wbr/>
+  <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW12">RAW12</a>,<wbr/> or
+  <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW14">RAW14</a></li>
 <li>Processed (but not-stalling): any non-RAW format without a stall duration.<wbr/>  Typically
   <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#YUV_420_888">YUV_<wbr/>420_<wbr/>888</a>,<wbr/>
   <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#NV21">NV21</a>,<wbr/> <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#YV12">YV12</a>,<wbr/> or <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#Y8">Y8</a> .<wbr/></li>
@@ -20736,6 +20737,7 @@ be any <code>RAW</code> and supported format provided by <a href="#static_androi
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW_SENSOR">RAW_<wbr/>SENSOR</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW10">RAW10</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW12">RAW12</a></li>
+<li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW14">RAW14</a></li>
 </ul>
 <p>LEGACY mode devices (<a href="#static_android.info.supportedHardwareLevel">android.<wbr/>info.<wbr/>supported<wbr/>Hardware<wbr/>Level</a> <code>==</code> LEGACY)
 never support raw streams.<wbr/></p>
@@ -25174,6 +25176,7 @@ ignored).<wbr/></p>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#YUV_420_888">Image<wbr/>Format#YUV_<wbr/>420_<wbr/>888</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW10">ImageFormat#RAW10</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW12">ImageFormat#RAW12</a></li>
+<li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW14">ImageFormat#RAW14</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#Y8">ImageFormat#Y8</a></li>
 </ul>
 <p>All other formats may or may not have an allowed stall duration on
@@ -27054,6 +27057,7 @@ reflected in the CaptureResult key <a href="#dynamic_android.scaler.rawCropRegio
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW_SENSOR">RAW_<wbr/>SENSOR</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW10">RAW10</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW12">RAW12</a></li>
+<li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW14">RAW14</a></li>
 </ul>
 <p>session configuration is not guaranteed to succeed.<wbr/></p>
 <p>This stream use case may not be supported on some devices.<wbr/></p></span>
