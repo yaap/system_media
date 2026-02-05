@@ -1579,6 +1579,10 @@ static inline CONSTEXPR uint32_t audio_channel_count_from_acn_mask(audio_channel
     return audio_channel_mask_get_bits(mask) & AUDIO_ACN_CHANNEL_COUNT_MASK;
 }
 
+static inline CONSTEXPR bool audio_acn_mask_is_horizontal(audio_channel_mask_t mask) {
+    return (mask & AUDIO_ACN_HORIZONTAL) == AUDIO_ACN_HORIZONTAL;
+}
+
 /* Returns the number of channels from an input channel mask,
  * used in the context of audio input or recording.
  * If a channel bit is set which could _not_ correspond to an input channel,
