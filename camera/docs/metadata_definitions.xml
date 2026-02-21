@@ -15493,7 +15493,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
     <section name="sharedSession">
       <static>
         <entry name="colorSpace" type="int32" visibility="fwk_only" optional="true"
-          enum="true" aconfig_flag="camera_multi_client" hal_version="3.11">
+          enum="true" hal_version="3.11">
           <enum>
             <value id="-1">UNSPECIFIED</value>
             <value id="0">SRGB</value>
@@ -15510,8 +15510,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </hal_details>
         </entry>
         <entry name="outputConfigurations" type="int64" visibility="fwk_only"
-          optional="true" container="array" aconfig_flag="camera_multi_client"
-          hal_version="3.11">
+          optional="true" container="array" hal_version="3.11">
           <array>
             <size>n</size>
           </array>
@@ -15537,8 +15536,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </hal_details>
         </entry>
         <entry name="configuration" type="byte" visibility="fwk_system_public"
-          synthetic="true" optional="true" typedef="sharedSessionConfiguration"
-          aconfig_flag="camera_multi_client">
+          synthetic="true" optional="true" typedef="sharedSessionConfiguration">
           <description>The available stream configurations that this camera device supports for
             shared capture session when camera is opened in shared mode. Android camera framework
             will generate this tag if the camera device can be opened in shared mode.
