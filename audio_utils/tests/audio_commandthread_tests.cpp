@@ -76,3 +76,26 @@ TEST(commandthread, full) {
     stage = 6;
     cv.notify_one();
 }
+
+TEST(commandthread, priority) {
+    std::mutex m;
+    std::condition_variable cv;
+    bool done = false;
+    int priority = -1;
+
+    // we only reduce priority - some hosts require permission
+    // to raise priority.
+    constexpr int kPriority = 130;
+    android::audio_utils::CommandThread ct(kPriority);
+    ct.add("priority", [&]{
+        std::lock_guard lg(m);
+        priority = android::audio_utils::get_thread_priority(
+                android::audio_utils::gettid_wrapper());
+        done = true;
+        cv.notify_one();
+    });
+
+    std::unique_lock ul(m);
+    cv.wait(ul, [&] { return done; });
+    EXPECT_EQ(kPriority, priority);
+}

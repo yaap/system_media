@@ -16,11 +16,22 @@
 
 #pragma once
 
+// go/keep-sorted start
+#include <audio_utils/mutex.h>
+#include <audio_utils/threads.h>
+#include <utils/Log.h>
+// go/keep-sorted end
+
+// go/keep-sorted start
 #include <deque>
 #include <functional>
 #include <mutex>
 #include <thread>
-#include <audio_utils/mutex.h>
+// go/keep-sorted end
+
+#pragma push_macro("LOG_TAG")
+#undef LOG_TAG
+#define LOG_TAG "audio_utils::CommandThread"
 
 namespace android::audio_utils {
 
@@ -33,9 +44,45 @@ namespace android::audio_utils {
 
 class CommandThread {
 public:
+    /**
+     * Default constructor for CommandThread.
+     * The worker thread is started immediately with default priority.
+     */
     CommandThread() {
         // threadLoop() should be started after the class is initialized.
         mThread = std::thread([this](){this->threadLoop();});
+    }
+
+    /**
+     * Constructor for CommandThread with a specified priority.
+     * The worker thread is started immediately with the given priority.
+     *
+     * The linux kernel unified scheduler priority values are as follows:
+     * 0 - 98    (A real time priority rtprio between 99 and 1)
+     * 100 - 139 (A Completely Fair Scheduler niceness between -20 and 19)
+     *
+     * A priority value of 99 is changed to 98.
+     *
+     * Real time schedulers (SCHED_FIFO and SCHED_RR) have rtprio between 1 and 99,
+     * where 1 is the lowest and 99 is the highest.
+     *
+     * The Completely Fair Scheduler (also known as SCHED_OTHER) has a
+     * nice value between 19 and -20, where 19 is the lowest and -20 the highest.
+     *
+     * Note: the unified priority is reported on /proc/<tid>/stat file as "prio".
+     *
+     * See audio_utils/threads.h for a description of unified priority.
+     *
+     * @param priority the unified priority to set for the worker thread.
+     */
+    explicit CommandThread(int priority) {
+        // threadLoop() should be started after the class is initialized.
+        mThread = std::thread([this, priority](){
+            const status_t status = set_thread_priority(gettid_wrapper(), priority);
+            ALOGW_IF(status != OK, "%s: set priority %d failed with status %d",
+                    __func__, priority, status);
+            this->threadLoop();
+        });
     }
 
     ~CommandThread() {
@@ -116,3 +163,5 @@ private:
 };
 
 }  // namespace android::audio_utils
+
+#pragma pop_macro("LOG_TAG")

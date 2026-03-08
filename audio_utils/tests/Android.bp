@@ -38,6 +38,11 @@ cc_test {
     shared_libs: [
         "libbase",
         "libbinder",
+        "liblog",
+        "libutils",
+    ],
+    static_libs: [
+        "libaudioutils",
     ],
     header_libs: [
         "libaudioutils_headers",
