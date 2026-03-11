@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <sched.h>    // scheduler
 #include <sys/resource.h>
+#include <system/thread_defs.h>
 #include <thread>
 #include <utils/Errors.h>  // status_t
 #include <utils/Log.h>
@@ -32,9 +33,13 @@ namespace android::audio_utils {
  * Sets the unified priority of the tid.
  */
 status_t set_thread_priority(pid_t tid, int priority) {
+    const int policy = sched_getscheduler(tid);
+    if (policy < 0) return -errno;
+    const int basePolicy = policy & ~SCHED_RESET_ON_FORK;
+    const int resetOnFork = policy & SCHED_RESET_ON_FORK; // preserve if possible
     if (is_realtime_priority(priority)) {
         // audio processes are designed to work with FIFO, not RR.
-        constexpr int new_policy = SCHED_FIFO;
+        const int new_policy = SCHED_FIFO | resetOnFork;
         const int rtprio = unified_priority_to_rtprio(priority);
         struct sched_param param {
             .sched_priority = rtprio,
@@ -46,14 +51,14 @@ status_t set_thread_priority(pid_t tid, int priority) {
         }
         return NO_ERROR;
     } else if (is_cfs_priority(priority)) {
-        const int policy = sched_getscheduler(tid);
         const int nice = unified_priority_to_nice(priority);
-        if (policy != SCHED_OTHER) {
+        if (basePolicy != SCHED_OTHER) {
             struct sched_param param{};
-            constexpr int new_policy = SCHED_OTHER;
+            const int new_policy = SCHED_OTHER | resetOnFork;
             if (sched_setscheduler(tid, new_policy, &param) != 0) {
-                ALOGW("%s: Cannot set CFS priority for tid %d to policy %d nice %d  %s",
-                        __func__, tid, new_policy, nice, strerror(errno));
+                ALOGW("%s: Cannot set CFS priority for tid %d "
+                        "from policy %d to policy %d nice %d  %s",
+                        __func__, tid, policy, new_policy, nice, strerror(errno));
                 return -errno;
             }
         }
@@ -70,9 +75,10 @@ status_t set_thread_priority(pid_t tid, int priority) {
  * A negative number represents error.
  */
 int get_thread_priority(int tid) {
-    const int policy = sched_getscheduler(tid);
+    int policy = sched_getscheduler(tid);
     if (policy < 0) return -errno;
 
+    policy &= ~SCHED_RESET_ON_FORK; // get base policy
     if (policy == SCHED_OTHER) {
         errno = 0;  // negative return value valid, so check errno change.
         const int nice = getpriority(PRIO_PROCESS, tid);
@@ -136,6 +142,14 @@ size_t get_number_cpus() {
         n.store(value, std::memory_order_relaxed);  // on race, this store is idempotent.
     }
     return value;
+}
+
+status_t set_priority_for_binder_callback(const char* calling_func) {
+    constexpr int priority = nice_to_unified_priority(ANDROID_PRIORITY_URGENT_AUDIO);
+    const status_t status = set_thread_priority(gettid_wrapper(), priority);
+    ALOGD_IF(status != OK, "%s: set priority %d failed with status %d",
+             calling_func, priority, status);
+    return status;
 }
 
 } // namespace android::audio_utils

@@ -23,9 +23,12 @@
 // go/keep-sorted end
 
 // go/keep-sorted start
+#include <chrono>
 #include <deque>
 #include <functional>
+#include <map>
 #include <mutex>
+#include <optional>
 #include <thread>
 // go/keep-sorted end
 
@@ -98,12 +101,43 @@ public:
      *
      * @param name for dump() purposes.
      * @param func command to execute
+     * @return true if successfully added, false if the CommandThread is quitting.
      */
-    void add(std::string_view name, std::function<void()>&& func) {
+    bool add(std::string_view name, std::function<void()>&& func) {
         std::lock_guard lg(mMutex);
-        if (mQuit) return;
+        if (mQuit) return false;
         mCommands.emplace_back(name, std::move(func));
         if (mCommands.size() == 1) mConditionVariable.notify_one();
+        return true;
+    }
+
+    /**
+     * Add a command to the command queue to be executed after a delay.
+     *
+     * If the func is a closure containing references, suggest using shared_ptr
+     * instead of references to maintain proper lifetime.
+     *
+     * @param name for dump() purposes.
+     * @param func command to execute
+     * @param delay duration to wait before executing the command
+     * @return true if successfully added, false if the CommandThread is quitting.
+     */
+    bool add(std::string_view name, std::function<void()>&& func,
+            std::chrono::nanoseconds delay) {
+        std::lock_guard lg(mMutex);
+        if (mQuit) return false;
+        if (delay <= std::chrono::nanoseconds(0)) {
+            mCommands.emplace_back(name, std::move(func));
+            if (mCommands.size() == 1) mConditionVariable.notify_one();
+        } else {
+            const auto wakeupTime = std::chrono::steady_clock::now() + delay;
+            const bool earliest = mScheduledCommands.empty() ||
+                    wakeupTime < mScheduledCommands.begin()->first;
+            mScheduledCommands.emplace(
+                    wakeupTime, std::make_pair(std::string(name), std::move(func)));
+            if (earliest && mCommands.empty()) mConditionVariable.notify_one();
+        }
+        return true;
     }
 
     /**
@@ -114,6 +148,9 @@ public:
         std::lock_guard lg(mMutex);
         for (const auto &p : mCommands) {
             result.append(p.first).append("\n");
+        }
+        for (const auto &p : mScheduledCommands) {
+            result.append(p.second.first).append(" (scheduled)\n");
         }
         return result;
     }
@@ -126,7 +163,19 @@ public:
         if (mQuit) return;
         mQuit = true;
         mCommands.clear();
+        mScheduledCommands.clear();
         mConditionVariable.notify_one();
+        mWaitConditionVariable.notify_all();
+    }
+
+    /**
+     * Wait for all tasks to complete.
+     */
+    void wait_for_all_tasks() {
+        audio_utils::unique_lock ul(mMutex);
+        mWaitConditionVariable.wait(ul, [this]() REQUIRES(mMutex) {
+            return (mCommands.empty() && mScheduledCommands.empty() && !mTaskRunning) || mQuit;
+        });
     }
 
     /**
@@ -134,30 +183,60 @@ public:
      */
     size_t size() const {
         std::lock_guard lg(mMutex);
-        return mCommands.size();
+        return mCommands.size() + mScheduledCommands.size();
+    }
+
+    /**
+     * Returns the time of the last scheduled task in the CommandThread.
+     */
+    std::optional<std::chrono::steady_clock::time_point> latest_scheduled_time() const {
+        std::lock_guard lg(mMutex);
+        if (mScheduledCommands.empty()) return std::nullopt;
+        return mScheduledCommands.rbegin()->first;
     }
 
 private:
     std::thread mThread;
     mutable std::mutex mMutex;
     std::condition_variable mConditionVariable GUARDED_BY(mMutex);
+    std::condition_variable mWaitConditionVariable GUARDED_BY(mMutex);
     std::deque<std::pair<std::string, std::function<void()>>> mCommands GUARDED_BY(mMutex);
+    std::multimap<std::chrono::steady_clock::time_point,
+            std::pair<std::string, std::function<void()>>> mScheduledCommands GUARDED_BY(mMutex);
     bool mQuit GUARDED_BY(mMutex) = false;
+    bool mTaskRunning GUARDED_BY(mMutex) = false;
 
     void threadLoop() {
         audio_utils::unique_lock ul(mMutex);
         while (!mQuit) {
+            const auto now = std::chrono::steady_clock::now();
+            // transfer scheduled commands that are ready to the command queue.
+            while (!mScheduledCommands.empty() && mScheduledCommands.begin()->first <= now) {
+                mCommands.push_back(std::move(mScheduledCommands.begin()->second));
+                mScheduledCommands.erase(mScheduledCommands.begin());
+            }
+
+            // process the command queue.
             if (!mCommands.empty()) {
                 auto name = std::move(mCommands.front().first);
                 auto func = std::move(mCommands.front().second);
                 mCommands.pop_front();
+                mTaskRunning = true;
                 ul.unlock();
                 // ALOGD("%s: executing %s", __func__, name.c_str());
                 func();
                 ul.lock();
+                mTaskRunning = false;
+                mWaitConditionVariable.notify_all();
                 continue;
             }
-            mConditionVariable.wait(ul);
+
+            if (!mScheduledCommands.empty()) {
+                mConditionVariable.wait_until(ul, mScheduledCommands.begin()->first);
+            } else {
+                mWaitConditionVariable.notify_all();
+                mConditionVariable.wait(ul);
+            }
         }
     }
 };

@@ -49,7 +49,7 @@ inline constexpr int kDefaultPrio = kMaxRtPrio + kNiceWidth / 2;
 /**
  * Convert CFS (SCHED_OTHER) nice to unified priority.
  */
-inline int nice_to_unified_priority(int nice) {
+inline constexpr int nice_to_unified_priority(int nice) {
     return kDefaultPrio + nice;
 }
 
@@ -59,14 +59,14 @@ inline int nice_to_unified_priority(int nice) {
  * Some unified priorities are not CFS, they will be clamped in range.
  * Use is_cfs_priority() to check if a CFS priority.
  */
-inline int unified_priority_to_nice(int priority) {
+inline constexpr int unified_priority_to_nice(int priority) {
     return std::clamp(priority - kDefaultPrio, kMinNice, kMaxNice);
 }
 
 /**
  * Convert SCHED_FIFO/SCHED_RR rtprio 1 - 99 to unified priority 98 to 0.
  */
-inline int rtprio_to_unified_priority(int rtprio) {
+inline constexpr int rtprio_to_unified_priority(int rtprio) {
     return kMaxRtPrio - 1 - rtprio;
 }
 
@@ -76,21 +76,21 @@ inline int rtprio_to_unified_priority(int rtprio) {
  * Some unified priorities are not real time, they will be clamped in range.
  * Use is_realtime_priority() to check if real time priority.
  */
-inline int unified_priority_to_rtprio(int priority) {
+inline constexpr int unified_priority_to_rtprio(int priority) {
     return std::clamp(kMaxRtPrio - 1 - priority, kMinRtPrio, kMaxRtPrio - 1);
 }
 
 /**
  * Returns whether the unified priority is realtime.
  */
-inline bool is_realtime_priority(int priority) {
+inline constexpr bool is_realtime_priority(int priority) {
     return priority >= 0 && priority < kMaxRtPrio;  // note this allows the unified value 99.
 }
 
 /**
  * Returns whether the unified priority is CFS.
  */
-inline bool is_cfs_priority(int priority) {
+inline constexpr bool is_cfs_priority(int priority) {
     return priority >= kMaxRtPrio && priority < kMaxPrio;
 }
 
@@ -144,6 +144,14 @@ status_t set_thread_priority(pid_t tid, int priority);
  * A negative number represents error.
  */
 int get_thread_priority(int tid);
+
+/**
+ * Sets the current thread priority to urgent audio for binder callbacks.
+ *
+ * \param  calling_func for logging.
+ * \return 0 on success or error on failure.
+ */
+status_t set_priority_for_binder_callback(const char* calling_func);
 
 /**
  * An arbitrary CPU limit for Android running on Chrome / Linux / Windows devices.
