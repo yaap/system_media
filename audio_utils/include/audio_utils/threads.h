@@ -16,12 +16,16 @@
 
 #pragma once
 
+// go/keep-sorted start
 #include <algorithm>
 #include <bitset>
 #include <sched.h>         // CPU_SETSIZE
+#include <string>
 #include <sys/syscall.h>   // SYS_gettid
+#include <thread>
 #include <unistd.h>        // bionic gettid
 #include <utils/Errors.h>  // status_t
+// go/keep-sorted end
 
 namespace android::audio_utils {
 
@@ -133,17 +137,31 @@ pid_t inline gettid_wrapper() {
 /**
  * Sets the priority of tid to a unified priority.
  *
- * The range of priority is 0 through 139, inclusive.
- * A priority value of 99 is changed to 98.
+ * \param tid the thread id, 0 represents the current thread.
+ * \param priority the unified priority between 0 and 139 inclusive.
+ *        A priority value of 99 is changed to 98.
+ * \return 0 on success or -errno on failure.
  */
 status_t set_thread_priority(pid_t tid, int priority);
 
 /**
+ * Sets the current thread priority to a unified priority.
+ *
+ * \param priority the unified priority between 0 and 139 inclusive.
+ * \return 0 on success or -errno on failure.
+ */
+inline status_t set_thread_priority(int priority) {
+    return set_thread_priority(0, priority);
+}
+
+
+/**
  * Returns the unified priority of the tid.
  *
- * A negative number represents error.
+ * \param tid the thread id, 0 represents the current thread.
+ * \return the unified priority or a negative number representing error.
  */
-int get_thread_priority(int tid);
+int get_thread_priority(pid_t tid = 0);
 
 /**
  * Sets the current thread priority to urgent audio for binder callbacks.
@@ -192,5 +210,30 @@ std::bitset<kMaxCpus> get_thread_affinity(pid_t tid);
  * This is not cached and a subsequent call will retry.
  */
 size_t get_number_cpus();
+
+/**
+ * Sets the name of a std::thread.
+ *
+ * \param  thread the std::thread to set the name of.
+ * \param  name the name to set (truncated to 15 characters on Linux).
+ * \return 0 on success or status code on failure.
+ */
+status_t set_thread_name(std::thread& thread, const std::string& name);
+
+/**
+ * Sets the name of the current thread.
+ *
+ * \param  name the name to set (truncated to 15 characters on Linux).
+ * \return 0 on success or status code on failure.
+ */
+status_t set_thread_name(const std::string& name);
+
+/**
+ * Returns the name of a std::thread.
+ *
+ * \param  thread the std::thread to get the name of.
+ * \return the name of the thread or an empty string on failure.
+ */
+std::string get_thread_name(std::thread& thread);
 
 } // namespace android::audio_utils

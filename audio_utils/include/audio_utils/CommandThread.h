@@ -50,14 +50,29 @@ public:
     /**
      * Default constructor for CommandThread.
      * The worker thread is started immediately with default priority.
+     *
+     * @param name optional name for the worker thread.
      */
-    CommandThread() {
+    explicit CommandThread(std::string_view name = "") {
         // threadLoop() should be started after the class is initialized.
-        mThread = std::thread([this](){this->threadLoop();});
+        mThread = std::thread([this, nameStr = std::string(name)](){
+            if (!nameStr.empty()) {
+                set_thread_name(nameStr);
+            }
+            this->threadLoop();
+        });
     }
 
     /**
      * Constructor for CommandThread with a specified priority.
+     * The worker thread is started immediately with the given priority.
+     *
+     * @param priority the unified priority to set for the worker thread.
+     */
+    explicit CommandThread(int priority) : CommandThread("", priority) {}
+
+    /**
+     * Constructor for CommandThread with a specified name and priority.
      * The worker thread is started immediately with the given priority.
      *
      * The linux kernel unified scheduler priority values are as follows:
@@ -76,12 +91,16 @@ public:
      *
      * See audio_utils/threads.h for a description of unified priority.
      *
+     * @param name name for the worker thread.
      * @param priority the unified priority to set for the worker thread.
      */
-    explicit CommandThread(int priority) {
+    CommandThread(std::string_view name, int priority) {
         // threadLoop() should be started after the class is initialized.
-        mThread = std::thread([this, priority](){
-            const status_t status = set_thread_priority(gettid_wrapper(), priority);
+        mThread = std::thread([this, priority, nameStr = std::string(name)](){
+            if (!nameStr.empty()) {
+                set_thread_name(nameStr);
+            }
+            const status_t status = set_thread_priority(priority);
             ALOGW_IF(status != OK, "%s: set priority %d failed with status %d",
                     __func__, priority, status);
             this->threadLoop();

@@ -85,3 +85,31 @@ TEST(audio_thread_tests, invalid_affinity) {
     const int cpu_count = get_number_cpus();
     ASSERT_NE(NO_ERROR, set_thread_affinity(self, std::bitset<kMaxCpus>{}.set(cpu_count)));
 }
+
+TEST(audio_thread_tests, thread_name) {
+    std::mutex m;
+    std::condition_variable cv;
+    bool exit = false;
+
+    std::thread t([&]() {
+        std::unique_lock<std::mutex> lk(m);
+        cv.wait(lk, [&]{ return exit; });
+    });
+
+    const std::string name = "test_thread";
+    EXPECT_EQ(OK, set_thread_name(t, name));
+    EXPECT_EQ(name, get_thread_name(t));
+
+    const std::string long_name = "this_is_a_very_long_thread_name";
+    const std::string expected_truncated_name = long_name.substr(0, 15);
+    EXPECT_EQ(OK, set_thread_name(t, long_name));
+    EXPECT_EQ(expected_truncated_name, get_thread_name(t));
+
+    // Cleanup
+    {
+        std::lock_guard<std::mutex> lk(m);
+        exit = true;
+    }
+    cv.notify_one();
+    t.join();
+}

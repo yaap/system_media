@@ -20,6 +20,7 @@
 
 #include <algorithm>  // std::clamp
 #include <errno.h>
+#include <pthread.h>
 #include <sched.h>    // scheduler
 #include <sys/resource.h>
 #include <system/thread_defs.h>
@@ -33,6 +34,7 @@ namespace android::audio_utils {
  * Sets the unified priority of the tid.
  */
 status_t set_thread_priority(pid_t tid, int priority) {
+    if (tid == 0) tid = gettid_wrapper();
     const int policy = sched_getscheduler(tid);
     if (policy < 0) return -errno;
     const int basePolicy = policy & ~SCHED_RESET_ON_FORK;
@@ -74,7 +76,8 @@ status_t set_thread_priority(pid_t tid, int priority) {
  *
  * A negative number represents error.
  */
-int get_thread_priority(int tid) {
+int get_thread_priority(pid_t tid) {
+    if (tid == 0) tid = gettid_wrapper();
     int policy = sched_getscheduler(tid);
     if (policy < 0) return -errno;
 
@@ -150,6 +153,24 @@ status_t set_priority_for_binder_callback(const char* calling_func) {
     ALOGD_IF(status != OK, "%s: set priority %d failed with status %d",
              calling_func, priority, status);
     return status;
+}
+
+status_t set_thread_name(std::thread& thread, const std::string& name) {
+    const int err = pthread_setname_np(thread.native_handle(), name.substr(0, 15).c_str());
+    return err == 0 ? OK : -err;
+}
+
+status_t set_thread_name(const std::string& name) {
+    const int err = pthread_setname_np(pthread_self(), name.substr(0, 15).c_str());
+    return err == 0 ? OK : -err;
+}
+
+std::string get_thread_name(std::thread& thread) {
+    char buf[16]; // Linux limit for pthread name is 16 including null terminator
+    if (pthread_getname_np(thread.native_handle(), buf, sizeof(buf)) == 0) {
+        return buf;
+    }
+    return "";
 }
 
 } // namespace android::audio_utils
