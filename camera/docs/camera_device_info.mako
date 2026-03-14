@@ -52,6 +52,27 @@ message CameraDeviceInfo {
             optional int64 minFrameDuration = 5;
         }
         repeated StreamConfig availableStreamConfigurations = 1;
+
+        message HighSpeedVideoConfig {
+            optional int32 width = 1;
+            optional int32 height = 2;
+            optional int32 minFps = 3;
+            optional int32 maxFps = 4;
+        }
+        repeated HighSpeedVideoConfig availableHighSpeedConfigurations = 2;
+
+        message InputConfig {
+            optional int32 inputFormat = 1;
+            optional int32 inputWidth = 2;
+            optional int32 inputHeight = 3;
+        }
+        repeated InputConfig availableInputConfigurations = 3;
+
+        message InputOutputFormatMap {
+            optional int32 inputFormat = 1;
+            optional int32 outputFormat = 2;
+        }
+        repeated InputOutputFormatMap availableInputOutputFormatsMap = 4;
     }
 
     message RangeFloat {
