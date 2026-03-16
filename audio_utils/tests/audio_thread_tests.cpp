@@ -113,3 +113,53 @@ TEST(audio_thread_tests, thread_name) {
     cv.notify_one();
     t.join();
 }
+
+TEST(audio_thread_tests, get_thread_name) {
+    const std::string name = "audio_test_name";
+    const std::string original_name = get_thread_name();
+
+    // Test current thread
+    EXPECT_EQ(OK, set_thread_name(name));
+    EXPECT_EQ(name, get_thread_name());
+    EXPECT_EQ(name, get_thread_name(0));
+    EXPECT_EQ(name, get_thread_name(gettid_wrapper()));
+
+    // Test other thread
+    std::mutex m;
+    std::condition_variable cv;
+    bool ready = false;
+    bool exit = false;
+    pid_t other_tid = 0;
+    const std::string other_name = "other_test_name";
+
+    std::thread t([&]() {
+        set_thread_name(other_name);
+        {
+            std::lock_guard<std::mutex> lk(m);
+            other_tid = gettid_wrapper();
+            ready = true;
+        }
+        cv.notify_one();
+
+        std::unique_lock<std::mutex> lk(m);
+        cv.wait(lk, [&]{ return exit; });
+    });
+
+    {
+        std::unique_lock<std::mutex> lk(m);
+        cv.wait(lk, [&]{ return ready; });
+    }
+
+    EXPECT_EQ(other_name, get_thread_name(other_tid));
+
+    // Cleanup
+    {
+        std::lock_guard<std::mutex> lk(m);
+        exit = true;
+    }
+    cv.notify_one();
+    t.join();
+
+    // Restore original name
+    EXPECT_EQ(OK, set_thread_name(original_name));
+}

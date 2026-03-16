@@ -114,7 +114,6 @@ cc_library {
             ],
         },
         host: {
-            cflags: ["-D__unused=__attribute__((unused))"],
             whole_static_libs: [
                 // if libaudioutils is added as a static lib AND flags are used in the utils object,
                 // then add server_configurable_flags as a shared lib.
@@ -146,12 +145,6 @@ cc_library {
     srcs: [
         "StringUtils.cpp",
     ],
-
-    target: {
-        host: {
-            cflags: ["-D__unused=__attribute__((unused))"],
-        },
-    },
     min_sdk_version: "29",
     static: {
         // library has C++ code that we don't allow across module boundaries

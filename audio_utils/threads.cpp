@@ -20,6 +20,7 @@
 
 #include <algorithm>  // std::clamp
 #include <errno.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <sched.h>    // scheduler
 #include <sys/resource.h>
@@ -169,6 +170,30 @@ std::string get_thread_name(std::thread& thread) {
     char buf[16]; // Linux limit for pthread name is 16 including null terminator
     if (pthread_getname_np(thread.native_handle(), buf, sizeof(buf)) == 0) {
         return buf;
+    }
+    return "";
+}
+
+std::string get_thread_name(pid_t tid) {
+    if (tid == 0 || tid == gettid_wrapper()) {
+        char buf[16]; // Linux limit for pthread name is 16 including null terminator
+        if (pthread_getname_np(pthread_self(), buf, sizeof(buf)) == 0) {
+            return buf;
+        }
+    } else {
+        char path[32];
+        snprintf(path, sizeof(path), "/proc/%d/comm", tid);
+        int fd = open(path, O_RDONLY | O_CLOEXEC);
+        if (fd >= 0) {
+            char buf[16];
+            ssize_t n = read(fd, buf, sizeof(buf) - 1);
+            close(fd);
+            if (n > 0) {
+                if (buf[n - 1] == '\n') n--;
+                buf[n] = '\0';
+                return buf;
+            }
+        }
     }
     return "";
 }

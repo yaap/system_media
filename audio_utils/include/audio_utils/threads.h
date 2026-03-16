@@ -236,4 +236,12 @@ status_t set_thread_name(const std::string& name);
  */
 std::string get_thread_name(std::thread& thread);
 
+/**
+ * Returns the name of the thread with the given tid.
+ *
+ * \param tid the thread id, 0 represents the current thread.
+ * \return the name of the thread or an empty string on failure.
+ */
+std::string get_thread_name(pid_t tid = 0);
+
 } // namespace android::audio_utils
