@@ -23,9 +23,11 @@
 #include <algorithm>
 #include <audio_utils/Statistics.h>
 #include <audio_utils/clock.h>
+#include <audio_utils/threads.h>
 #include <log/log.h>
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
+#include <system/thread_defs.h>
 #include <unistd.h>
 #include <utils/SystemClock.h>
 // go/keep-sorted end
@@ -320,6 +322,12 @@ std::string TimerQueue::toString(std::string_view prefix) const {
 }
 
 void TimerQueue::threadLoop() {
+    constexpr const char* kThreadName = "TimerQueue";
+    audio_utils::set_thread_name(kThreadName);
+    constexpr int kPriority = audio_utils::nice_to_unified_priority(ANDROID_PRIORITY_AUDIO);
+    const status_t status = audio_utils::set_thread_priority(kPriority);
+    ALOGW_IF(status != OK, "%s: set priority %d failed with status %d",
+             __func__, kPriority, status);
     while (true) {
         const IClock::Handle handle = mClock->wait(-1 /* timeout */);
         ALOGV("%s: Clock wait %d", __func__, handle);
