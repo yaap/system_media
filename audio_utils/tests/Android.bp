@@ -193,6 +193,24 @@ cc_test {
 }
 
 cc_test {
+    name: "audio_property_tests",
+    host_supported: true,
+    srcs: ["audio_property_tests.cpp"],
+    shared_libs: [
+        "libaudioutils",
+        "libbase",
+        "liblog",
+        "libutils",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-Wthread-safety",
+    ],
+}
+
+cc_test {
     name: "audio_stringutils_tests",
     host_supported: true,
 
