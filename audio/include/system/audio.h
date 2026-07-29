@@ -119,6 +119,7 @@ typedef enum {
 
 /* Audio attributes */
 #define AUDIO_ATTRIBUTES_TAGS_MAX_SIZE 256
+#define AUDIO_ATTRIBUTES_CODEC_PROVENANCE_MAX_SIZE 64
 typedef struct {
     audio_content_type_t content_type;
     audio_usage_t        usage;
@@ -129,7 +130,7 @@ typedef struct {
 /** The separator for tags. */
 static const char AUDIO_ATTRIBUTES_TAGS_SEPARATOR = ';';
 /** Tag value for GMAP bidirectional mode indication */
-static const char* AUDIO_ATTRIBUTES_TAG_GMAP_BIDIRECTIONAL = "VX_AOSP_bidirectional";
+static const char* AUDIO_ATTRIBUTES_TAG_GMAP_BIDIRECTIONAL = "VX_AOSP_BIDIRECTIONAL";
 
 // Keep sync with android/media/AudioProductStrategy.java
 static const audio_flags_mask_t AUDIO_FLAGS_AFFECT_STRATEGY_SELECTION =
@@ -271,12 +272,22 @@ enum {
  *     There is no concept of output or input.
  *     It is not permitted for no bits to be set.
  *
+ *   AUDIO_CHANNEL_REPRESENTATION_ACN
+ *     is a channel mask representation of Ambisonics Channel Number (ACN) scheme.
+ *     The platform assumes SN3D normalization is used. The first 8 low-order bits (0..7) set
+ *     the number of channel used. By default full sphere Ambisonics is assumed, thus
+ *     the number of channels used by the order N is (N + 1) ^ 2. To reduce channel usage,
+ *     only horizontal components may be considered, lowering the number of channels to 2 * N + 1,
+ *     this case is encoded with the bit 8 set to 1.
+ *     There is no concept of output or input.
+ *     It is not permitted for no bits to be set.
+ *
  * All other representations are reserved for future use.
  *
- * Warning: current representation distinguishes between input and output, but this will not the be
- * case in future revisions of the platform. Wherever there is an ambiguity between input and output
- * that is currently resolved by checking the channel mask, the implementer should look for ways to
- * fix it with additional information outside of the mask.
+ * Warning: current position-based representation distinguishes between input and output, but this
+ * will not the be case in future revisions of the platform. Wherever there is an ambiguity between
+ * input and output that is currently resolved by checking the channel mask, the implementer should
+ * look for ways to fix it with additional information outside of the mask.
  */
 
 /* log(2) of maximum number of representations, not part of public API */
@@ -290,7 +301,9 @@ static inline CONSTEXPR uint32_t audio_channel_mask_get_bits(audio_channel_mask_
 
 typedef enum {
     AUDIO_CHANNEL_REPRESENTATION_POSITION   = 0x0u,
+    AUDIO_CHANNEL_REPRESENTATION_ACN        = 0x1u,
     AUDIO_CHANNEL_REPRESENTATION_INDEX      = 0x2u,
+    // INVALID = 0x3u
 } audio_channel_representation_t;
 
 /* The return value is undefined if the channel mask is invalid. */
@@ -322,6 +335,7 @@ static inline CONSTEXPR bool audio_channel_mask_is_valid(audio_channel_mask_t ch
     audio_channel_representation_t representation = audio_channel_mask_get_representation(channel);
     switch (representation) {
     case AUDIO_CHANNEL_REPRESENTATION_POSITION:
+    case AUDIO_CHANNEL_REPRESENTATION_ACN:
     case AUDIO_CHANNEL_REPRESENTATION_INDEX:
         break;
     default:
@@ -1277,6 +1291,7 @@ typedef struct playback_track_metadata_v7 {
     struct playback_track_metadata base;
     audio_channel_mask_t channel_mask;
     char tags[AUDIO_ATTRIBUTES_TAGS_MAX_SIZE]; /* UTF8 */
+    char codec_provenance[AUDIO_ATTRIBUTES_CODEC_PROVENANCE_MAX_SIZE]; /* UTF8 */
 } playback_track_metadata_v7_t;
 
 /** Metadata of a record track for an out stream. */
@@ -1291,6 +1306,7 @@ static inline void playback_track_metadata_to_v7(struct playback_track_metadata_
     dst->base = *src;
     dst->channel_mask = AUDIO_CHANNEL_NONE;
     dst->tags[0] = '\0';
+    dst->codec_provenance[0] = '\0';
 }
 
 static inline void playback_track_metadata_from_v7(struct playback_track_metadata *dst,
@@ -1530,6 +1546,8 @@ static inline bool audio_is_input_channel(audio_channel_mask_t channel)
         FALLTHROUGH_INTENDED;
     case AUDIO_CHANNEL_REPRESENTATION_INDEX:
         return bits != 0;
+    case AUDIO_CHANNEL_REPRESENTATION_ACN:
+        return (bits & AUDIO_ACN_CHANNEL_COUNT_MASK) != 0;
     default:
         return false;
     }
@@ -1552,9 +1570,21 @@ static inline CONSTEXPR bool audio_is_output_channel(audio_channel_mask_t channe
         FALLTHROUGH_INTENDED;
     case AUDIO_CHANNEL_REPRESENTATION_INDEX:
         return bits != 0;
+    case AUDIO_CHANNEL_REPRESENTATION_ACN:
+        return (bits & AUDIO_ACN_CHANNEL_COUNT_MASK) != 0;
     default:
         return false;
     }
+}
+
+static inline CONSTEXPR uint32_t audio_channel_count_from_acn_mask(audio_channel_mask_t mask) {
+    const audio_channel_representation_t repr = audio_channel_mask_get_representation(mask);
+    if (repr != AUDIO_CHANNEL_REPRESENTATION_ACN) return 0;
+    return audio_channel_mask_get_bits(mask) & AUDIO_ACN_CHANNEL_COUNT_MASK;
+}
+
+static inline CONSTEXPR bool audio_acn_mask_is_horizontal(audio_channel_mask_t mask) {
+    return (mask & AUDIO_ACN_HORIZONTAL) == AUDIO_ACN_HORIZONTAL;
 }
 
 /* Returns the number of channels from an input channel mask,
@@ -1573,6 +1603,8 @@ static inline CONSTEXPR uint32_t audio_channel_count_from_in_mask(audio_channel_
         FALLTHROUGH_INTENDED;
     case AUDIO_CHANNEL_REPRESENTATION_INDEX:
         return __builtin_popcount(bits);
+    case AUDIO_CHANNEL_REPRESENTATION_ACN:
+        return audio_channel_count_from_acn_mask(channel);
     default:
         return 0;
     }
@@ -1585,7 +1617,6 @@ static inline CONSTEXPR uint32_t audio_channel_count_from_in_mask(uint32_t mask)
     return audio_channel_count_from_in_mask(static_cast<audio_channel_mask_t>(mask));
 }
 #endif
-
 /* Returns the number of channels from an output channel mask,
  * used in the context of audio output or playback.
  * If a channel bit is set which could _not_ correspond to an output channel,
@@ -1602,6 +1633,8 @@ static inline CONSTEXPR uint32_t audio_channel_count_from_out_mask(audio_channel
         FALLTHROUGH_INTENDED;
     case AUDIO_CHANNEL_REPRESENTATION_INDEX:
         return __builtin_popcount(bits);
+    case AUDIO_CHANNEL_REPRESENTATION_ACN:
+        return audio_channel_count_from_acn_mask(channel);
     default:
         return 0;
     }
@@ -1614,6 +1647,17 @@ static inline CONSTEXPR uint32_t audio_channel_count_from_out_mask(uint32_t mask
     return audio_channel_count_from_out_mask(static_cast<audio_channel_mask_t>(mask));
 }
 #endif
+
+/* Returns true if the channel mask is a supported ACN channel mask.
+ */
+static inline CONSTEXPR bool audio_acn_channel_mask_is_supported(audio_channel_mask_t channel)
+{
+    const audio_channel_representation_t repr = audio_channel_mask_get_representation(channel);
+    if (repr != AUDIO_CHANNEL_REPRESENTATION_ACN) return false;
+    // Must be one of the known values.
+    const char* const s = audio_channel_acn_mask_to_string(channel);
+    return s[0] != '\0';
+}
 
 /* Derive a channel mask for index assignment from a channel count.
  * Returns the matching channel mask,
@@ -2357,6 +2401,22 @@ inline CONSTEXPR bool audio_output_is_mixed_output_flags(audio_output_flags_t fl
             AUDIO_OUTPUT_FLAG_HW_AV_SYNC | AUDIO_OUTPUT_FLAG_IEC958_NONAUDIO |
             AUDIO_OUTPUT_FLAG_DIRECT_PCM | AUDIO_OUTPUT_FLAG_GAPLESS_OFFLOAD |
             AUDIO_OUTPUT_FLAG_BIT_PERFECT)) == 0;
+}
+
+static inline bool audio_is_system_usage(audio_usage_t audioUsage)
+{
+    switch (audioUsage) {
+        case AUDIO_USAGE_EMERGENCY:
+        case AUDIO_USAGE_SAFETY:
+        case AUDIO_USAGE_VEHICLE_STATUS:
+        case AUDIO_USAGE_ANNOUNCEMENT:
+        case AUDIO_USAGE_SPEAKER_CLEANUP:
+        case AUDIO_USAGE_NOTIFICATION_VIBRATION:
+        case AUDIO_USAGE_RINGTONE_VIBRATION:
+            return true;
+        default:
+            return false;
+    }
 }
 
 __END_DECLS

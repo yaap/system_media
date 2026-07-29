@@ -97,7 +97,27 @@ public:
      */
     virtual Handle wait(nsecs_t timeout) = 0;
 
-    virtual std::string toString() const = 0;
+    /**
+     * Returns a string representation of the clock's internal state,
+     * including all active timers.
+     *
+     * This is useful for debugging.
+     *
+     * @param prefix A string to prepend to each line of the output.
+     * @return A string detailing the current state of the clock.
+     */
+    virtual std::string toString(std::string_view prefix = {}) const = 0;
+
+    /**
+     * Returns a string representation of a specific timer's state.
+     *
+     * This is useful for debugging.
+     *
+     * @param prefix A string to prepend to each line of the output.
+     * @param handle The handle of the timer to describe.
+     * @return A string detailing the current state of the specified timer.
+     */
+    virtual std::string toString(std::string_view prefix, Handle handle) const = 0;
 
     /**
      * Creates a new LinuxClock instance.
@@ -218,9 +238,15 @@ public:
     bool alarm() const { return mAlarm; }
 
     /**
-     * Returns a string state status.
+     * Returns a string representation of the TimerQueue's internal state,
+     * including all pending events and clock information.
+     *
+     * This is useful for debugging.
+     *
+     * @param prefix A string to prepend to each line of the output.
+     * @return A string detailing the current state of the TimerQueue.
      */
-    std::string toString() const;
+    std::string toString(std::string_view prefix = {}) const;
 
 private:
     EventId getNextEventId_l() REQUIRES(mMutex);
@@ -229,13 +255,32 @@ private:
     struct Event {
         EventId id;
         std::function<void()> function;
-        nsecs_t priorityTime;
+        nsecs_t priorityTime; // The time used to determine which task is scheduled
+                              // if multiple tasks can be executed.  Defaults to the
+                              // hardDeadline if unspecified (or negative).
+
+        // for debugging purposes:
+        nsecs_t hardDeadline; // The hard deadline is when the function must be executed.
+                              // A soft deadline (not saved) is when the function
+                              // can be executed earlier, if the system is not suspended.
+        nsecs_t creationTime = systemTime(SYSTEM_TIME_BOOTTIME);
+
+        std::string toString(std::string_view prefix = {}) const {
+            std::string s(prefix);
+            s.append("id: ").append(std::to_string(id));
+            s.append("  priorityTime: ").append(std::to_string(priorityTime));
+            s.append("  hardDeadline: ").append(std::to_string(hardDeadline));
+            s.append("  creationTime: ").append(std::to_string(creationTime));
+            s.append("\n");
+            return s;
+        }
     };
 
     // AlarmClock is not inherently thread-safe, but accessed with ThreadQueue mMutex held.
     class AlarmClock {
     public:
-        AlarmClock(IClock* clock, IClock::ClockType clockType, bool& running);
+        AlarmClock(
+                std::string_view name, IClock* clock, IClock::ClockType clockType, bool& running);
         ~AlarmClock();
 
         IClock::Handle getHandle() const { return mTimerHandle; }
@@ -244,8 +289,9 @@ private:
         void armTimerForNextEvent();
         void collectEvents(nsecs_t now, std::set<std::shared_ptr<Event>>& events);
         void removeEvents(const std::set<std::shared_ptr<Event>>& events);
-
+        std::string toString(std::string_view prefix = {}) const;
     private:
+        const std::string mName;
         IClock* const mClock;
         const IClock::Handle mTimerHandle;
         bool& mRunning;  // from the outer object always read safely.

@@ -101,6 +101,7 @@
 #include <aidl/android/hardware/camera/metadata/LedAvailableLeds.h>
 #include <aidl/android/hardware/camera/metadata/InfoSupportedHardwareLevel.h>
 #include <aidl/android/hardware/camera/metadata/InfoSupportedBufferManagementVersion.h>
+#include <aidl/android/hardware/camera/metadata/InfoDeviceType.h>
 #include <aidl/android/hardware/camera/metadata/BlackLevelLock.h>
 #include <aidl/android/hardware/camera/metadata/SyncFrameNumber.h>
 #include <aidl/android/hardware/camera/metadata/SyncMaxLatency.h>
@@ -110,6 +111,7 @@
 #include <aidl/android/hardware/camera/metadata/DepthAvailableDepthStreamConfigurationsMaximumResolution.h>
 #include <aidl/android/hardware/camera/metadata/DepthAvailableDynamicDepthStreamConfigurationsMaximumResolution.h>
 #include <aidl/android/hardware/camera/metadata/LogicalMultiCameraSensorSyncType.h>
+#include <aidl/android/hardware/camera/metadata/LogicalMultiCameraAdditionalResults.h>
 #include <aidl/android/hardware/camera/metadata/DistortionCorrectionMode.h>
 #include <aidl/android/hardware/camera/metadata/HeicAvailableHeicStreamConfigurations.h>
 #include <aidl/android/hardware/camera/metadata/HeicAvailableHeicStreamConfigurationsMaximumResolution.h>
@@ -638,6 +640,8 @@ static_assert(static_cast<int>(ANDROID_SCALER_AVAILABLE_STREAM_USE_CASES)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_SCALER_AVAILABLE_STREAM_USE_CASES));
 static_assert(static_cast<int>(ANDROID_SCALER_RAW_CROP_REGION)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_SCALER_RAW_CROP_REGION));
+static_assert(static_cast<int>(ANDROID_SCALER_CONCURRENT_MULTI_RESOLUTION_FORMATS)
+        == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_SCALER_CONCURRENT_MULTI_RESOLUTION_FORMATS));
 static_assert(static_cast<int>(ANDROID_SENSOR_EXPOSURE_TIME)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_SENSOR_EXPOSURE_TIME));
 static_assert(static_cast<int>(ANDROID_SENSOR_FRAME_DURATION)
@@ -836,6 +840,8 @@ static_assert(static_cast<int>(ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION));
 static_assert(static_cast<int>(ANDROID_INFO_DEVICE_STATE_ORIENTATIONS)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_INFO_DEVICE_STATE_ORIENTATIONS));
+static_assert(static_cast<int>(ANDROID_INFO_DEVICE_TYPE)
+        == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_INFO_DEVICE_TYPE));
 static_assert(static_cast<int>(ANDROID_BLACK_LEVEL_LOCK)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_BLACK_LEVEL_LOCK));
 static_assert(static_cast<int>(ANDROID_SYNC_FRAME_NUMBER)
@@ -884,6 +890,8 @@ static_assert(static_cast<int>(ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID));
 static_assert(static_cast<int>(ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_SENSOR_CROP_REGION)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_SENSOR_CROP_REGION));
+static_assert(static_cast<int>(ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS)
+        == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS));
 static_assert(static_cast<int>(ANDROID_DISTORTION_CORRECTION_MODE)
         == static_cast<int>(::aidl::android::hardware::camera::metadata::CameraMetadataTag::ANDROID_DISTORTION_CORRECTION_MODE));
 static_assert(static_cast<int>(ANDROID_DISTORTION_CORRECTION_AVAILABLE_MODES)
@@ -1418,6 +1426,32 @@ static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFI
         == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_PO));
 static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_MAX)
         == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_MAX));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_STANDARD_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_STANDARD_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HLG10_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HLG10_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_PLUS_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_HDR10_PLUS_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50));
+static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_MAX_312)
+        == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableDynamicRangeProfilesMap::ANDROID_REQUEST_AVAILABLE_DYNAMIC_RANGE_PROFILES_MAP_MAX_312));
 
 static_assert(static_cast<int64_t>(ANDROID_REQUEST_AVAILABLE_COLOR_SPACE_PROFILES_MAP_UNSPECIFIED)
         == static_cast<int64_t>(::aidl::android::hardware::camera::metadata::RequestAvailableColorSpaceProfilesMap::ANDROID_REQUEST_AVAILABLE_COLOR_SPACE_PROFILES_MAP_UNSPECIFIED));
@@ -1446,6 +1480,8 @@ static_assert(static_cast<int32_t>(ANDROID_SCALER_AVAILABLE_FORMATS_RAW10)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::ScalerAvailableFormats::ANDROID_SCALER_AVAILABLE_FORMATS_RAW10));
 static_assert(static_cast<int32_t>(ANDROID_SCALER_AVAILABLE_FORMATS_RAW12)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::ScalerAvailableFormats::ANDROID_SCALER_AVAILABLE_FORMATS_RAW12));
+static_assert(static_cast<int32_t>(ANDROID_SCALER_AVAILABLE_FORMATS_RAW14)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::ScalerAvailableFormats::ANDROID_SCALER_AVAILABLE_FORMATS_RAW14));
 static_assert(static_cast<int32_t>(ANDROID_SCALER_AVAILABLE_FORMATS_Y8)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::ScalerAvailableFormats::ANDROID_SCALER_AVAILABLE_FORMATS_Y8));
 
@@ -1701,6 +1737,15 @@ static_assert(static_cast<int32_t>(ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERS
 static_assert(static_cast<int32_t>(ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION_SESSION_CONFIGURABLE)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoSupportedBufferManagementVersion::ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION_SESSION_CONFIGURABLE));
 
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_BUILT_IN)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoDeviceType::ANDROID_INFO_DEVICE_TYPE_BUILT_IN));
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_EXTERNAL)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoDeviceType::ANDROID_INFO_DEVICE_TYPE_EXTERNAL));
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_VIRTUAL)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoDeviceType::ANDROID_INFO_DEVICE_TYPE_VIRTUAL));
+static_assert(static_cast<int32_t>(ANDROID_INFO_DEVICE_TYPE_UNKNOWN)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::InfoDeviceType::ANDROID_INFO_DEVICE_TYPE_UNKNOWN));
+
 static_assert(static_cast<int32_t>(ANDROID_BLACK_LEVEL_LOCK_OFF)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::BlackLevelLock::ANDROID_BLACK_LEVEL_LOCK_OFF));
 static_assert(static_cast<int32_t>(ANDROID_BLACK_LEVEL_LOCK_ON)
@@ -1745,6 +1790,11 @@ static_assert(static_cast<int32_t>(ANDROID_LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::LogicalMultiCameraSensorSyncType::ANDROID_LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_APPROXIMATE));
 static_assert(static_cast<int32_t>(ANDROID_LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_CALIBRATED)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::LogicalMultiCameraSensorSyncType::ANDROID_LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE_CALIBRATED));
+
+static_assert(static_cast<int32_t>(ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_OFF)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::LogicalMultiCameraAdditionalResults::ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_OFF));
+static_assert(static_cast<int32_t>(ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_ON)
+        == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::LogicalMultiCameraAdditionalResults::ANDROID_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS_ON));
 
 static_assert(static_cast<int32_t>(ANDROID_DISTORTION_CORRECTION_MODE_OFF)
         == static_cast<int32_t>(::aidl::android::hardware::camera::metadata::DistortionCorrectionMode::ANDROID_DISTORTION_CORRECTION_MODE_OFF));

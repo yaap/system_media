@@ -38,14 +38,6 @@ extern "C" {
 /** **These are private functions for use only by the camera framework.** **/
 
 /**
- * Set the global vendor tag operations object used to define vendor tag
- * structure when parsing camera metadata with functions defined in
- * system/media/camera/include/camera_metadata.h.
- */
-ANDROID_API
-int set_camera_metadata_vendor_ops(const vendor_tag_ops_t *query_ops);
-
-/**
  * Set the global vendor tag cache operations object used to define vendor tag
  * structure when parsing camera metadata with functions defined in
  * system/media/camera/include/camera_metadata.h.

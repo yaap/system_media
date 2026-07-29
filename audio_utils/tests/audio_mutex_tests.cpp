@@ -643,6 +643,80 @@ TEST_P(MutexTestSuite, TimedLock) {
     }
 }
 
+TEST_P(MutexTestSuite, ConditionVariableWaitFor) {
+    using ConditionVariable = android::audio_utils::condition_variable;
+    using Mutex = android::audio_utils::mutex;
+    using UniqueLock = android::audio_utils::unique_lock<Mutex>;
+    const bool priority_inheritance = GetParam();
+
+    Mutex m{priority_inheritance};
+    ConditionVariable cv;
+    bool notified = false; // GUARDED_BY(m)
+    bool thread_done = false; // GUARDED_BY(m)
+
+    Mutex m_stage{priority_inheritance};
+    ConditionVariable cv_stage;  // GUARDED_BY(m_stage)
+    int stage = 0;  // GUARDED_BY(m_stage)
+
+    std::thread t([&]() {
+        UniqueLock ul(m);
+        // Stage 1: test timeout
+        {
+            UniqueLock ul_stage(m_stage);
+            stage = 1;
+            cv_stage.notify_one();
+        }
+
+        bool status = cv.wait_for(ul, 100ms, [&]{ return notified; });
+        EXPECT_FALSE(status); // Should time out, so predicate is false
+
+        // Reset for next test
+        notified = false;
+
+        // Stage 2: test notification
+        {
+            UniqueLock ul_stage(m_stage);
+            stage = 2;
+            cv_stage.notify_one();
+        }
+
+        status = cv.wait_for(ul, 1000ms, [&]{ return notified; });
+        EXPECT_TRUE(status); // Should be notified, so predicate is true
+
+        thread_done = true;
+        cv.notify_one(); // Notify main thread that this thread is done
+    });
+
+    // Wait for thread to be in Stage 1 wait
+    {
+        UniqueLock ul_stage(m_stage);
+        cv_stage.wait(ul_stage, [&]{ return stage == 1; });
+    }
+
+    // Now we know thread is in its first wait. It will time out.
+
+    // Wait for thread to be in Stage 2 wait
+    {
+        UniqueLock ul_stage(m_stage);
+        cv_stage.wait(ul_stage, [&]{ return stage == 2; });
+    }
+
+    // Now we know thread is in its second wait. Notify it.
+    {
+        UniqueLock ul(m);
+        notified = true;
+        cv.notify_one();
+    }
+
+    // Wait for the thread to finish its work
+    {
+        UniqueLock ul(m);
+        cv.wait(ul, [&]{ return thread_done; });
+    }
+
+    t.join();
+}
+
 // Test the deadlock detection algorithm for a single wait chain
 // (no cycle).
 
@@ -944,7 +1018,6 @@ TEST_P(MutexTestSuite, DeadlockJoinDetection) {
     const size_t chain_size = chain.size();
     EXPECT_EQ(3u, chain_size);
 
-    const auto default_idx = static_cast<size_t>(Mutex::attributes_t::order_default_);
     if (chain_size > 0) {
         EXPECT_EQ(tid2, chain[0].first);
         EXPECT_EQ("join", chain[0].second);

@@ -17,13 +17,13 @@
 #ifndef SYSTEM_MEDIA_INCLUDE_ANDROID_CAMERA_METADATA_H
 #define SYSTEM_MEDIA_INCLUDE_ANDROID_CAMERA_METADATA_H
 
+#include <sys/cdefs.h>
 #include <string.h>
 #include <stdint.h>
 #include <cutils/compiler.h>
+#include <system/camera_vendor_tags.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+__BEGIN_DECLS
 
 /**
  * Tag hierarchy and enum definitions for camera_metadata_entry
@@ -589,8 +589,19 @@ int camera_metadata_enum_value(uint32_t tag /*in*/,
                                size_t size /*in*/,
                                uint32_t *value /*out*/);
 
-#ifdef __cplusplus
-}
-#endif
+/**
+ * Set the global vendor tag operations object used to define vendor tag
+ * structure when parsing camera metadata with functions defined in
+ * system/media/camera/include/camera_metadata.h.
+ *
+ * Note: this is moved from system/media/private/camera/include/camera_metadata_hidden.h.
+ * Every process that needs to read or write vendor tags has to call this method before
+ * attempting to use them. The OS will handle standard app and system service processes,
+ * but OEMs may need to invoke this method in HALs that process camera data.
+ */
+ANDROID_API
+int set_camera_metadata_vendor_ops(const vendor_tag_ops_t *query_ops);
+
+__END_DECLS
 
 #endif

@@ -880,6 +880,8 @@
             ><a href="#static_android.scaler.availableStreamUseCases">android.scaler.availableStreamUseCases</a></li>
             <li
             ><a href="#static_android.scaler.mandatoryUseCaseStreamCombinations">android.scaler.mandatoryUseCaseStreamCombinations</a></li>
+            <li
+            ><a href="#static_android.scaler.concurrentMultiResolutionFormats">android.scaler.concurrentMultiResolutionFormats</a></li>
           </ul>
         </li>
         <li>
@@ -1261,6 +1263,15 @@
             ><a href="#static_android.info.sessionConfigurationQueryVersion">android.info.sessionConfigurationQueryVersion</a></li>
             <li
             ><a href="#static_android.info.deviceId">android.info.deviceId</a></li>
+            <li
+            ><a href="#static_android.info.deviceType">android.info.deviceType</a></li>
+          </ul>
+        </li>
+        <li>
+          <span class="toc_kind_header">dynamic</span>
+          <ul class="toc_section">
+            <li
+            ><a href="#dynamic_android.info.deviceType">android.info.deviceType</a></li>
           </ul>
         </li>
       </ul> <!-- toc_section -->
@@ -1388,6 +1399,15 @@
             ><a href="#dynamic_android.logicalMultiCamera.activePhysicalId">android.logicalMultiCamera.activePhysicalId</a></li>
             <li
             ><a href="#dynamic_android.logicalMultiCamera.activePhysicalSensorCropRegion">android.logicalMultiCamera.activePhysicalSensorCropRegion</a></li>
+            <li
+            ><a href="#dynamic_android.logicalMultiCamera.additionalResults">android.logicalMultiCamera.additionalResults</a></li>
+          </ul>
+        </li>
+        <li>
+          <span class="toc_kind_header">controls</span>
+          <ul class="toc_section">
+            <li
+            ><a href="#controls_android.logicalMultiCamera.additionalResults">android.logicalMultiCamera.additionalResults</a></li>
           </ul>
         </li>
       </ul> <!-- toc_section -->
@@ -5434,7 +5454,8 @@ after RAW sensor data is captured.<wbr/></p>
               <p>Some camera devices support additional digital sensitivity boosting in the
 camera processing pipeline after sensor RAW image is captured.<wbr/>
 Such a boost will be applied to YUV/<wbr/>JPEG format output images but will not
-have effect on RAW output formats like RAW_<wbr/>SENSOR,<wbr/> RAW10,<wbr/> RAW12 or RAW_<wbr/>OPAQUE.<wbr/></p>
+have effect on RAW output formats like RAW_<wbr/>SENSOR,<wbr/> RAW10,<wbr/> RAW12,<wbr/> RAW14
+or RAW_<wbr/>OPAQUE.<wbr/></p>
 <p>This key will be <code>null</code> for devices that do not support any RAW format
 outputs.<wbr/> For devices that do support RAW format outputs,<wbr/> this key will always
 present,<wbr/> and if a device does not support post RAW sensitivity boost,<wbr/> it will
@@ -12116,7 +12137,8 @@ after RAW sensor data is captured.<wbr/></p>
               <p>Some camera devices support additional digital sensitivity boosting in the
 camera processing pipeline after sensor RAW image is captured.<wbr/>
 Such a boost will be applied to YUV/<wbr/>JPEG format output images but will not
-have effect on RAW output formats like RAW_<wbr/>SENSOR,<wbr/> RAW10,<wbr/> RAW12 or RAW_<wbr/>OPAQUE.<wbr/></p>
+have effect on RAW output formats like RAW_<wbr/>SENSOR,<wbr/> RAW10,<wbr/> RAW12,<wbr/> RAW14
+or RAW_<wbr/>OPAQUE.<wbr/></p>
 <p>This key will be <code>null</code> for devices that do not support any RAW format
 outputs.<wbr/> For devices that do support RAW format outputs,<wbr/> this key will always
 present,<wbr/> and if a device does not support post RAW sensitivity boost,<wbr/> it will
@@ -20643,11 +20665,13 @@ into the 3 stream types as below:</p>
 <ul>
 <li>Processed (but stalling): any non-RAW format with a stallDurations &gt; 0.<wbr/>
   Typically <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#JPEG">JPEG format</a>.<wbr/></li>
-<li>Raw formats: <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW_SENSOR">RAW_<wbr/>SENSOR</a>,<wbr/> <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW10">RAW10</a>,<wbr/> or
-  <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW12">RAW12</a>.<wbr/></li>
+<li>Raw formats: <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW_SENSOR">RAW_<wbr/>SENSOR</a>,<wbr/>
+  <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW10">RAW10</a>,<wbr/>
+  <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW12">RAW12</a>,<wbr/> or
+  <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW14">RAW14</a></li>
 <li>Processed (but not-stalling): any non-RAW format without a stall duration.<wbr/>  Typically
   <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#YUV_420_888">YUV_<wbr/>420_<wbr/>888</a>,<wbr/>
-  <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#NV21">NV21</a>,<wbr/> <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#YV12">YV12</a>,<wbr/> or <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#Y8">Y8</a> .<wbr/></li>
+  or <a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#Y8">Y8</a> .<wbr/></li>
 </ul>
             </td>
           </tr>
@@ -20713,6 +20737,7 @@ be any <code>RAW</code> and supported format provided by <a href="#static_androi
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW_SENSOR">RAW_<wbr/>SENSOR</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW10">RAW10</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW12">RAW12</a></li>
+<li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW14">RAW14</a></li>
 </ul>
 <p>LEGACY mode devices (<a href="#static_android.info.supportedHardwareLevel">android.<wbr/>info.<wbr/>supported<wbr/>Hardware<wbr/>Level</a> <code>==</code> LEGACY)
 never support raw streams.<wbr/></p>
@@ -20781,8 +20806,6 @@ be any non-<code>RAW</code> and supported format provided by <a href="#static_an
 Typically:</p>
 <ul>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#YUV_420_888">YUV_<wbr/>420_<wbr/>888</a></li>
-<li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#NV21">NV21</a></li>
-<li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#YV12">YV12</a></li>
 <li>Implementation-defined formats,<wbr/> i.<wbr/>e.<wbr/> <a href="https://developer.android.com/reference/android/hardware/camera2/params/StreamConfigurationMap.html#isOutputSupportedFor(Class)">StreamConfigurationMap#isOutputSupportedFor(Class)</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#Y8">Y8</a></li>
 </ul>
@@ -22666,6 +22689,90 @@ capture Mode.<wbr/></p></span>
                     <span class="entry_type_enum_value">0x1000</span>
                     <span class="entry_type_enum_notes"></span>
                   </li>
+                  <li>
+                    <span class="entry_type_enum_name">STANDARD_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x2000</span>
+                    <span class="entry_type_enum_notes"><p>8-bit profile with additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">HLG10_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x4000</span>
+                    <span class="entry_type_enum_notes"><p>10-bit pixel samples encoded using the Hybrid log-gamma transfer function with
+additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">HDR10_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x8000</span>
+                    <span class="entry_type_enum_notes"><p>10-bit pixel samples encoded using the SMPTE ST 2084 transfer function.<wbr/>
+This profile utilizes internal static metadata to increase the quality
+of the capture and also includes SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">HDR10_PLUS_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x10000</span>
+                    <span class="entry_type_enum_notes"><p>10-bit pixel samples encoded using the SMPTE ST 2084 transfer function.<wbr/>
+In contrast to HDR10,<wbr/> this profile uses internal per-frame metadata
+to further enhance the quality of the capture and includes
+additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x20000</span>
+                    <span class="entry_type_enum_notes"><p>This is a camera mode for Dolby Vision capture optimized for a more scene
+accurate capture.<wbr/> This would typically differ from what a specific device
+might want to tune for a consumer optimized Dolby Vision general capture and
+also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x40000</span>
+                    <span class="entry_type_enum_notes"><p>This is the power optimized mode for 10-bit Dolby Vision HDR Reference Mode
+with additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x80000</span>
+                    <span class="entry_type_enum_notes"><p>This is the camera mode for the default Dolby Vision capture mode for the
+specific device.<wbr/> This would be tuned by each specific device for consumer
+pleasing results that resonate with their particular audience.<wbr/> We expect
+that each specific device would have a different look for their default
+Dolby Vision capture and also include additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x100000</span>
+                    <span class="entry_type_enum_notes"><p>This is the power optimized mode for 10-bit Dolby Vision HDR device specific
+capture Mode and also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x200000</span>
+                    <span class="entry_type_enum_notes"><p>This is the 8-bit version of the Dolby Vision reference capture mode optimized
+for scene accuracy and also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x400000</span>
+                    <span class="entry_type_enum_notes"><p>This is the power optimized mode for 8-bit Dolby Vision HDR Reference Mode and
+also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x800000</span>
+                    <span class="entry_type_enum_notes"><p>This is the 8-bit version of device specific tuned and optimized Dolby Vision
+capture mode and also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x1000000</span>
+                    <span class="entry_type_enum_notes"><p>This is the power optimized mode for 8-bit Dolby Vision HDR device specific
+capture Mode and also includes additional SMPTE 2094-50 per-frame metadata.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">MAX_312 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x2000000</span>
+                    <span class="entry_type_enum_notes"></span>
+                  </li>
                 </ul>
 
             </td> <!-- entry_type -->
@@ -23896,6 +24003,11 @@ performance guarantees.<wbr/></p></span>
                     <span class="entry_type_enum_notes"><p>RAW12</p></span>
                   </li>
                   <li>
+                    <span class="entry_type_enum_name">RAW14 (v3.12)</span>
+                    <span class="entry_type_enum_value">0x2C</span>
+                    <span class="entry_type_enum_notes"><p>RAW14</p></span>
+                  </li>
+                  <li>
                     <span class="entry_type_enum_name">Y8 (v3.4)</span>
                     <span class="entry_type_enum_value">0x20203859</span>
                     <span class="entry_type_enum_notes"><p>Y8</p></span>
@@ -25062,6 +25174,7 @@ ignored).<wbr/></p>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#YUV_420_888">Image<wbr/>Format#YUV_<wbr/>420_<wbr/>888</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW10">ImageFormat#RAW10</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW12">ImageFormat#RAW12</a></li>
+<li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW14">ImageFormat#RAW14</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#Y8">ImageFormat#Y8</a></li>
 </ul>
 <p>All other formats may or may not have an allowed stall duration on
@@ -25078,8 +25191,8 @@ calculating the max frame rate (absent stalls).<wbr/></p>
           <tr class="entry_cont">
             <td class="entry_details" colspan="6">
               <p>If possible,<wbr/> it is recommended that all non-JPEG formats
-(such as RAW16) should not have a stall duration.<wbr/> RAW10,<wbr/> RAW12,<wbr/> RAW_<wbr/>OPAQUE
-and IMPLEMENTATION_<wbr/>DEFINED must not have stall durations.<wbr/></p>
+(such as RAW16) should not have a stall duration.<wbr/> RAW10,<wbr/> RAW12,<wbr/> RAW14,<wbr/>
+RAW_<wbr/>OPAQUE and IMPLEMENTATION_<wbr/>DEFINED must not have stall durations.<wbr/></p>
             </td>
           </tr>
 
@@ -26360,8 +26473,8 @@ which are applicable when <a href="#controls_android.sensor.pixelMode">android.<
           <tr class="entry_cont">
             <td class="entry_details" colspan="6">
               <p>If possible,<wbr/> it is recommended that all non-JPEG formats
-(such as RAW16) should not have a stall duration.<wbr/> RAW10,<wbr/> RAW12,<wbr/> RAW_<wbr/>OPAQUE
-and IMPLEMENTATION_<wbr/>DEFINED must not have stall durations.<wbr/></p>
+(such as RAW16) should not have a stall duration.<wbr/> RAW10,<wbr/> RAW12,<wbr/> RAW14,<wbr/>
+RAW_<wbr/>OPAQUE and IMPLEMENTATION_<wbr/>DEFINED must not have stall durations.<wbr/></p>
             </td>
           </tr>
 
@@ -26942,6 +27055,7 @@ reflected in the CaptureResult key <a href="#dynamic_android.scaler.rawCropRegio
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW_SENSOR">RAW_<wbr/>SENSOR</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW10">RAW10</a></li>
 <li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW12">RAW12</a></li>
+<li><a href="https://developer.android.com/reference/android/graphics/ImageFormat.html#RAW14">RAW14</a></li>
 </ul>
 <p>session configuration is not guaranteed to succeed.<wbr/></p>
 <p>This stream use case may not be supported on some devices.<wbr/></p></span>
@@ -27104,6 +27218,60 @@ capability.<wbr/></p>
 (it is synthetic and will not be available at the HAL layer).<wbr/></p>
             </td>
           </tr>
+
+          <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
+           <!-- end of entry -->
+        
+                
+          <tr class="entry" id="static_android.scaler.concurrentMultiResolutionFormats">
+            <td class="entry_name
+             " rowspan="3">
+              android.<wbr/>scaler.<wbr/>concurrent<wbr/>Multi<wbr/>Resolution<wbr/>Formats
+            </td>
+            <td class="entry_type">
+                <span class="entry_type_name">int32</span>
+                <span class="entry_type_container">x</span>
+
+                <span class="entry_type_array">
+                  n
+                </span>
+              <span class="entry_type_visibility"> [ndk_public]</span>
+
+
+
+
+
+
+            </td> <!-- entry_type -->
+
+            <td class="entry_description">
+              <p>The MultiResolutionImageReader formats supporting concurrent readers.<wbr/></p>
+            </td>
+
+            <td class="entry_units">
+            </td>
+
+            <td class="entry_range">
+            </td>
+
+            <td class="entry_hal_version">
+              <p>3.<wbr/>12</p>
+            </td>
+
+            <td class="entry_tags">
+            </td>
+
+          </tr>
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>Among all of the MultiResolutionImageReader formats this camera device supports,<wbr/>
+this list contains the formats that support concurrent reader outputs.<wbr/></p>
+            </td>
+          </tr>
+
 
           <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
            <!-- end of entry -->
@@ -28332,8 +28500,8 @@ pre-correction active array and active array accounts for scaling or cropping ca
 by lens geometric distortion correction.<wbr/></p>
 <p>In general,<wbr/> application should always refer to active array size for controls like
 metering regions or crop region.<wbr/> Two exceptions are when the application is dealing with
-RAW image buffers (RAW_<wbr/>SENSOR,<wbr/> RAW10,<wbr/> RAW12 etc),<wbr/> or when application explicitly set
-<a href="#controls_android.distortionCorrection.mode">android.<wbr/>distortion<wbr/>Correction.<wbr/>mode</a> to OFF.<wbr/> In these cases,<wbr/> application should refer
+RAW image buffers (RAW_<wbr/>SENSOR,<wbr/> RAW10,<wbr/> RAW12,<wbr/> RAW14 etc),<wbr/> or when application explicitly
+set <a href="#controls_android.distortionCorrection.mode">android.<wbr/>distortion<wbr/>Correction.<wbr/>mode</a> to OFF.<wbr/> In these cases,<wbr/> application should refer
 to <a href="#static_android.sensor.info.preCorrectionActiveArraySize">android.<wbr/>sensor.<wbr/>info.<wbr/>pre<wbr/>Correction<wbr/>Active<wbr/>Array<wbr/>Size</a>.<wbr/></p>
             </td>
           </tr>
@@ -37915,6 +38083,242 @@ in case this key is not present.<wbr/></p>
           <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
            <!-- end of entry -->
         
+                
+          <tr class="entry" id="static_android.info.deviceType">
+            <td class="entry_name
+             " rowspan="3">
+              android.<wbr/>info.<wbr/>device<wbr/>Type
+            </td>
+            <td class="entry_type">
+                <span class="entry_type_name entry_type_name_enum">byte</span>
+
+              <span class="entry_type_visibility"> [public]</span>
+
+
+              <span class="entry_type_hwlevel">[legacy] </span>
+
+
+
+                <ul class="entry_type_enum">
+                  <li>
+                    <span class="entry_type_enum_name">BUILT_IN (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device is physically a part of this Android device,<wbr/> and the data produced
+is always within the device's control before it reaches the application requesting it.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">EXTERNAL (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device is not permanently connected to this Android device.<wbr/>  It may be
+connected by a wired connection,<wbr/> such as a USB webcam,<wbr/> or it might be connected
+wirelessly,<wbr/> such as via WiFi or other communication mechanism.<wbr/></p>
+<p>The provenance of the image data from the external camera cannot be guaranteed,<wbr/> since it
+is produced by hardware that is not controlled by this Android device.<wbr/></p>
+<p>Note that an <code>EXTERNAL</code> <code><a href="#static_android.info.deviceType">android.<wbr/>info.<wbr/>device<wbr/>Type</a></code> does not mean the
+<code><a href="#static_android.info.supportedHardwareLevel">android.<wbr/>info.<wbr/>supported<wbr/>Hardware<wbr/>Level</a></code> must be <code>EXTERNAL</code>.<wbr/> A basic USB webcam would
+likely have an <code>EXTERNAL</code> hardware level,<wbr/> but more sophisticated remote camera systems
+may have more capabilities than that,<wbr/> and be listed with a <code>LIMITED</code> or better
+hardware level.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">VIRTUAL (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device produces purely virtual images,<wbr/> though they may be based on the
+output of a real hardware camera in some cases.<wbr/> For example,<wbr/> a virtual reality headset
+may have a virtual camera as the front-facing camera,<wbr/> producing a virtual avatar to
+represent the user,<wbr/> which is animated based on sensors on the headset.<wbr/></p>
+<p>The image data should not be assumed to be real.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">UNKNOWN (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device has an unknown classification.<wbr/></p>
+<p>This value will be used when new device classifications need to be added in future
+Android versions,<wbr/> so that applications targeting older SDK levels do not have to
+handle unknown enumeration values.<wbr/></p></span>
+                  </li>
+                </ul>
+
+            </td> <!-- entry_type -->
+
+            <td class="entry_description">
+              <p>A classification of the underlying hardware and source of image data for this
+camera device,<wbr/> or for a specific camera output frame.<wbr/></p>
+            </td>
+
+            <td class="entry_units">
+            </td>
+
+            <td class="entry_range">
+            </td>
+
+            <td class="entry_hal_version">
+              <p>3.<wbr/>12</p>
+            </td>
+
+            <td class="entry_tags">
+            </td>
+
+          </tr>
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>Historically,<wbr/> camera devices listed by the camera2 API could be assumed to be built-in
+cameras on the Android device,<wbr/> or in the case of the <code>EXTERNAL</code>
+<code><a href="#static_android.info.supportedHardwareLevel">android.<wbr/>info.<wbr/>supported<wbr/>Hardware<wbr/>Level</a></code>,<wbr/> USB webcams.<wbr/></p>
+<p>However,<wbr/> it is increasingly possible for camera devices to not be restricted to
+device-internal sensors and processing pipelines.<wbr/> Such devices can provide a wide range
+of useful capabilities to applications,<wbr/> but may also not be suitable for all camera use
+cases.<wbr/></p>
+<p>This key provides a basic classification of the type of camera this camera ID
+represents,<wbr/> so that applications may decide on the appropriate level of trust to extend
+to the image data produced by it.<wbr/></p>
+<p>Note that in some cases,<wbr/> it is possible for the user to swap the definition of a camera
+ID to a different one,<wbr/> such as when connecting a remote camera to act as the front
+camera of the device.<wbr/> This is normally transparent to the camera-using application to
+minimize user friction,<wbr/> but applications that care about this possibility should always
+verify the value of this key in the
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html">CameraCharacteristics</a> before opening
+a camera,<wbr/> instead of caching it,<wbr/> and should also watch the value of this key in
+<a href="https://developer.android.com/reference/android/hardware/camera2/CaptureResult.html">CaptureResults</a> as well,<wbr/> since it may
+change mid-session.<wbr/></p>
+            </td>
+          </tr>
+
+
+          <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
+           <!-- end of entry -->
+        
+        
+
+      <!-- end of kind -->
+      </tbody>
+      <tr><td colspan="7" class="kind">dynamic</td></tr>
+
+      <thead class="entries_header">
+        <tr>
+          <th class="th_name">Property Name</th>
+          <th class="th_type">Type</th>
+          <th class="th_description">Description</th>
+          <th class="th_units">Units</th>
+          <th class="th_range">Range</th>
+          <th class="th_hal_version">Initial HIDL HAL version</th>
+          <th class="th_tags">Tags</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        
+
+        
+
+        
+
+        
+
+                
+          <tr class="entry" id="dynamic_android.info.deviceType">
+            <td class="entry_name
+             " rowspan="3">
+              android.<wbr/>info.<wbr/>device<wbr/>Type
+            </td>
+            <td class="entry_type">
+                <span class="entry_type_name entry_type_name_enum">byte</span>
+
+              <span class="entry_type_visibility"> [public]</span>
+
+
+              <span class="entry_type_hwlevel">[legacy] </span>
+
+
+
+                <ul class="entry_type_enum">
+                  <li>
+                    <span class="entry_type_enum_name">BUILT_IN (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device is physically a part of this Android device,<wbr/> and the data produced
+is always within the device's control before it reaches the application requesting it.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">EXTERNAL (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device is not permanently connected to this Android device.<wbr/>  It may be
+connected by a wired connection,<wbr/> such as a USB webcam,<wbr/> or it might be connected
+wirelessly,<wbr/> such as via WiFi or other communication mechanism.<wbr/></p>
+<p>The provenance of the image data from the external camera cannot be guaranteed,<wbr/> since it
+is produced by hardware that is not controlled by this Android device.<wbr/></p>
+<p>Note that an <code>EXTERNAL</code> <code><a href="#static_android.info.deviceType">android.<wbr/>info.<wbr/>device<wbr/>Type</a></code> does not mean the
+<code><a href="#static_android.info.supportedHardwareLevel">android.<wbr/>info.<wbr/>supported<wbr/>Hardware<wbr/>Level</a></code> must be <code>EXTERNAL</code>.<wbr/> A basic USB webcam would
+likely have an <code>EXTERNAL</code> hardware level,<wbr/> but more sophisticated remote camera systems
+may have more capabilities than that,<wbr/> and be listed with a <code>LIMITED</code> or better
+hardware level.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">VIRTUAL (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device produces purely virtual images,<wbr/> though they may be based on the
+output of a real hardware camera in some cases.<wbr/> For example,<wbr/> a virtual reality headset
+may have a virtual camera as the front-facing camera,<wbr/> producing a virtual avatar to
+represent the user,<wbr/> which is animated based on sensors on the headset.<wbr/></p>
+<p>The image data should not be assumed to be real.<wbr/></p></span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">UNKNOWN (v3.12)</span>
+                    <span class="entry_type_enum_notes"><p>This camera device has an unknown classification.<wbr/></p>
+<p>This value will be used when new device classifications need to be added in future
+Android versions,<wbr/> so that applications targeting older SDK levels do not have to
+handle unknown enumeration values.<wbr/></p></span>
+                  </li>
+                </ul>
+
+            </td> <!-- entry_type -->
+
+            <td class="entry_description">
+              <p>A classification of the underlying hardware and source of image data for this
+camera device,<wbr/> or for a specific camera output frame.<wbr/></p>
+            </td>
+
+            <td class="entry_units">
+            </td>
+
+            <td class="entry_range">
+            </td>
+
+            <td class="entry_hal_version">
+              <p>3.<wbr/>12</p>
+            </td>
+
+            <td class="entry_tags">
+            </td>
+
+          </tr>
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>Historically,<wbr/> camera devices listed by the camera2 API could be assumed to be built-in
+cameras on the Android device,<wbr/> or in the case of the <code>EXTERNAL</code>
+<code><a href="#static_android.info.supportedHardwareLevel">android.<wbr/>info.<wbr/>supported<wbr/>Hardware<wbr/>Level</a></code>,<wbr/> USB webcams.<wbr/></p>
+<p>However,<wbr/> it is increasingly possible for camera devices to not be restricted to
+device-internal sensors and processing pipelines.<wbr/> Such devices can provide a wide range
+of useful capabilities to applications,<wbr/> but may also not be suitable for all camera use
+cases.<wbr/></p>
+<p>This key provides a basic classification of the type of camera this camera ID
+represents,<wbr/> so that applications may decide on the appropriate level of trust to extend
+to the image data produced by it.<wbr/></p>
+<p>Note that in some cases,<wbr/> it is possible for the user to swap the definition of a camera
+ID to a different one,<wbr/> such as when connecting a remote camera to act as the front
+camera of the device.<wbr/> This is normally transparent to the camera-using application to
+minimize user friction,<wbr/> but applications that care about this possibility should always
+verify the value of this key in the
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html">CameraCharacteristics</a> before opening
+a camera,<wbr/> instead of caching it,<wbr/> and should also watch the value of this key in
+<a href="https://developer.android.com/reference/android/hardware/camera2/CaptureResult.html">CaptureResults</a> as well,<wbr/> since it may
+change mid-session.<wbr/></p>
+            </td>
+          </tr>
+
+
+          <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
+           <!-- end of entry -->
+        
         
 
       <!-- end of kind -->
@@ -40298,6 +40702,194 @@ larger than active pixel array.<wbr/> Width and height may be
 rounded to nearest larger supportable width,<wbr/> especially
 for raw output,<wbr/> where only a few fixed scales may be
 possible.<wbr/></p>
+            </td>
+          </tr>
+
+          <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
+           <!-- end of entry -->
+        
+                
+          <tr class="entry" id="dynamic_android.logicalMultiCamera.additionalResults">
+            <td class="entry_name
+             " rowspan="5">
+              android.<wbr/>logical<wbr/>Multi<wbr/>Camera.<wbr/>additional<wbr/>Results
+            </td>
+            <td class="entry_type">
+                <span class="entry_type_name entry_type_name_enum">byte</span>
+
+              <span class="entry_type_visibility"> [public as boolean]</span>
+
+
+
+
+
+                <ul class="entry_type_enum">
+                  <li>
+                    <span class="entry_type_enum_name">OFF (v3.12)</span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">ON (v3.12)</span>
+                  </li>
+                </ul>
+
+            </td> <!-- entry_type -->
+
+            <td class="entry_description">
+              <p>Controls whether the camera device could also return additional
+physical cameras' metadata in the results.<wbr/></p>
+            </td>
+
+            <td class="entry_units">
+            </td>
+
+            <td class="entry_range">
+            </td>
+
+            <td class="entry_hal_version">
+              <p>3.<wbr/>12</p>
+            </td>
+
+            <td class="entry_tags">
+            </td>
+
+          </tr>
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>This control must only be turned on when device is using logical camera,<wbr/>
+which are devices that have
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html#REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA">Camera<wbr/>Metadata#REQUEST_<wbr/>AVAILABLE_<wbr/>CAPABILITIES_<wbr/>LOGICAL_<wbr/>MULTI_<wbr/>CAMERA</a>
+capability and the key is supported in the device's
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html#getAvailableCaptureRequestKeys">CameraCharacteristics#getAvailableCaptureRequestKeys</a>.<wbr/>
+Once this key is set to ON,<wbr/> if the camera device has
+multiple physical cameras active,<wbr/> the TotalCaptureResult will contain
+additional physical camera metadata in the result.<wbr/> One of such
+scenario is at the time of lens switch during zoom,<wbr/> where in addition
+to the active physical camera,<wbr/> a secondary physical camera runs as a
+"follower" and produces an additional physical camera CaptureResult.<wbr/>
+The application can call <a href="https://developer.android.com/reference/android/hardware/camera2/TotalCaptureResult.html#getPhysicalCameraTotalResults">TotalCaptureResult#getPhysicalCameraTotalResults</a>
+to get the additional results.<wbr/></p>
+            </td>
+          </tr>
+
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">HAL Implementation Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>This key may only be included in a logical multi-camera's available
+request and result keys.<wbr/> It must not be included if the camera device
+is not a logical multi-camera.<wbr/></p>
+            </td>
+          </tr>
+
+          <tr class="entry_spacer"><td class="entry_spacer" colspan="7"></td></tr>
+           <!-- end of entry -->
+        
+        
+
+      <!-- end of kind -->
+      </tbody>
+      <tr><td colspan="7" class="kind">controls</td></tr>
+
+      <thead class="entries_header">
+        <tr>
+          <th class="th_name">Property Name</th>
+          <th class="th_type">Type</th>
+          <th class="th_description">Description</th>
+          <th class="th_units">Units</th>
+          <th class="th_range">Range</th>
+          <th class="th_hal_version">Initial HIDL HAL version</th>
+          <th class="th_tags">Tags</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        
+
+        
+
+        
+
+        
+
+                
+          <tr class="entry" id="controls_android.logicalMultiCamera.additionalResults">
+            <td class="entry_name
+             " rowspan="5">
+              android.<wbr/>logical<wbr/>Multi<wbr/>Camera.<wbr/>additional<wbr/>Results
+            </td>
+            <td class="entry_type">
+                <span class="entry_type_name entry_type_name_enum">byte</span>
+
+              <span class="entry_type_visibility"> [public as boolean]</span>
+
+
+
+
+
+                <ul class="entry_type_enum">
+                  <li>
+                    <span class="entry_type_enum_name">OFF (v3.12)</span>
+                  </li>
+                  <li>
+                    <span class="entry_type_enum_name">ON (v3.12)</span>
+                  </li>
+                </ul>
+
+            </td> <!-- entry_type -->
+
+            <td class="entry_description">
+              <p>Controls whether the camera device could also return additional
+physical cameras' metadata in the results.<wbr/></p>
+            </td>
+
+            <td class="entry_units">
+            </td>
+
+            <td class="entry_range">
+            </td>
+
+            <td class="entry_hal_version">
+              <p>3.<wbr/>12</p>
+            </td>
+
+            <td class="entry_tags">
+            </td>
+
+          </tr>
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>This control must only be turned on when device is using logical camera,<wbr/>
+which are devices that have
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html#REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA">Camera<wbr/>Metadata#REQUEST_<wbr/>AVAILABLE_<wbr/>CAPABILITIES_<wbr/>LOGICAL_<wbr/>MULTI_<wbr/>CAMERA</a>
+capability and the key is supported in the device's
+<a href="https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html#getAvailableCaptureRequestKeys">CameraCharacteristics#getAvailableCaptureRequestKeys</a>.<wbr/>
+Once this key is set to ON,<wbr/> if the camera device has
+multiple physical cameras active,<wbr/> the TotalCaptureResult will contain
+additional physical camera metadata in the result.<wbr/> One of such
+scenario is at the time of lens switch during zoom,<wbr/> where in addition
+to the active physical camera,<wbr/> a secondary physical camera runs as a
+"follower" and produces an additional physical camera CaptureResult.<wbr/>
+The application can call <a href="https://developer.android.com/reference/android/hardware/camera2/TotalCaptureResult.html#getPhysicalCameraTotalResults">TotalCaptureResult#getPhysicalCameraTotalResults</a>
+to get the additional results.<wbr/></p>
+            </td>
+          </tr>
+
+          <tr class="entries_header">
+            <th class="th_details" colspan="6">HAL Implementation Details</th>
+          </tr>
+          <tr class="entry_cont">
+            <td class="entry_details" colspan="6">
+              <p>This key may only be included in a logical multi-camera's available
+request and result keys.<wbr/> It must not be included if the camera device
+is not a logical multi-camera.<wbr/></p>
             </td>
           </tr>
 

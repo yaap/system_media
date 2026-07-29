@@ -20,8 +20,11 @@
 
 #include <algorithm>  // std::clamp
 #include <errno.h>
+#include <fcntl.h>
+#include <pthread.h>
 #include <sched.h>    // scheduler
 #include <sys/resource.h>
+#include <system/thread_defs.h>
 #include <thread>
 #include <utils/Errors.h>  // status_t
 #include <utils/Log.h>
@@ -32,9 +35,14 @@ namespace android::audio_utils {
  * Sets the unified priority of the tid.
  */
 status_t set_thread_priority(pid_t tid, int priority) {
+    if (tid == 0) tid = gettid_wrapper();
+    const int policy = sched_getscheduler(tid);
+    if (policy < 0) return -errno;
+    const int basePolicy = policy & ~SCHED_RESET_ON_FORK;
+    const int resetOnFork = policy & SCHED_RESET_ON_FORK; // preserve if possible
     if (is_realtime_priority(priority)) {
         // audio processes are designed to work with FIFO, not RR.
-        constexpr int new_policy = SCHED_FIFO;
+        const int new_policy = SCHED_FIFO | resetOnFork;
         const int rtprio = unified_priority_to_rtprio(priority);
         struct sched_param param {
             .sched_priority = rtprio,
@@ -46,14 +54,14 @@ status_t set_thread_priority(pid_t tid, int priority) {
         }
         return NO_ERROR;
     } else if (is_cfs_priority(priority)) {
-        const int policy = sched_getscheduler(tid);
         const int nice = unified_priority_to_nice(priority);
-        if (policy != SCHED_OTHER) {
+        if (basePolicy != SCHED_OTHER) {
             struct sched_param param{};
-            constexpr int new_policy = SCHED_OTHER;
+            const int new_policy = SCHED_OTHER | resetOnFork;
             if (sched_setscheduler(tid, new_policy, &param) != 0) {
-                ALOGW("%s: Cannot set CFS priority for tid %d to policy %d nice %d  %s",
-                        __func__, tid, new_policy, nice, strerror(errno));
+                ALOGW("%s: Cannot set CFS priority for tid %d "
+                        "from policy %d to policy %d nice %d  %s",
+                        __func__, tid, policy, new_policy, nice, strerror(errno));
                 return -errno;
             }
         }
@@ -69,10 +77,12 @@ status_t set_thread_priority(pid_t tid, int priority) {
  *
  * A negative number represents error.
  */
-int get_thread_priority(int tid) {
-    const int policy = sched_getscheduler(tid);
+int get_thread_priority(pid_t tid) {
+    if (tid == 0) tid = gettid_wrapper();
+    int policy = sched_getscheduler(tid);
     if (policy < 0) return -errno;
 
+    policy &= ~SCHED_RESET_ON_FORK; // get base policy
     if (policy == SCHED_OTHER) {
         errno = 0;  // negative return value valid, so check errno change.
         const int nice = getpriority(PRIO_PROCESS, tid);
@@ -136,6 +146,56 @@ size_t get_number_cpus() {
         n.store(value, std::memory_order_relaxed);  // on race, this store is idempotent.
     }
     return value;
+}
+
+status_t set_priority_for_binder_callback(const char* calling_func) {
+    constexpr int priority = nice_to_unified_priority(ANDROID_PRIORITY_URGENT_AUDIO);
+    const status_t status = set_thread_priority(gettid_wrapper(), priority);
+    ALOGD_IF(status != OK, "%s: set priority %d failed with status %d",
+             calling_func, priority, status);
+    return status;
+}
+
+status_t set_thread_name(std::thread& thread, const std::string& name) {
+    const int err = pthread_setname_np(thread.native_handle(), name.substr(0, 15).c_str());
+    return err == 0 ? OK : -err;
+}
+
+status_t set_thread_name(const std::string& name) {
+    const int err = pthread_setname_np(pthread_self(), name.substr(0, 15).c_str());
+    return err == 0 ? OK : -err;
+}
+
+std::string get_thread_name(std::thread& thread) {
+    char buf[16]; // Linux limit for pthread name is 16 including null terminator
+    if (pthread_getname_np(thread.native_handle(), buf, sizeof(buf)) == 0) {
+        return buf;
+    }
+    return "";
+}
+
+std::string get_thread_name(pid_t tid) {
+    if (tid == 0 || tid == gettid_wrapper()) {
+        char buf[16]; // Linux limit for pthread name is 16 including null terminator
+        if (pthread_getname_np(pthread_self(), buf, sizeof(buf)) == 0) {
+            return buf;
+        }
+    } else {
+        char path[32];
+        snprintf(path, sizeof(path), "/proc/%d/comm", tid);
+        int fd = open(path, O_RDONLY | O_CLOEXEC);
+        if (fd >= 0) {
+            char buf[16];
+            ssize_t n = read(fd, buf, sizeof(buf) - 1);
+            close(fd);
+            if (n > 0) {
+                if (buf[n - 1] == '\n') n--;
+                buf[n] = '\0';
+                return buf;
+            }
+        }
+    }
+    return "";
 }
 
 } // namespace android::audio_utils

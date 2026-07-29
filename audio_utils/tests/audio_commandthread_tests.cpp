@@ -76,3 +76,139 @@ TEST(commandthread, full) {
     stage = 6;
     cv.notify_one();
 }
+
+TEST(commandthread, priority) {
+    std::mutex m;
+    std::condition_variable cv;
+    bool done = false;
+    int priority = -1;
+
+    // we only reduce priority - some hosts require permission
+    // to raise priority.
+    constexpr int kPriority = 130;
+    android::audio_utils::CommandThread ct(kPriority);
+    ct.add("priority", [&]{
+        std::lock_guard lg(m);
+        priority = android::audio_utils::get_thread_priority(
+                android::audio_utils::gettid_wrapper());
+        done = true;
+        cv.notify_one();
+    });
+
+    std::unique_lock ul(m);
+    cv.wait(ul, [&] { return done; });
+    EXPECT_EQ(kPriority, priority);
+}
+
+static constexpr std::chrono::milliseconds kFirstScheduledTime{40};
+static constexpr std::chrono::milliseconds kSecondScheduledTime{80};
+static constexpr std::chrono::milliseconds kScheduledFinishTime{500};
+
+TEST(commandthread, scheduled) {
+    using namespace std::chrono_literals;
+    std::mutex m;
+    std::condition_variable cv;
+    int stage = 0;
+    android::audio_utils::CommandThread ct;
+
+    const auto start = std::chrono::steady_clock::now();
+    ct.add("one", [&]{
+        std::lock_guard lg(m);
+        stage = 1;
+        cv.notify_one();
+    }, kFirstScheduledTime);
+
+    std::unique_lock ul(m);
+    EXPECT_TRUE(cv.wait_for(ul, kScheduledFinishTime, [&] { return stage == 1; }));
+    const auto end = std::chrono::steady_clock::now();
+    EXPECT_GE(end - start, kFirstScheduledTime);
+}
+
+TEST(commandthread, scheduled_multiple) {
+    using namespace std::chrono_literals;
+    std::mutex m;
+    std::condition_variable cv;
+    std::vector<int> results;
+    android::audio_utils::CommandThread ct;
+
+    // We add them out of order in time.
+    ct.add("two", [&]{
+        std::lock_guard lg(m);
+        results.push_back(2);
+        cv.notify_one();
+    }, kSecondScheduledTime);
+
+    ct.add("one", [&]{
+        std::lock_guard lg(m);
+        results.push_back(1);
+        cv.notify_one();
+    }, kFirstScheduledTime);
+
+    ct.add("zero", [&]{
+        std::lock_guard lg(m);
+        results.push_back(0);
+        cv.notify_one();
+    });
+
+    std::unique_lock ul(m);
+    EXPECT_TRUE(cv.wait_for(ul, kScheduledFinishTime, [&] { return results.size() == 3; }));
+    std::vector<int> expected = {0, 1, 2};
+    EXPECT_EQ(expected, results);
+}
+
+TEST(commandthread, latest_scheduled_time) {
+    using namespace std::chrono_literals;
+    android::audio_utils::CommandThread ct;
+
+    EXPECT_FALSE(ct.latest_scheduled_time().has_value());
+
+    const auto now = std::chrono::steady_clock::now();
+    ct.add("one", [](){}, kFirstScheduledTime);
+    auto latest = ct.latest_scheduled_time();
+    EXPECT_TRUE(latest.has_value());
+    EXPECT_GE(*latest, now + kFirstScheduledTime);
+
+    ct.add("two", [](){}, kSecondScheduledTime);
+    latest = ct.latest_scheduled_time();
+    EXPECT_TRUE(latest.has_value());
+    EXPECT_GE(*latest, now + kSecondScheduledTime);
+
+    ct.add("zero", [](){}); // Immediate task doesn't affect latest_scheduled_time
+    latest = ct.latest_scheduled_time();
+    EXPECT_TRUE(latest.has_value());
+    EXPECT_GE(*latest, now + kSecondScheduledTime);
+
+    ct.quit();
+    EXPECT_FALSE(ct.latest_scheduled_time().has_value());
+}
+
+TEST(commandthread, wait_for_all_tasks) {
+    using namespace std::chrono_literals;
+    android::audio_utils::CommandThread ct;
+    std::atomic<int> count = 0;
+
+    ct.add("one", [&]{
+        std::this_thread::sleep_for(kFirstScheduledTime);
+        count++;
+    });
+    ct.add("two", [&]{
+        std::this_thread::sleep_for(kFirstScheduledTime);
+        count++;
+    }, kFirstScheduledTime + kFirstScheduledTime);
+
+    ct.wait_for_all_tasks();
+    EXPECT_EQ(2, count);
+}
+
+TEST(commandthread, quit_add) {
+    using namespace std::chrono_literals;
+    android::audio_utils::CommandThread ct;
+
+    EXPECT_TRUE(ct.add("one", [](){}));
+    EXPECT_TRUE(ct.add("two", [](){}, 10ms));
+
+    ct.quit();
+
+    EXPECT_FALSE(ct.add("three", [](){}));
+    EXPECT_FALSE(ct.add("four", [](){}, 10ms));
+}

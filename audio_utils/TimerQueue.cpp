@@ -19,15 +19,22 @@
 
 #include <audio_utils/TimerQueue.h>
 
+// go/keep-sorted start
 #include <algorithm>
 #include <audio_utils/Statistics.h>
+#include <audio_utils/clock.h>
+#include <audio_utils/threads.h>
 #include <log/log.h>
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
+#include <system/thread_defs.h>
 #include <unistd.h>
 #include <utils/SystemClock.h>
+// go/keep-sorted end
 
 namespace android::audio_utils {
+
+static constexpr const char * kIndentPrefix = "  ";
 
 class LinuxClock : public IClock {
 public:
@@ -49,13 +56,20 @@ public:
     bool ready() const override { return mPollHandle != INVALID_HANDLE; }
     int setTimer(Handle handle, nsecs_t time) override;
     Handle wait(nsecs_t timeout) override;
-    std::string toString() const override {
+    std::string toString(std::string_view prefix) const override {
         std::string s;
         for (const auto& [handle, info] : mHandleInfos) {
-            s.append("lastTime: ").append(std::to_string(info.lastTime))
-                .append(" delayed: ").append(std::to_string(info.delayed))
-                .append(" statistics(ms): ").append(info.statistics.toString())
-                .append("\n");
+            appendInfo(s, prefix, handle, info);
+            s.append("\n");
+        }
+        return s;
+    }
+    std::string toString(std::string_view prefix, Handle handle) const override {
+        std::string s;
+        if (const auto it = mHandleInfos.find(handle);
+            it != mHandleInfos.end()) {
+            const auto& info = it->second;
+            appendInfo(s, prefix, handle, info);
         }
         return s;
     }
@@ -70,6 +84,15 @@ protected:
         Statistics<double> statistics{0.99};
     };
     std::map<Handle, HandleInfo> mHandleInfos;
+
+    static void appendInfo(
+            std::string& s, std::string_view prefix, Handle handle, const HandleInfo& info) {
+        s.append(prefix).append("handle: ")
+                .append(std::to_string(handle))
+                .append(" lastTime: ").append(std::to_string(info.lastTime))
+                .append(" delayed: ").append(std::to_string(info.delayed))
+                .append(" statistics(ms): ").append(info.statistics.toString());
+    }
 };
 
 std::unique_ptr<IClock> IClock::createLinuxClock() {
@@ -193,9 +216,11 @@ TimerQueue::TimerQueue(std::unique_ptr<IClock> clock, bool alarm)
       mAlarm(alarm) {
 
     // create our alarm clocks
-    mAlarmClocks.emplace_back(mClock.get(), IClock::BOOTTIME, mRunning);
+    mAlarmClocks.emplace_back(
+            "BootTime", mClock.get(), IClock::BOOTTIME, mRunning);
     if (alarm) {
-        mAlarmClocks.emplace_back(mClock.get(), IClock::BOOTTIME_ALARM, mRunning);
+        mAlarmClocks.emplace_back(
+                "BootTime Alarm", mClock.get(), IClock::BOOTTIME_ALARM, mRunning);
     }
     mRunning = true;
     mThread = std::thread(&TimerQueue::threadLoop, this);
@@ -226,7 +251,8 @@ TimerQueue::EventId TimerQueue::add(std::function<void()> function, nsecs_t exec
 
     std::lock_guard lock(mMutex);
     const EventId id = getNextEventId_l();
-    const auto event = std::make_shared<Event>(Event{id, std::move(function), executionTime});
+    const auto event = std::make_shared<Event>(
+            Event{id, std::move(function), executionTime, executionTime});
 
     if (mAlarm) {
         mAlarmClocks[1].add(executionTime, event);
@@ -245,7 +271,7 @@ TimerQueue::EventId TimerQueue::add(std::function<void()> function,
     std::lock_guard lock(mMutex);
     const EventId id = getNextEventId_l();
     const auto event = std::make_shared<Event>(Event{id, std::move(function),
-            priorityTime >= 0 ? priorityTime : hardDeadline});
+            priorityTime >= 0 ? priorityTime : hardDeadline, hardDeadline});
 
     if (mAlarm) {
         mAlarmClocks[0].add(softDeadline, event);
@@ -281,14 +307,27 @@ TimerQueue::EventId TimerQueue::getNextEventId_l() {
     return id;
 }
 
-std::string TimerQueue::toString() const {
-    std::string s{"TimerQueue\n"};
+std::string TimerQueue::toString(std::string_view prefix) const {
+    std::string s{prefix};
+    s.append("TimerQueue Event Queues:\n");
     std::lock_guard lock(mMutex);
-    s.append(mClock->toString());
+    std::string prefix2 = std::string(prefix).append(kIndentPrefix);
+    for (size_t i = 0; i < mAlarmClocks.size(); ++i) {
+        s.append(prefix).append("[").append(std::to_string(i)).append("] ");
+        s.append(mAlarmClocks[i].toString(prefix2));
+    }
+    s.append(prefix).append("TimerQueue Clock Handles:\n");
+    s.append(mClock->toString(prefix2));
     return s;
 }
 
 void TimerQueue::threadLoop() {
+    constexpr const char* kThreadName = "TimerQueue";
+    audio_utils::set_thread_name(kThreadName);
+    constexpr int kPriority = audio_utils::nice_to_unified_priority(ANDROID_PRIORITY_AUDIO);
+    const status_t status = audio_utils::set_thread_priority(kPriority);
+    ALOGW_IF(status != OK, "%s: set priority %d failed with status %d",
+             __func__, kPriority, status);
     while (true) {
         const IClock::Handle handle = mClock->wait(-1 /* timeout */);
         ALOGV("%s: Clock wait %d", __func__, handle);
@@ -298,14 +337,12 @@ void TimerQueue::threadLoop() {
         } else if (handle == IClock::PENDING_HANDLE || handle == IClock::INTR_HANDLE) {
             continue;
         }
-
+        const nsecs_t now = elapsedRealtimeNano();
         std::set<std::shared_ptr<Event>> events;
         {
             std::lock_guard lock(mMutex);
 
             if (!mRunning) break;
-
-            const nsecs_t now = elapsedRealtimeNano();
 
             // collect all the events that are active
             for (auto& alarmClock : mAlarmClocks) {
@@ -322,14 +359,23 @@ void TimerQueue::threadLoop() {
                 [](const std::shared_ptr<Event>& e1, const std::shared_ptr<Event>& e2) {
                     return e1->priorityTime < e2->priorityTime;});
         // execute the lambdas outside the lock
+        constexpr int kWarningMs = 100;
         for (const auto& event : sorted) {
+            if ((now - event->hardDeadline) > kWarningMs * NANOS_PER_MILLISECOND) {
+                ALOGW("%s: Event hard deadline exceeded by %d ms:"
+                        " creation: %lld, now: %lld, hardDeadline: %lld",
+                        __func__, kWarningMs, (long long)event->creationTime,
+                         (long long)now, (long long)event->hardDeadline);
+            }
             event->function();
         }
     }
 }
 
-TimerQueue::AlarmClock::AlarmClock(IClock* clock, IClock::ClockType clockType, bool& running)
-    : mClock(clock)
+TimerQueue::AlarmClock::AlarmClock(std::string_view name,
+        IClock* clock, IClock::ClockType clockType, bool& running)
+    : mName(name)
+    , mClock(clock)
     , mTimerHandle{mClock->createTimer(clockType)}
     , mRunning(running) {
     if (mTimerHandle < 0) {
@@ -416,6 +462,19 @@ void TimerQueue::AlarmClock::removeEvents(const std::set<std::shared_ptr<Event>>
     for (const auto& event : events) {
         remove(event->id);
     }
+}
+
+std::string TimerQueue::AlarmClock::toString(std::string_view prefix) const {
+    std::string s{prefix};
+    s.append(mName).append("\n");
+    if (!mEvents.empty()) {
+        s.append(prefix).append("Active Events:\n");
+        std::string prefix2 = std::string(prefix).append(kIndentPrefix);
+        for (const auto& event: mEvents) {
+            s.append(event.second.first->toString(prefix2));
+        }
+    }
+    return s;
 }
 
 } // namespace android::audio_utils

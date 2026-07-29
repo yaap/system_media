@@ -3296,7 +3296,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           Some camera devices support additional digital sensitivity boosting in the
           camera processing pipeline after sensor RAW image is captured.
           Such a boost will be applied to YUV/JPEG format output images but will not
-          have effect on RAW output formats like RAW_SENSOR, RAW10, RAW12 or RAW_OPAQUE.
+          have effect on RAW output formats like RAW_SENSOR, RAW10, RAW12, RAW14
+          or RAW_OPAQUE.
 
           This key will be `null` for devices that do not support any RAW format
           outputs. For devices that do support RAW format outputs, this key will always
@@ -6124,13 +6125,13 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           * Processed (but stalling): any non-RAW format with a stallDurations &amp;gt; 0.
             Typically {@link android.graphics.ImageFormat#JPEG|AIMAGE_FORMAT_JPEG JPEG format}.
           * Raw formats: {@link android.graphics.ImageFormat#RAW_SENSOR|AIMAGE_FORMAT_RAW16
-            RAW_SENSOR}, {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10 RAW10}, or
-            {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12 RAW12}.
+            RAW_SENSOR},
+            {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10 RAW10},
+            {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12 RAW12}, or
+            {@link android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW12 RAW14}
           * Processed (but not-stalling): any non-RAW format without a stall duration.  Typically
             {@link android.graphics.ImageFormat#YUV_420_888|AIMAGE_FORMAT_YUV_420_888 YUV_420_888},
-            {@link android.graphics.ImageFormat#NV21 NV21}, {@link
-            android.graphics.ImageFormat#YV12 YV12}, or {@link
-            android.graphics.ImageFormat#Y8|AIMAGE_FORMAT_Y8 Y8} .
+            or {@link android.graphics.ImageFormat#Y8|AIMAGE_FORMAT_Y8 Y8} .
           </details>
           <tag id="BC" />
         </entry>
@@ -6157,6 +6158,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           * {@link android.graphics.ImageFormat#RAW_SENSOR|AIMAGE_FORMAT_RAW16 RAW_SENSOR}
           * {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10 RAW10}
           * {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12 RAW12}
+          * {@link android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW14 RAW14}
 
           LEGACY mode devices (android.info.supportedHardwareLevel `==` LEGACY)
           never support raw streams.
@@ -6186,8 +6188,6 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           Typically:
 
           * {@link android.graphics.ImageFormat#YUV_420_888|AIMAGE_FORMAT_YUV_420_888 YUV_420_888}
-          * {@link android.graphics.ImageFormat#NV21 NV21}
-          * {@link android.graphics.ImageFormat#YV12 YV12}
           * Implementation-defined formats, i.e. {@link
             android.hardware.camera2.params.StreamConfigurationMap#isOutputSupportedFor(Class)}
           * {@link android.graphics.ImageFormat#Y8|AIMAGE_FORMAT_Y8 Y8}
@@ -6567,6 +6567,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               If the device supports the {@link
               android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10}, {@link
               android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12}, {@link
+              android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW14}, {@link
               android.graphics.ImageFormat#Y8|AIMAGE_FORMAT_Y8}, then those can also be
               captured at the same rate as the maximum-size YUV_420_888 resolution is.
 
@@ -6597,6 +6598,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               If the device supports the {@link
               android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10}, {@link
               android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12}, {@link
+              android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW14}, {@link
               android.graphics.ImageFormat#Y8|AIMAGE_FORMAT_Y8}, then those can also be
               captured at the same rate as the maximum-size YUV_420_888 resolution is.
 
@@ -7599,6 +7601,102 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             <notes>
             </notes>
             </value>
+            <value id="0x2000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                STANDARD_SMPTE_2094_50
+            <notes>
+                8-bit profile with additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x4000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                HLG10_SMPTE_2094_50
+            <notes>
+                10-bit pixel samples encoded using the Hybrid log-gamma transfer function with
+                additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x8000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                HDR10_SMPTE_2094_50
+            <notes>
+                10-bit pixel samples encoded using the SMPTE ST 2084 transfer function.
+                This profile utilizes internal static metadata to increase the quality
+                of the capture and also includes SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x10000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                HDR10_PLUS_SMPTE_2094_50
+            <notes>
+                10-bit pixel samples encoded using the SMPTE ST 2084 transfer function.
+                In contrast to HDR10, this profile uses internal per-frame metadata
+                to further enhance the quality of the capture and includes
+                additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x20000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                DOLBY_VISION_10B_HDR_REF_SMPTE_2094_50
+            <notes>
+                This is a camera mode for Dolby Vision capture optimized for a more scene
+                accurate capture. This would typically differ from what a specific device
+                might want to tune for a consumer optimized Dolby Vision general capture and
+                also includes additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x40000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                DOLBY_VISION_10B_HDR_REF_PO_SMPTE_2094_50
+            <notes>
+                This is the power optimized mode for 10-bit Dolby Vision HDR Reference Mode
+                with additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x80000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                DOLBY_VISION_10B_HDR_OEM_SMPTE_2094_50
+            <notes>
+                This is the camera mode for the default Dolby Vision capture mode for the
+                specific device. This would be tuned by each specific device for consumer
+                pleasing results that resonate with their particular audience. We expect
+                that each specific device would have a different look for their default
+                Dolby Vision capture and also include additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x100000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                DOLBY_VISION_10B_HDR_OEM_PO_SMPTE_2094_50
+            <notes>
+                This is the power optimized mode for 10-bit Dolby Vision HDR device specific
+                capture Mode and also includes additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x200000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                DOLBY_VISION_8B_HDR_REF_SMPTE_2094_50
+            <notes>
+                This is the 8-bit version of the Dolby Vision reference capture mode optimized
+                for scene accuracy and also includes additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x400000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                DOLBY_VISION_8B_HDR_REF_PO_SMPTE_2094_50
+            <notes>
+                This is the power optimized mode for 8-bit Dolby Vision HDR Reference Mode and
+                also includes additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x800000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                DOLBY_VISION_8B_HDR_OEM_SMPTE_2094_50
+            <notes>
+                This is the 8-bit version of device specific tuned and optimized Dolby Vision
+                capture mode and also includes additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x1000000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                DOLBY_VISION_8B_HDR_OEM_PO_SMPTE_2094_50
+            <notes>
+                This is the power optimized mode for 8-bit Dolby Vision HDR device specific
+                capture Mode and also includes additional SMPTE 2094-50 per-frame metadata.
+            </notes>
+            </value>
+            <value id="0x2000000" hal_version="3.12" aconfig_flag="new_dynamic_range_profiles">
+                MAX_312
+            <notes>
+            </notes>
+            </value>
           </enum>
           <description>A map of all available 10-bit dynamic range profiles along with their
           capture request constraints.
@@ -7991,6 +8089,9 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             </value>
             <value id="0x26" hal_version="3.4">RAW12
               <notes>RAW12</notes>
+            </value>
+            <value id="0x2C" hal_version="3.12">RAW14
+              <notes>RAW14</notes>
             </value>
             <value id="0x20203859" hal_version="3.4">Y8
               <notes>Y8</notes>
@@ -8529,6 +8630,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           * {@link android.graphics.ImageFormat#YUV_420_888|AIMAGE_FORMAT_YUV_420_888}
           * {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10}
           * {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12}
+          * {@link android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW14}
           * {@link android.graphics.ImageFormat#Y8|AIMAGE_FORMAT_Y8}
 
           All other formats may or may not have an allowed stall duration on
@@ -8540,8 +8642,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
           <hal_details>
           If possible, it is recommended that all non-JPEG formats
-          (such as RAW16) should not have a stall duration. RAW10, RAW12, RAW_OPAQUE
-          and IMPLEMENTATION_DEFINED must not have stall durations.
+          (such as RAW16) should not have a stall duration. RAW10, RAW12, RAW14,
+          RAW_OPAQUE and IMPLEMENTATION_DEFINED must not have stall durations.
           </hal_details>
           <tag id="V1" />
         </entry>
@@ -9321,8 +9423,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
           <hal_details>
           If possible, it is recommended that all non-JPEG formats
-          (such as RAW16) should not have a stall duration. RAW10, RAW12, RAW_OPAQUE
-          and IMPLEMENTATION_DEFINED must not have stall durations.
+          (such as RAW16) should not have a stall duration. RAW10, RAW12, RAW14,
+          RAW_OPAQUE and IMPLEMENTATION_DEFINED must not have stall durations.
           </hal_details>
         </entry>
         <entry name="streamConfigurationMapMaximumResolution" type="int32" visibility="java_public"
@@ -9636,6 +9738,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
               * {@link android.graphics.ImageFormat#RAW_SENSOR|AIMAGE_FORMAT_RAW16 RAW_SENSOR}
               * {@link android.graphics.ImageFormat#RAW10|AIMAGE_FORMAT_RAW10 RAW10}
               * {@link android.graphics.ImageFormat#RAW12|AIMAGE_FORMAT_RAW12 RAW12}
+              * {@link android.graphics.ImageFormat#RAW14|AIMAGE_FORMAT_RAW14 RAW14}
 
               session configuration is not guaranteed to succeed.
 
@@ -9782,6 +9885,20 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </details>
         </entry>
       </dynamic>
+      <static>
+        <entry name="concurrentMultiResolutionFormats" type="int32"
+          visibility="ndk_public" optional="true" container="array"
+          hal_version="3.12">
+          <array>
+            <size>n</size>
+          </array>
+          <description>The MultiResolutionImageReader formats supporting concurrent readers.
+          </description>
+          <details>Among all of the MultiResolutionImageReader formats this camera device supports,
+            this list contains the formats that support concurrent reader outputs.
+          </details>
+        </entry>
+      </static>
     </section>
     <section name="sensor">
       <controls>
@@ -9964,8 +10081,8 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
 
             In general, application should always refer to active array size for controls like
             metering regions or crop region. Two exceptions are when the application is dealing with
-            RAW image buffers (RAW_SENSOR, RAW10, RAW12 etc), or when application explicitly set
-            android.distortionCorrection.mode to OFF. In these cases, application should refer
+            RAW image buffers (RAW_SENSOR, RAW10, RAW12, RAW14 etc), or when application explicitly
+            set android.distortionCorrection.mode to OFF. In these cases, application should refer
             to android.sensor.info.preCorrectionActiveArraySize.
             </details>
             <ndk_details>
@@ -13400,7 +13517,84 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
             in case this key is not present.
           </details>
         </entry>
+        <entry name="deviceType" type="byte" visibility="public" enum="true" hwlevel="legacy"
+               aconfig_flag="camera_device_type_api" hal_version="3.12">
+          <enum>
+            <value>BUILT_IN
+            <notes>
+              This camera device is physically a part of this Android device, and the data produced
+              is always within the device's control before it reaches the application requesting it.
+            </notes>
+            </value>
+            <value>EXTERNAL
+            <notes>
+              This camera device is not permanently connected to this Android device.  It may be
+              connected by a wired connection, such as a USB webcam, or it might be connected
+              wirelessly, such as via WiFi or other communication mechanism.
+
+              The provenance of the image data from the external camera cannot be guaranteed, since it
+              is produced by hardware that is not controlled by this Android device.
+
+              Note that an `EXTERNAL` `android.info.deviceType` does not mean the
+              `android.info.supportedHardwareLevel` must be `EXTERNAL`. A basic USB webcam would
+              likely have an `EXTERNAL` hardware level, but more sophisticated remote camera systems
+              may have more capabilities than that, and be listed with a `LIMITED` or better
+              hardware level.
+              </notes>
+            </value>
+            <value>VIRTUAL
+            <notes>
+              This camera device produces purely virtual images, though they may be based on the
+              output of a real hardware camera in some cases. For example, a virtual reality headset
+              may have a virtual camera as the front-facing camera, producing a virtual avatar to
+              represent the user, which is animated based on sensors on the headset.
+
+              The image data should not be assumed to be real.
+            </notes>
+            </value>
+            <value>UNKNOWN
+            <notes>
+              This camera device has an unknown classification.
+
+              This value will be used when new device classifications need to be added in future
+              Android versions, so that applications targeting older SDK levels do not have to
+              handle unknown enumeration values.
+            </notes>
+            </value>
+          </enum>
+          <description>A classification of the underlying hardware and source of image data for this
+          camera device, or for a specific camera output frame.
+          </description>
+          <details>
+            Historically, camera devices listed by the camera2 API could be assumed to be built-in
+            cameras on the Android device, or in the case of the `EXTERNAL`
+            `android.info.supportedHardwareLevel`, USB webcams.
+
+            However, it is increasingly possible for camera devices to not be restricted to
+            device-internal sensors and processing pipelines. Such devices can provide a wide range
+            of useful capabilities to applications, but may also not be suitable for all camera use
+            cases.
+
+            This key provides a basic classification of the type of camera this camera ID
+            represents, so that applications may decide on the appropriate level of trust to extend
+            to the image data produced by it.
+
+            Note that in some cases, it is possible for the user to swap the definition of a camera
+            ID to a different one, such as when connecting a remote camera to act as the front
+            camera of the device. This is normally transparent to the camera-using application to
+            minimize user friction, but applications that care about this possibility should always
+            verify the value of this key in the
+            {@link android.hardware.camera2.CameraCharacteristics CameraCharacteristics} before opening
+            a camera, instead of caching it, and should also watch the value of this key in
+            {@link android.hardware.camera2.CaptureResult CaptureResults} as well, since it may
+            change mid-session.
+          </details>
+        </entry>
       </static>
+      <dynamic>
+        <clone entry="android.info.deviceType" kind="static">
+        </clone>
+      </dynamic>
     </section>
     <section name="blackLevel">
       <controls>
@@ -14298,6 +14492,43 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
         <tag id="LOGICALCAMERA" />
       </entry>
     </dynamic>
+    <controls>
+      <entry name="additionalResults" type="byte" visibility="public" enum="true"
+          typedef="boolean" aconfig_flag="logical_multi_camera_additional_results" hal_version="3.12">
+        <enum>
+          <value>OFF</value>
+          <value>ON</value>
+        </enum>
+        <description>
+          Controls whether the camera device could also return additional
+          physical cameras' metadata in the results.
+        </description>
+        <details>
+          This control must only be turned on when device is using logical camera,
+          which are devices that have
+          {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA}
+          capability and the key is supported in the device's
+          {@link android.hardware.camera2.CameraCharacteristics#getAvailableCaptureRequestKeys}.
+          Once this key is set to ON, if the camera device has
+          multiple physical cameras active, the TotalCaptureResult will contain
+          additional physical camera metadata in the result. One of such
+          scenario is at the time of lens switch during zoom, where in addition
+          to the active physical camera, a secondary physical camera runs as a
+          "follower" and produces an additional physical camera CaptureResult.
+          The application can call {@link android.hardware.camera2.TotalCaptureResult#getPhysicalCameraTotalResults}
+          to get the additional results.
+        </details>
+        <hal_details>
+          This key may only be included in a logical multi-camera's available
+          request and result keys. It must not be included if the camera device
+          is not a logical multi-camera.
+        </hal_details>
+      </entry>
+    </controls>
+      <dynamic>
+        <clone entry="android.logicalMultiCamera.additionalResults" kind="controls" >
+        </clone>
+      </dynamic>
     </section>
     <section name="distortionCorrection">
       <controls>
@@ -15258,7 +15489,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
     <section name="sharedSession">
       <static>
         <entry name="colorSpace" type="int32" visibility="fwk_only" optional="true"
-          enum="true" aconfig_flag="camera_multi_client" hal_version="3.11">
+          enum="true" hal_version="3.11">
           <enum>
             <value id="-1">UNSPECIFIED</value>
             <value id="0">SRGB</value>
@@ -15275,8 +15506,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </hal_details>
         </entry>
         <entry name="outputConfigurations" type="int64" visibility="fwk_only"
-          optional="true" container="array" aconfig_flag="camera_multi_client"
-          hal_version="3.11">
+          optional="true" container="array" hal_version="3.11">
           <array>
             <size>n</size>
           </array>
@@ -15302,8 +15532,7 @@ xsi:schemaLocation="http://schemas.android.com/service/camera/metadata/ metadata
           </hal_details>
         </entry>
         <entry name="configuration" type="byte" visibility="fwk_system_public"
-          synthetic="true" optional="true" typedef="sharedSessionConfiguration"
-          aconfig_flag="camera_multi_client">
+          synthetic="true" optional="true" typedef="sharedSessionConfiguration">
           <description>The available stream configurations that this camera device supports for
             shared capture session when camera is opened in shared mode. Android camera framework
             will generate this tag if the camera device can be opened in shared mode.

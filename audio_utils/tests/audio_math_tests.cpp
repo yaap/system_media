@@ -16,6 +16,7 @@
 
 #define LOG_TAG "audio_math_tests"
 
+#include <audio_utils/safe_chrono.h>
 #include <audio_utils/safe_math.h>
 
 #include <gtest/gtest.h>
@@ -77,4 +78,35 @@ TEST(audio_math_tests, safe_add_sat) {
     static_assert(UINT_MAX == android::audio_utils::safe_add_sat(UINT_MAX, 10U));
     static_assert(UINT_MAX - 10 == android::audio_utils::safe_add_sat(UINT_MAX - 20, 10U));
     static_assert(UINT_MAX - 10 == android::audio_utils::safe_add_sat(UINT_MAX - 20, 10U));
+}
+
+TEST(audio_math_tests, safe_add_chrono) {
+    const auto now = std::chrono::steady_clock::now();
+    const auto nmax = std::chrono::nanoseconds::max();
+    const auto nmin = std::chrono::nanoseconds::min();
+
+    // this should overflow.
+    // EXPECT_EQ(now + std::chrono::nanoseconds::min() + std::chrono::nanoseconds(-1),
+    //        now + std::chrono::nanoseconds::max());
+
+    // this saturates at max
+    EXPECT_EQ(decltype(now)::max(),
+            android::audio_utils::safe_add_sat(now, nmax));
+
+    EXPECT_TRUE(
+            android::audio_utils::add_would_overflow(now, nmax));
+
+    // this saturates at min
+    EXPECT_EQ(decltype(now)::min(),
+            android::audio_utils::safe_add_sat(now + nmin, nmin));
+
+    EXPECT_TRUE(
+            android::audio_utils::add_would_overflow(now + nmin, nmin));
+
+    // this does not saturate.
+    EXPECT_EQ(now + std::chrono::nanoseconds(1),
+            android::audio_utils::safe_add_sat(now, std::chrono::nanoseconds(1)));
+
+    EXPECT_FALSE(
+            android::audio_utils::add_would_overflow(now, std::chrono::nanoseconds(1)));
 }

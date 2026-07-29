@@ -16,12 +16,16 @@
 
 #pragma once
 
+// go/keep-sorted start
 #include <algorithm>
 #include <bitset>
 #include <sched.h>         // CPU_SETSIZE
+#include <string>
 #include <sys/syscall.h>   // SYS_gettid
+#include <thread>
 #include <unistd.h>        // bionic gettid
 #include <utils/Errors.h>  // status_t
+// go/keep-sorted end
 
 namespace android::audio_utils {
 
@@ -49,7 +53,7 @@ inline constexpr int kDefaultPrio = kMaxRtPrio + kNiceWidth / 2;
 /**
  * Convert CFS (SCHED_OTHER) nice to unified priority.
  */
-inline int nice_to_unified_priority(int nice) {
+inline constexpr int nice_to_unified_priority(int nice) {
     return kDefaultPrio + nice;
 }
 
@@ -59,14 +63,14 @@ inline int nice_to_unified_priority(int nice) {
  * Some unified priorities are not CFS, they will be clamped in range.
  * Use is_cfs_priority() to check if a CFS priority.
  */
-inline int unified_priority_to_nice(int priority) {
+inline constexpr int unified_priority_to_nice(int priority) {
     return std::clamp(priority - kDefaultPrio, kMinNice, kMaxNice);
 }
 
 /**
  * Convert SCHED_FIFO/SCHED_RR rtprio 1 - 99 to unified priority 98 to 0.
  */
-inline int rtprio_to_unified_priority(int rtprio) {
+inline constexpr int rtprio_to_unified_priority(int rtprio) {
     return kMaxRtPrio - 1 - rtprio;
 }
 
@@ -76,21 +80,21 @@ inline int rtprio_to_unified_priority(int rtprio) {
  * Some unified priorities are not real time, they will be clamped in range.
  * Use is_realtime_priority() to check if real time priority.
  */
-inline int unified_priority_to_rtprio(int priority) {
+inline constexpr int unified_priority_to_rtprio(int priority) {
     return std::clamp(kMaxRtPrio - 1 - priority, kMinRtPrio, kMaxRtPrio - 1);
 }
 
 /**
  * Returns whether the unified priority is realtime.
  */
-inline bool is_realtime_priority(int priority) {
+inline constexpr bool is_realtime_priority(int priority) {
     return priority >= 0 && priority < kMaxRtPrio;  // note this allows the unified value 99.
 }
 
 /**
  * Returns whether the unified priority is CFS.
  */
-inline bool is_cfs_priority(int priority) {
+inline constexpr bool is_cfs_priority(int priority) {
     return priority >= kMaxRtPrio && priority < kMaxPrio;
 }
 
@@ -133,17 +137,39 @@ pid_t inline gettid_wrapper() {
 /**
  * Sets the priority of tid to a unified priority.
  *
- * The range of priority is 0 through 139, inclusive.
- * A priority value of 99 is changed to 98.
+ * \param tid the thread id, 0 represents the current thread.
+ * \param priority the unified priority between 0 and 139 inclusive.
+ *        A priority value of 99 is changed to 98.
+ * \return 0 on success or -errno on failure.
  */
 status_t set_thread_priority(pid_t tid, int priority);
 
 /**
+ * Sets the current thread priority to a unified priority.
+ *
+ * \param priority the unified priority between 0 and 139 inclusive.
+ * \return 0 on success or -errno on failure.
+ */
+inline status_t set_thread_priority(int priority) {
+    return set_thread_priority(0, priority);
+}
+
+
+/**
  * Returns the unified priority of the tid.
  *
- * A negative number represents error.
+ * \param tid the thread id, 0 represents the current thread.
+ * \return the unified priority or a negative number representing error.
  */
-int get_thread_priority(int tid);
+int get_thread_priority(pid_t tid = 0);
+
+/**
+ * Sets the current thread priority to urgent audio for binder callbacks.
+ *
+ * \param  calling_func for logging.
+ * \return 0 on success or error on failure.
+ */
+status_t set_priority_for_binder_callback(const char* calling_func);
 
 /**
  * An arbitrary CPU limit for Android running on Chrome / Linux / Windows devices.
@@ -184,5 +210,38 @@ std::bitset<kMaxCpus> get_thread_affinity(pid_t tid);
  * This is not cached and a subsequent call will retry.
  */
 size_t get_number_cpus();
+
+/**
+ * Sets the name of a std::thread.
+ *
+ * \param  thread the std::thread to set the name of.
+ * \param  name the name to set (truncated to 15 characters on Linux).
+ * \return 0 on success or status code on failure.
+ */
+status_t set_thread_name(std::thread& thread, const std::string& name);
+
+/**
+ * Sets the name of the current thread.
+ *
+ * \param  name the name to set (truncated to 15 characters on Linux).
+ * \return 0 on success or status code on failure.
+ */
+status_t set_thread_name(const std::string& name);
+
+/**
+ * Returns the name of a std::thread.
+ *
+ * \param  thread the std::thread to get the name of.
+ * \return the name of the thread or an empty string on failure.
+ */
+std::string get_thread_name(std::thread& thread);
+
+/**
+ * Returns the name of the thread with the given tid.
+ *
+ * \param tid the thread id, 0 represents the current thread.
+ * \return the name of the thread or an empty string on failure.
+ */
+std::string get_thread_name(pid_t tid = 0);
 
 } // namespace android::audio_utils
